@@ -1,0 +1,19 @@
+[package]
+name = "frui_widgets"
+version = "0.0.1"
+license = "MIT OR Apache-2.0"
+authors = ["Jakub Idzik <idzikkuba@gmail.com>"]
+description = "Essential widgets for Frui UI framework"
+repository = "https://github.com/fruiframework/frui"
+edition = "2021"
+
+
+[dependencies]
+frui = { path = "../frui_core", package = "frui_core", version = "0.0.1" }
+frui_macros = { path = "../frui_macros", package = "frui_macros", version = "0.0.1" }
+
+log = "0.4.17"
+druid-shell = "0.7.0"
+
+[features]
+miri = []

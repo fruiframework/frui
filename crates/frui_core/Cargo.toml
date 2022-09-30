@@ -1,0 +1,21 @@
+[package]
+name = "frui_core"
+version = "0.0.1"
+license = "MIT OR Apache-2.0"
+authors = ["Jakub Idzik <idzikkuba@gmail.com>"]
+description = "Core functionality of Frui UI framework"
+repository = "https://github.com/fruiframework/frui"
+edition = "2021"
+
+
+[dependencies]
+frui_macros = { path = "../frui_macros", version = "0.0.1" }
+
+log = "0.4.17"
+simplelog = "0.12.0"
+once_cell = "1.13.0"
+druid-shell = "0.7.0"
+
+
+[features]
+miri = []

@@ -1,0 +1,27 @@
+[package]
+name = "frui"
+version = "0.0.1"
+license = "MIT OR Apache-2.0"
+authors = ["Jakub Idzik <idzikkuba@gmail.com>"]
+description = "A developer-friendly framework for building user interfaces in Rust"
+repository = "https://github.com/fruiframework/frui"
+readme = "README.md"
+categories = ["gui"]
+keywords = ["gui", "ui", "framework", "frui"]
+exclude = ["assets/", ".vscode/", ".github/"]
+edition = "2021"
+
+
+[workspace]
+exclude = ["examples/misc"]
+members = ["crates/*", "examples/*"]
+
+[dependencies]
+frui_core = { path = "crates/frui_core", version = "0.0.1" }
+frui_widgets = { path = "crates/frui_widgets", version = "0.0.1" }
+
+[dev-dependencies]
+rand = "0.8.5"
+
+[features]
+miri = ["frui_core/miri", "frui_widgets/miri"]

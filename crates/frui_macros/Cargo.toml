@@ -1,0 +1,17 @@
+[package]
+name = "frui_macros"
+version = "0.0.1"
+license = "MIT OR Apache-2.0"
+authors = ["Jakub Idzik <idzikkuba@gmail.com>"]
+description = "Macros for Frui UI framework"
+repository = "https://github.com/fruiframework/frui"
+edition = "2021"
+
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.10"
+proc-macro2 = "1.0.33"
+syn = { version = "1.0.82", features = ["full"] }
