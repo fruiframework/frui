@@ -34,22 +34,45 @@ fn main() {
 }
 ```
 
+## Warning
+
+This framework is still in an experimental phase of development. As such, API changes are inevitable and necessary for the best developer experience. 
+
+Currently, there is very little optimizations happening. Layout and drawing are the least optimized. Many important widgets are yet to be implemented. 
+
+Frui heavily utilizes some of the nightly features to optimize rebuilds of the widget tree and improve the API. Therefore, the Minimum Supported Rust Version is "the latest nightly release" of Rust. This may be a deal-breaker for some.
+
+It is important to know that Frui should not be used to build any serious applications at this point in time.
+
+
 
 ## Features
 
-Frui, as of now, is a PoC, and has only implemented the most essential parts of the API. There is a lot of work that needs to be done, especially in terms of back-end considerations, optimizations, and widget implementations (widgets like buttons, gesture detectors, theming, flex wrappers,  etc.).
+*Ok, what's done and what's not?*
 
-- [x] `ViewWidget` (based on [`StatelessWidget`](https://api.flutter.dev/flutter/widgets/StatelessWidget-class.html) and [`StatefulWidget`](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html))
-- [x] `InheritedWidget` (based on [`InheritedWidget`](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html))
-- [x] `LocalKey` (based on [`Key`](https://api.flutter.dev/flutter/foundation/Key-class.html))
+- [x] `ViewWidget` (see [`StatelessWidget`](https://api.flutter.dev/flutter/widgets/StatelessWidget-class.html) and [`StatefulWidget`](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html))
+- [x] `InheritedWidget` (see [`InheritedWidget`](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html))
+- [x] `LocalKey` (see [`Key`](https://api.flutter.dev/flutter/foundation/Key-class.html))
 - [x] Scheduling state updates
-- [x] Basic event detection (`KeyboardEventDetector` / mouse events through `event` method)
+- [x] Basic event detection (`KeyboardEventDetector` / mouse events)
 - [x] Basic layout widgets (`Column`, `Row`, `Center`)
+
+###
+
+- [ ] Focus
+- [ ] Events
+- [ ] Accessibility
+- [ ] Z-layers drawing
+- [ ] Optimizations:
+  - [ ] Widget-rebuilds (based on depth)
+  - [ ] Layout
+  - [ ] Painting
+- [ ] Library of widgets common to all design langauges (provided in `frui_widgets`)
+  - [ ] `Column`, `Row`, `Stack`, `Scroll`, ...
+  - [ ] `KeyboardListener`, `GestureDetector`, ...
+  - [ ] Theming widgets, etc.
+- [ ] Officially supported widget library implementing most popular design languages (e.g. `frui_material`, `frui_cupertino`)
 - [ ] Documentation and tutorials
-- [ ] Event passing, handling focus, Z-layers
-- [ ] Optimizations: widget-rebuild order based on depth, layout & painting
-- [ ] Library of widgets common to all visual langauges provided out of the box (`Column`, `Row`, `GestureDetector`, `Scroll`, etc.)
-- [ ] Separate widget library implementing one of the design languages (e.g. Material Design)
 
 
 ## 🦀 Counter - Example
@@ -112,11 +135,9 @@ fn main() {
 
 ## Credits
 
-Frui wouldn't exist without Flutter and its widget architecture, which inspired Frui's API.
+Frui wouldn't exist without Flutter and its widget architecture, which inspired Frui's API. Thank you!
 
-Frui also wouldn't exist without prior work done on Druid - which powers most of the back-end. Many widgets share some of the implementation details with it as well.
-
-Thank you!
+Frui also wouldn't exist without prior work done on Druid - which powers most of the back-end. Many widgets share some of the implementation details with it as well. Thank you a lot!
 
 
 ## License
