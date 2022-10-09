@@ -1,6 +1,6 @@
 <h1 align="center"><img src="assets/logo.svg" height="80px" alt="Frui"/></h1>
 
-*<p align="center">Reading: "Fr" as in "fruit" and "ui" as in "you" and "I".</p>*
+*<p align="center">Reading: "Fru" as in "fruit" and "i" as in "I" (I am).</p>*
 
 <p align="center">
 <a href="https://crates.io/crates/frui"><img src="https://img.shields.io/crates/v/frui.svg" alt="Latest version"/></a>
