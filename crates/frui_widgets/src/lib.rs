@@ -16,3 +16,8 @@ pub use self::scroll::*;
 pub use self::testing::*;
 pub use self::text::*;
 pub use self::widget_list::*;
+
+#[doc(hidden)]
+pub mod macro_exports {
+    pub use frui::prelude::{BoxedWidget, Widget};
+}
