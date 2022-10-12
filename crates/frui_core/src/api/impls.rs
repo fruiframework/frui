@@ -15,11 +15,21 @@ pub trait BoxedWidget: Widget + Sized {
 }
 
 impl<T: Widget> BoxedWidget for T {
-    fn boxed<'a>(self) -> Box<dyn Widget + 'a>
+    default fn boxed<'a>(self) -> Box<dyn Widget + 'a>
     where
         Self: 'a,
     {
         Box::new(self)
+    }
+}
+
+impl<T: Widget> BoxedWidget for Box<T> {
+    fn boxed<'a>(self) -> Box<dyn Widget + 'a>
+    where
+        Self: 'a,
+    {
+        // Avoid double boxing.
+        self
     }
 }
 

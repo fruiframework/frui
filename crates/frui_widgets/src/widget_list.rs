@@ -1,13 +1,13 @@
-use frui::prelude::Widget;
+pub use frui::prelude::Widget;
 
-/// Represents a collection of widgets.
+/// Represents a list of widgets.
 ///
 ///
-/// # Example usage
+/// # Implementations
 ///
 /// ## Widget tuple
 ///
-/// Most often you will use [`WidgetList`] in a form of a tuple:
+/// Most often you will use [`WidgetList`] in form of a tuple:
 ///
 /// ```
 /// Column::builder()
@@ -15,42 +15,46 @@ use frui::prelude::Widget;
 /// ```
 ///
 /// This pattern is great if you have a statically known list of widgets, since
-/// each child widget can have different types.
+/// each child widget can have different type.
 ///
-/// Do note that currently only tuples with less than 50 widgets work, but in
-/// the future this limit might be increased / lifted.
+/// Do note that currently only tuples with less than 50 widgets work. To handle
+/// bigger lists you can use [`wlist`] macro or [`Vec`]/array of widgets.
+///
+///
+/// ## Widget list macro
+///
+/// If tuple pattern doesn't make it for you, you can use [`wlist`] macro. It
+/// automatically erases types of provided children, boxes them and puts inside
+/// of a [`Vec`].
+///
+/// ```
+/// Column::builder()
+///     .children(wlist![WidgetA, WidgetB, WidgetC]);
+/// ```
+///
+/// This pattern is great if number of widgets you have is greater than 50 since
+/// widget tuple works only up to 50 widgets.
+///
+/// Do note that using [`wlist`] boxes every widget which may cause performance
+/// issues if wildly overused.
+///
 ///
 /// ## Widget vector / array / slice
 ///
-/// If tuple pattern doesn't make it for you, you can also use vector, array
-/// and slice as [`WidgetList`]. Those come with their respectful constraints,
-/// like e.g. type stored in that collection must be the same - you can't have
-/// widgets of different types, unless you box / type erase them:
-///
-/// ```
-/// Column::builder()
-///     .children(&widgets_a); // &[WidgetA]
-/// Column::builder()
-///     .children([WidgetB, WidgetB, WidgetB]); // [WidgetB]
-/// Column::builder()
-///     .children(vec![WidgetC, WidgetC, WidgetC]); // Vec<WidgetC>
-///
-/// // And type erased, e.g.:
-/// Column::builder()
-///     .children([
-///         Box::new(WidgetA) as Box<dyn Widget>,
-///         Box::new(WidgetB),
-///         Box::new(WidgetC),
-///     ]); // [Box<dyn Widget>]
-/// Column::builder()
-///     .children(vec![
-///         &widget_a as &dyn Widget,
-///         &widget_b,
-///         &widget_c,
-///     ]); // Vec<&dyn Widget>
-/// ```
+/// As an alternative to the previous patterns, you can also use vectors, arrays
+/// and slices as [`WidgetList`]. Those come with their respectful constraints,
+/// like the fact that types of elements stored in these kinds of collections
+/// must be the same.
 pub trait WidgetList {
     fn get(&self) -> Vec<&dyn Widget>;
+}
+
+/// See [`WidgetList`] documentation for usage.
+#[macro_export]
+macro_rules! wlist {
+    ($($x:expr),* $(,)?) => {
+        std::vec![$($crate::macro_exports::BoxedWidget::boxed($x)),*] as Vec<Box<dyn $crate::macro_exports::Widget>>
+    }
 }
 
 frui_macros::impl_widget_list!(0..50);
