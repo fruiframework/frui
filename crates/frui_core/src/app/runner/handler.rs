@@ -113,6 +113,7 @@ impl FruiWindowHandler for WindowHandler {
     fn prepare_paint(&mut self) {}
 
     fn paint(&mut self, piet: &mut PaintContext, _invalid: &druid_shell::Region) {
+        //
         // Fill screen with one color (temp).
 
         let size = self.window_size;
@@ -121,13 +122,16 @@ impl FruiWindowHandler for WindowHandler {
 
         druid_shell::piet::RenderContext::fill(piet, rect, brush);
 
+        //
         // Rebuild widget tree.
 
         self.pending_update = false;
         self.rebuild_dirty();
 
-        // Todo: Optimize layout.
+        //
+        // Layout & Paint
 
+        // Todo: Optimize layout.
         self.widget_tree.layout(Constraints {
             min_width: 0.,
             max_width: self.window_size.width,
@@ -136,7 +140,6 @@ impl FruiWindowHandler for WindowHandler {
         });
 
         // Todo: Optimize paint.
-
         self.widget_tree.paint(piet);
     }
 
