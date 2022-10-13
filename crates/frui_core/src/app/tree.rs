@@ -646,10 +646,12 @@ impl Hash for WidgetNodeRef {
 pub(crate) struct RenderData {
     /// Render state used by this widget.
     pub state: Box<dyn Any>,
-    /// Size computed during layout.
+    /// Size computed during last layout.
     pub size: Size,
-    /// Position computed during layout.
+    /// Position computed during last paint.
     pub offset: Offset,
+    /// Incoming constraints received during last layout.
+    pub constraints: Constraints,
     /// Whether child was laid out. Used to display an error message when
     /// painting children without laying them out beforehand.
     pub laid_out: bool,
@@ -661,6 +663,7 @@ impl RenderData {
             state: widget.create_render_state(),
             size: Size::default(),
             offset: Offset::default(),
+            constraints: Constraints::default(),
             laid_out: false,
         }
     }

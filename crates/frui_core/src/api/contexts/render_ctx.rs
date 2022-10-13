@@ -105,7 +105,7 @@ impl PartialOrd for Size {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Constraints {
     pub min_width: f64,
     pub max_width: f64,
@@ -281,28 +281,11 @@ impl<'a> ChildContext<'a> {
     }
 
     pub fn layout(&mut self, constraints: Constraints) -> Size {
-        let size = self.ctx.layout(constraints.clone());
-
-        if cfg!(debug_assertions) {
-            if size > constraints.max() {
-                if self.ctx.node.widget().debug_name_short() != "DebugContainer" {
-                    log::warn!("`{}` overflowed", self.ctx.node.widget().debug_name_short());
-                }
-            }
-        }
-
-        self.ctx.node.borrow_mut().render_data.laid_out = true;
-
-        size
+        self.ctx.layout(constraints.clone())
     }
 
     #[track_caller]
     pub fn paint(&mut self, canvas: &mut PaintContext, offset: &Offset) {
-        assert!(
-            self.ctx.node.borrow().render_data.laid_out,
-            "child was not laid out"
-        );
-        self.ctx.node.borrow_mut().render_data.offset = *offset;
         self.ctx.paint(canvas, offset)
     }
 
@@ -343,15 +326,34 @@ impl AnyRenderContext {
 
     pub(crate) fn layout(&mut self, constraints: Constraints) -> Size {
         let widget = self.node.widget().clone();
-
         let size = widget.layout(self, constraints);
 
-        self.node.borrow_mut().render_data.size = size;
+        if cfg!(debug_assertions) {
+            if size > constraints.max() {
+                if widget.debug_name_short() != "DebugContainer" {
+                    log::warn!("`{}` overflowed", widget.debug_name_short());
+                }
+            }
+        }
+
+        let render_data = &mut self.node.borrow_mut().render_data;
+
+        render_data.size = size;
+        render_data.laid_out = true;
+        render_data.constraints = constraints;
 
         size
     }
 
     pub(crate) fn paint(&mut self, piet: &mut PaintContext, offset: &Offset) {
+        assert!(
+            self.node.borrow().render_data.laid_out,
+            "child was not laid out before paint"
+        );
+
+        // This should probably be calculated during layout probably.
+        self.node.borrow_mut().render_data.offset = offset.clone();
+
         self.node.widget().clone().paint(self, piet, offset);
     }
 
