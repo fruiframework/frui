@@ -40,7 +40,7 @@ This framework is still in an experimental phase of development. As such, API ch
 
 Currently, there is very little optimizations happening. Layout and drawing are the least optimized. Many important widgets are yet to be implemented. 
 
-Frui heavily utilizes some of the nightly features to optimize rebuilds of the widget tree and improve the API. Therefore, the Minimum Supported Rust Version is "the latest nightly release" of Rust. This may be a deal-breaker for some.
+Frui heavily utilizes some of the nightly features to optimize rebuilds of the widget tree and improve the API. Therefore, the Minimum Supported Rust Version is **the latest nightly release** of Rust. This may be a deal-breaker for some.
 
 It is important to know that Frui should not be used to build any serious applications at this point in time.
 
