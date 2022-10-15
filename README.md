@@ -10,7 +10,7 @@
 
 ## What is Frui?
 
-Frui is a developer-friendly UI framework that makes building user interfaces easy and productive. It's based on Flutter architecture and is written in Rust!
+Frui is a developer-friendly UI framework that makes building user interfaces easy and productive. It's inspired by Flutter architecture and is written in Rust!
 
 For an introduction see the [announcement](https://github.com/fruiframework/frui-blog/blob/master/posts/001/0.0.1.md).
 
