@@ -47,7 +47,7 @@ pub mod prelude {
 #[doc(hidden)]
 pub mod macro_exports {
     pub use crate::api::implementors::WidgetDerive;
-    pub use crate::api::widget_eq::cheap_eq::CheapEq;
+    pub use crate::api::structural_eq::{StructuralEq, StructuralEqImpl};
 }
 
 #[doc(hidden)]

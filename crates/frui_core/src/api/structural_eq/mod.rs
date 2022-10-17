@@ -1,21 +1,22 @@
-pub mod cheap_eq;
+mod structural_eq;
 
-pub(crate) use sealed::WidgetEqOS;
+pub(crate) use sealed::StructuralEqOS;
+pub use structural_eq::{StructuralEq, StructuralEqImpl};
 
 mod sealed {
-    use crate::{api::AnyExt, macro_exports::CheapEq};
+    use crate::{api::AnyExt, macro_exports::StructuralEq};
 
     /// `OS` stands for "object safe".
-    pub trait WidgetEqOS {
-        /// Checks if two widget configurations are equal.
+    pub trait StructuralEqOS {
+        /// Checks if two widget structural configurations are equal.
         fn eq(&self, other: &dyn AnyExt) -> bool;
     }
 
-    impl<T: CheapEq> WidgetEqOS for T {
+    impl<T: StructuralEq> StructuralEqOS for T {
         fn eq(&self, other: &dyn AnyExt) -> bool {
             // Safety:
             //
-            // `CheapEq` is implemented by `#[derive(WidgetKind)]` macro, which doesn't
+            // `StructuralEq` is implemented by `#[derive(WidgetKind)]` macro, which doesn't
             // mutate any data of a widget through interior mutability thus it can't cause
             // dangling pointers.
             //
@@ -26,7 +27,7 @@ mod sealed {
             // old widget configuration).
             unsafe {
                 match other.downcast_ref::<T>() {
-                    Some(other) => <T as CheapEq>::cheap_eq(self, other),
+                    Some(other) => <T as StructuralEq>::eq(self, other),
                     None => {
                         eprintln!(
                             "WidgetEqOS: can't compare widgets of different types. This is a bug."

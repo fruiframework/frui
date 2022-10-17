@@ -26,11 +26,11 @@ pub fn Inherited(structure: &ItemStruct) -> TokenStream {
 
 fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
     let name = &input.ident;
-    let (LT, Widget, WidgetKind, CheapEq, _) = imports();
+    let (LT, Widget, WidgetKind, _, StructuralEqImpl, _) = imports();
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let WidgetKindVariant = kind.into_token();
-    let (cheap_to_cmp, eq_impl) = eq_impl(input.clone());
+    let (eq_enabled, eq_impl) = eq_impl(input.clone());
     let WidgetDeriveImpl = widget_derive_impl(kind, input, name);
     let (UniqueTypeId, _, _, _) = widget_derive_helpers(name, &input.generics);
 
@@ -51,10 +51,10 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
         // Automatically derive `type Self::Widget<'a> = impl Widget`.
         #WidgetDeriveImpl
 
-        unsafe impl #impl_generics #CheapEq for #name #ty_generics #where_clause {
-            const CHEAP_TO_EQ: bool = #cheap_to_cmp;
+        unsafe impl #impl_generics #StructuralEqImpl for #name #ty_generics #where_clause {
+            const EQ_ENABLED: bool = #eq_enabled;
 
-            fn cheap_eq(&self, other: &Self) -> bool {
+            fn eq(&self, other: &Self) -> bool {
                 #eq_impl
             }
         }
@@ -63,7 +63,7 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
 
 fn widget_derive_impl(kind: WidgetKind, input: &ItemStruct, name: &Ident) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-    let (LT, Widget, _, _, WidgetDerive) = imports();
+    let (LT, Widget, _, _, _, WidgetDerive) = imports();
 
     let (UniqueTypeId, WidgetAlias, AliasImplBounds, AliasTypeBounds) =
         widget_derive_helpers(name, &input.generics);
@@ -139,14 +139,14 @@ fn widget_derive_helpers(name: &Ident, gparam: &Generics) -> (Ident, Ident, Gene
 }
 
 fn eq_impl(input: ItemStruct) -> (bool, TokenStream) {
-    let (_, _, _, CheapEq, _) = imports();
+    let (_, _, _, StructuralEq, _, _) = imports();
 
     // Constant-evaluated (optimized) expression indicating if all fields are cheap to compare.
     // That means that e.g. no field contains another widget, which would cause recursive
     // equality tests of the widget subtree to be performed.
     let fields_cheap_to_eq = input.fields.iter().map(|t| {
         let ty = &t.ty;
-        quote!(<#ty as #CheapEq>::CHEAP_TO_EQ &&)
+        quote!(<#ty as #StructuralEq>::EQ_ENABLED &&)
     });
 
     let fields_eq = input.fields.iter().enumerate().map(|(n, t)| {
@@ -156,7 +156,7 @@ fn eq_impl(input: ItemStruct) -> (bool, TokenStream) {
             // Named struct field.
             |v| v.to_token_stream(),
         );
-        quote!(#CheapEq::cheap_eq(&self.#field_ident, &other.#field_ident) &&)
+        quote!(#StructuralEq::eq(&self.#field_ident, &other.#field_ident) &&)
     });
 
     let eq_impl = quote! (#(#fields_cheap_to_eq)*  #(#fields_eq)* true);
@@ -172,6 +172,7 @@ fn imports() -> (
     TokenStream,
     TokenStream,
     TokenStream,
+    TokenStream,
 ) {
     let prelude = quote! { ::frui::prelude };
 
@@ -182,10 +183,18 @@ fn imports() -> (
 
     let macro_path = quote! { ::frui::macro_exports };
 
-    let CheapEq = quote! { #macro_path::CheapEq };
+    let StructuralEq = quote! { #macro_path::StructuralEq };
+    let StructuralEqImpl = quote! { #macro_path::StructuralEqImpl };
     let MissingWidgetDerive = quote! { #macro_path::WidgetDerive };
 
-    (LT, Widget, WidgetKind, CheapEq, MissingWidgetDerive)
+    (
+        LT,
+        Widget,
+        WidgetKind,
+        StructuralEq,
+        StructuralEqImpl,
+        MissingWidgetDerive,
+    )
 }
 
 #[derive(Debug, Clone, Copy)]

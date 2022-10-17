@@ -17,7 +17,7 @@ pub mod events;
 pub mod implementors;
 pub mod impls;
 pub mod local_key;
-pub mod widget_eq;
+pub mod structural_eq;
 
 pub trait Widget: WidgetDebug {
     /// Implementation should return the same unique TypeId for given structure definition,

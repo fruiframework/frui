@@ -1,4 +1,3 @@
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 mod container;

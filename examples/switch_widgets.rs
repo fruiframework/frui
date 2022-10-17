@@ -12,7 +12,6 @@
 //! [`KeyboardEventDetector`] is a widget which allows its consumers to react
 //! to keyboard events through a callback provided in `on_event`.
 
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;

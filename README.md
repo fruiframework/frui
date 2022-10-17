@@ -17,7 +17,7 @@ For an introduction see the [announcement](https://github.com/fruiframework/frui
 ## Example
 
 ```rust
-#![feature(min_specialization)]
+
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
@@ -82,7 +82,7 @@ It is important to know that Frui should not be used to build any serious applic
 Obligatory crab counter! From `examples/crab_counter.rs`.
 
 ```rust
-#![feature(min_specialization)]
+
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;

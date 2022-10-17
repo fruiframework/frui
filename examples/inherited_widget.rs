@@ -11,7 +11,6 @@
 //! [`InheritedSwitchConsumer`] reacts to [`InheritedSwitch`] state changes
 //! triggered by the [`InheritedSwitchDispatcher`] and rebuilds.
 
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
