@@ -14,7 +14,6 @@
 //! stateful widgets in a way that will preserve their state even if their
 //! order in children list changes.
 
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;

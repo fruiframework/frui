@@ -10,7 +10,6 @@
 //! informs Frui that if it is possible it should try preserving the state of
 //! that widget between rebuilds.
 
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;

@@ -19,7 +19,7 @@ mod sealed {
             },
             events::WidgetEventOS,
             local_key::WidgetLocalKey,
-            widget_eq::WidgetEqOS,
+            structural_eq::StructuralEqOS,
             AnyExt, WidgetDebug, WidgetUniqueType,
         },
         prelude::{Constraints, Offset, PaintContext, Size},
@@ -29,7 +29,7 @@ mod sealed {
     pub trait LeafWidgetOS:
         WidgetStateOS
         + RenderStateOS
-        + WidgetEqOS
+        + StructuralEqOS
         + WidgetLocalKey
         + WidgetUniqueType
         + WidgetDebug

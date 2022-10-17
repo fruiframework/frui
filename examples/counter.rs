@@ -1,6 +1,5 @@
 //! This is an obligatory example of a counter app.
 
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;

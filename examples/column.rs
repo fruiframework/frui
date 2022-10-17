@@ -7,7 +7,6 @@
 //! affects the way its children are laid out.
 
 #![feature(type_alias_impl_trait)]
-#![feature(min_specialization)]
 
 use frui::prelude::*;
 

@@ -1,7 +1,6 @@
 //! Crab Counter is an app that allows you to keep track of the number of crabs
 //! you have! 🦀 🦀 🦀
 
-#![feature(min_specialization)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
