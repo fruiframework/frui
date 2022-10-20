@@ -40,8 +40,8 @@ impl<S: AsRef<str>> Text<S> {
         self
     }
 
-    pub fn family(mut self, family: FontFamily) -> Self {
-        self.font_family = family;
+    pub fn font(mut self, font: FontFamily) -> Self {
+        self.font_family = font;
         self
     }
 }
