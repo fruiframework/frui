@@ -4,8 +4,9 @@
 
 <p align="center">
 <a href="https://crates.io/crates/frui"><img src="https://img.shields.io/crates/v/frui.svg" alt="Latest version"/></a>
-<a href="https://github.com/emilk/egui/blob/master/LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT"/></a>
-<a href="https://github.com/emilk/egui/blob/master/LICENSE-APACHE"><img src="https://img.shields.io/badge/license-Apache-blue.svg" alt="Apache"/></a>
+<a href="https://github.com/fruiframework/frui/blob/main/LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT"/></a>
+<a href="https://github.com/fruiframework/frui/blob/main/LICENSE-APACHE"><img src="https://img.shields.io/badge/license-Apache-blue.svg" alt="Apache"/></a>
+<a href="https://discord.gg/rqCd6Hr9"><img src="https://img.shields.io/badge/Join-flat.svg?label=Discord&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2" alt="Discord"/></a>
 </p>
 
 ## What is Frui?
