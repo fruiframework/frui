@@ -110,4 +110,8 @@ impl WinHandler for WindowHandler {
     fn key_down(&mut self, event: KeyEvent) -> bool {
         FruiWindowHandler::key_down(self, event)
     }
+
+    fn request_close(&mut self) {
+        FruiWindowHandler::request_close(self)
+    }
 }
