@@ -4,15 +4,15 @@ pub use center::*;
 pub use column::*;
 pub use row::*;
 
+pub mod alignment;
 pub mod center;
 pub mod column;
 pub mod row;
 pub mod stack;
-pub mod alignment;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct BoxLayoutData {
-    offset: Offset
+    offset: Offset,
 }
 
 pub trait LayoutData<T = BoxLayoutData> {
@@ -30,7 +30,6 @@ impl LayoutData for BoxLayoutData {
         self
     }
 }
-
 
 #[derive(Debug, Clone, Copy)]
 pub enum MainAxisSize {

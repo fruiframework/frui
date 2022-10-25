@@ -1,7 +1,7 @@
-use crate::alignment::{self, Alignment, AlignmentDirectional, AlignmentGeometry};
+use crate::alignment::{AlignmentDirectional, AlignmentGeometry};
 use crate::{BoxLayoutData, LayoutData, WidgetList};
+
 use frui::prelude::*;
-use std::cell::Ref;
 
 pub enum StackFit {
     Loose,
@@ -146,10 +146,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
         }
     }
 
-    pub fn alignment(
-        mut self,
-        alignment: impl AlignmentGeometry,
-    ) -> Stack<WL, impl AlignmentGeometry> {
+    pub fn alignment(self, alignment: impl AlignmentGeometry) -> Stack<WL, impl AlignmentGeometry> {
         Stack {
             children: self.children,
             fit: self.fit,
@@ -172,7 +169,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
@@ -213,7 +210,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, _: &Offset) {
         let size = ctx.size();
         for mut child in ctx.children() {
             child.paint(canvas, &self.get_layout_offset(&child, size));
@@ -252,7 +249,7 @@ impl<T> SingleChildWidget for Positioned<T>
 where
     T: Widget,
 {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
         &self.child
     }
 
