@@ -191,4 +191,8 @@ impl FruiWindowHandler for WindowHandler {
 
         true
     }
+
+    fn request_close(&mut self) {
+        self.window_handle.close();
+    }
 }

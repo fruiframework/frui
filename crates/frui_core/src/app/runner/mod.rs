@@ -54,4 +54,6 @@ pub trait FruiWindowHandler {
     fn wheel(&mut self, event: &MouseEvent);
 
     fn key_down(&mut self, event: KeyEvent) -> bool;
+
+    fn request_close(&mut self);
 }
