@@ -1,8 +1,10 @@
 use frui::prelude::*;
 
+pub use alignment::*;
 pub use center::*;
 pub use column::*;
 pub use row::*;
+pub use stack::*;
 
 pub mod alignment;
 pub mod center;

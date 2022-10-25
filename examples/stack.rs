@@ -3,10 +3,6 @@
 use frui::prelude::*;
 
 mod misc;
-use frui_widgets::{
-    alignment::Alignment,
-    stack::{Positioned, Stack},
-};
 
 #[derive(ViewWidget)]
 struct App;
