@@ -13,15 +13,15 @@ struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        Stack::builder()
-            .alignment(&Alignment::TOP_CENTER)
+        Stack::builder() //
+            .alignment(Alignment::TOP_CENTER)
             .children((
                 Text::new("🦀").size(100.0).weight(FontWeight::BOLD),
                 Positioned {
                     child: Container::builder()
-                    .color(Color::GREEN)
-                    .width(50.0)
-                    .height(50.0),
+                        .color(Color::GREEN)
+                        .width(50.0)
+                        .height(50.0),
                     right: Some(10.0),
                     bottom: Some(10.0),
                     left: None,

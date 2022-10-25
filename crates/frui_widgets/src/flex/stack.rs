@@ -10,10 +10,10 @@ pub enum StackFit {
 }
 
 #[derive(MultiChildWidget)]
-pub struct Stack<T: WidgetList> {
-    pub children: T,
+pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
+    pub children: WL,
     pub fit: StackFit,
-    pub alignment: &'static dyn AlignmentGeometry,
+    pub alignment: A,
 }
 
 /// RenderData which Stack's children should hold, if not the child widget
@@ -58,19 +58,19 @@ impl LayoutData for StackLayoutData {
     }
 }
 
-impl Stack<()> {
+impl Stack<(), AlignmentDirectional> {
     pub fn builder() -> Self {
         Stack {
             children: (),
             fit: StackFit::Loose,
-            alignment: &AlignmentDirectional::TOP_START,
+            alignment: AlignmentDirectional::TOP_START,
         }
     }
 
     fn layout_positioned_child(
         child: &mut ChildContext,
         size: Size,
-        alignment: &dyn AlignmentGeometry,
+        alignment: &impl AlignmentGeometry,
     ) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
@@ -137,8 +137,8 @@ impl Stack<()> {
     }
 }
 
-impl<WidgetList_: WidgetList> Stack<WidgetList_> {
-    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList> {
+impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
+    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList, A> {
         Stack {
             children,
             fit: self.fit,
@@ -146,13 +146,19 @@ impl<WidgetList_: WidgetList> Stack<WidgetList_> {
         }
     }
 
-    pub fn fit(mut self, fit: StackFit) -> Self {
-        self.fit = fit;
-        self
+    pub fn alignment(
+        mut self,
+        alignment: impl AlignmentGeometry,
+    ) -> Stack<WL, impl AlignmentGeometry> {
+        Stack {
+            children: self.children,
+            fit: self.fit,
+            alignment,
+        }
     }
 
-    pub fn alignment(mut self, alignment: &'static dyn AlignmentGeometry) -> Self {
-        self.alignment = alignment;
+    pub fn fit(mut self, fit: StackFit) -> Self {
+        self.fit = fit;
         self
     }
 
@@ -165,7 +171,7 @@ impl<WidgetList_: WidgetList> Stack<WidgetList_> {
     }
 }
 
-impl<T: WidgetList> MultiChildWidget for Stack<T> {
+impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
     fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
@@ -201,7 +207,7 @@ impl<T: WidgetList> MultiChildWidget for Stack<T> {
                     layout_data.base.offset = self.alignment.along(size - child_size);
                 }
             } else {
-                Stack::layout_positioned_child(&mut child, size, self.alignment);
+                Stack::layout_positioned_child(&mut child, size, &self.alignment);
             }
         }
         size
