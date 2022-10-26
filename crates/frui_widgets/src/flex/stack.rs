@@ -159,6 +159,11 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
         self
     }
 
+    pub fn text_direction(mut self, text_direction: TextDirection) -> Self {
+        self.text_direction = text_direction;
+        self
+    }
+
     fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_data::<StackLayoutData>().map_or_else(
