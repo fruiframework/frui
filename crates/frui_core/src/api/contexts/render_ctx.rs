@@ -47,6 +47,15 @@ pub struct Size {
     pub height: f64,
 }
 
+impl From<Offset> for Size {
+    fn from(value: Offset) -> Self {
+        Size {
+            width: value.x,
+            height: value.y,
+        }
+    }
+}
+
 impl Size {
     pub fn new(width: f64, height: f64) -> Self {
         Self { width, height }
