@@ -12,12 +12,12 @@ use self::{
     local_key::LocalKeyAny,
 };
 
-pub mod contexts;
-pub mod events;
-pub mod implementors;
-pub mod impls;
-pub mod local_key;
-pub mod structural_eq;
+pub(crate) mod contexts;
+pub(crate) mod events;
+pub(crate) mod implementors;
+pub(crate) mod impls;
+pub(crate) mod local_key;
+pub(crate) mod structural_eq;
 
 pub trait Widget: WidgetDebug {
     /// Implementation should return the same unique TypeId for given structure definition,
@@ -116,6 +116,16 @@ impl<'a> WidgetPtr<'a> {
             WidgetKind::MultiChild(w) => w.create_render_state(),
             WidgetKind::SingleChild(w) => w.create_render_state(),
             WidgetKind::Inherited(w) => w.create_render_state(),
+        }
+    }
+
+    pub fn create_parent_data(&self) -> Box<dyn Any> {
+        match self.kind {
+            WidgetKind::View(_) => Box::new(()),
+            WidgetKind::Leaf(w) => w.create_parent_data(),
+            WidgetKind::MultiChild(w) => w.create_parent_data(),
+            WidgetKind::SingleChild(w) => w.create_parent_data(),
+            WidgetKind::Inherited(w) => w.create_parent_data(),
         }
     }
 

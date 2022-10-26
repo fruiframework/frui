@@ -9,7 +9,7 @@ struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        Stack::builder() //
+        Stack::builder()
             .alignment(AlignmentDirectional::CENTER_END)
             .children((
                 Text::new("🦀").size(100.0).weight(FontWeight::BOLD),
@@ -27,7 +27,7 @@ impl ViewWidget for App {
                 },
                 Positioned {
                     child: Container::builder()
-                        .color(Color::GREEN)
+                        .color(Color::AQUA)
                         .width(50.0)
                         .height(50.0),
                     right: Some(10.0),

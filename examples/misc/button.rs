@@ -1,9 +1,6 @@
 use std::cell::Cell;
 
-use frui::{
-    api::events::{Event, WidgetEvent},
-    prelude::*,
-};
+use frui::prelude::*;
 
 const WIDTH: f64 = 60.0;
 const HEIGHT: f64 = 60.0;

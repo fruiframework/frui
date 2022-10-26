@@ -13,7 +13,7 @@ mod sealed {
         api::{
             contexts::{
                 build_ctx::WidgetStateOS,
-                render_ctx::{AnyRenderContext, RenderStateOS},
+                render_ctx::{AnyRenderContext, ParentDataOS, RenderStateOS},
             },
             events::WidgetEventOS,
             local_key::WidgetLocalKey,
@@ -28,6 +28,7 @@ mod sealed {
     /// `OS` stands for "object safe".
     pub trait InheritedWidgetOS:
         WidgetStateOS
+        + ParentDataOS
         + RenderStateOS
         + StructuralEqOS
         + WidgetLocalKey
