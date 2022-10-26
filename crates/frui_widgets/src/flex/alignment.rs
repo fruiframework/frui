@@ -2,66 +2,73 @@ use frui::prelude::{Offset, Size};
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-pub trait AlignmentGeometry {
-    fn x(&self) -> f64;
+use crate::TextDirection;
 
-    fn start(&self) -> f64;
-
-    fn y(&self) -> f64;
-
-    fn along(&self, other: Size) -> Offset;
+pub enum AlignmentGeometry {
+    Alignment(Alignment),
+    Directional(AlignmentDirectional),
 }
 
-#[derive(PartialEq, Copy, Clone, Debug, Default)]
+impl AlignmentGeometry {
+    pub fn resolve(&self, text_direction: &TextDirection) -> Alignment {
+        match self {
+            AlignmentGeometry::Alignment(a) => *a,
+            AlignmentGeometry::Directional(a) => match text_direction {
+                TextDirection::Ltr => Alignment { x: a.start, y: a.y },
+                TextDirection::Rtl => Alignment {
+                    x: -a.start,
+                    y: a.y,
+                },
+            },
+        }
+    }
+}
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Alignment {
     x: f64,
     y: f64,
 }
 
-impl AlignmentGeometry for Alignment {
-    fn x(&self) -> f64 {
-        self.x
-    }
-
-    fn start(&self) -> f64 {
-        0.0
-    }
-
-    fn y(&self) -> f64 {
-        self.y
-    }
-
-    fn along(&self, other: Size) -> Offset {
-        let center_x = other.width / 2.0;
-        let center_y = other.height / 2.0;
+impl Alignment {
+    pub fn along<T: Into<Size>>(&self, other: T) -> Offset {
+        let size: Size = other.into();
+        let center_x = size.width / 2.0;
+        let center_y = size.height / 2.0;
         Offset {
             x: center_x + self.x * center_x,
             y: center_y + self.y * center_y,
         }
     }
-}
 
-impl Alignment {
-    pub const TOP_LEFT: Alignment = Alignment { x: -1.0, y: -1.0 };
-    pub const TOP_CENTER: Alignment = Alignment { x: 0.0, y: -1.0 };
-    pub const TOP_RIGHT: Alignment = Alignment { x: 1.0, y: -1.0 };
-    pub const CENTER_LEFT: Alignment = Alignment { x: -1.0, y: 0.0 };
-    pub const CENTER: Alignment = Alignment { x: 0.0, y: 0.0 };
-    pub const CENTER_RIGHT: Alignment = Alignment { x: 1.0, y: 0.0 };
-    pub const BOTTOM_LEFT: Alignment = Alignment { x: -1.0, y: 1.0 };
-    pub const BOTTOM_CENTER: Alignment = Alignment { x: 0.0, y: 1.0 };
-    pub const BOTTOM_RIGHT: Alignment = Alignment { x: 1.0, y: 1.0 };
+    pub const TOP_LEFT: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: -1.0, y: -1.0 });
+    pub const TOP_CENTER: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: 0.0, y: -1.0 });
+    pub const TOP_RIGHT: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: 1.0, y: -1.0 });
+    pub const CENTER_LEFT: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: -1.0, y: 0.0 });
+    pub const CENTER: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: 0.0, y: 0.0 });
+    pub const CENTER_RIGHT: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: 1.0, y: 0.0 });
+    pub const BOTTOM_LEFT: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: -1.0, y: 1.0 });
+    pub const BOTTOM_CENTER: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: 0.0, y: 1.0 });
+    pub const BOTTOM_RIGHT: AlignmentGeometry =
+        AlignmentGeometry::Alignment(Alignment { x: 1.0, y: 1.0 });
 
-    const PRELUDES: [(Alignment, &'static str); 9] = [
-        (Alignment::TOP_LEFT, "Alignment::TOP_LEFT"),
-        (Alignment::TOP_CENTER, "Alignment::TOP_CENTER"),
-        (Alignment::TOP_RIGHT, "Alignment::TOP_RIGHT"),
-        (Alignment::CENTER_LEFT, "Alignment::CENTER_LEFT"),
-        (Alignment::CENTER, "Alignment::CENTER"),
-        (Alignment::CENTER_RIGHT, "Alignment::CENTER_RIGHT"),
-        (Alignment::BOTTOM_LEFT, "Alignment::BOTTOM_LEFT"),
-        (Alignment::BOTTOM_CENTER, "Alignment::BOTTOM_CENTER"),
-        (Alignment::BOTTOM_RIGHT, "Alignment::BOTTOM_RIGHT"),
+    const PRELUDES: [(&AlignmentGeometry, &'static str); 9] = [
+        (&Alignment::TOP_LEFT, "Alignment::TOP_LEFT"),
+        (&Alignment::TOP_CENTER, "Alignment::TOP_CENTER"),
+        (&Alignment::TOP_RIGHT, "Alignment::TOP_RIGHT"),
+        (&Alignment::CENTER_LEFT, "Alignment::CENTER_LEFT"),
+        (&Alignment::CENTER, "Alignment::CENTER"),
+        (&Alignment::CENTER_RIGHT, "Alignment::CENTER_RIGHT"),
+        (&Alignment::BOTTOM_LEFT, "Alignment::BOTTOM_LEFT"),
+        (&Alignment::BOTTOM_CENTER, "Alignment::BOTTOM_CENTER"),
+        (&Alignment::BOTTOM_RIGHT, "Alignment::BOTTOM_RIGHT"),
     ];
 }
 
@@ -87,6 +94,12 @@ impl Sub for Alignment {
     }
 }
 
+impl PartialEq for Alignment {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
 impl Neg for Alignment {
     type Output = Self;
 
@@ -100,118 +113,79 @@ impl Neg for Alignment {
 
 impl Display for Alignment {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for (alignment, name) in Alignment::PRELUDES {
-            if alignment == *self {
-                return write!(f, "{}", name);
+        for prelude in Alignment::PRELUDES {
+            if let (AlignmentGeometry::Alignment(alignment), name) = prelude {
+                if alignment == self {
+                    return write!(f, "{}", name);
+                }
             }
         }
         write!(f, "Alignment({}, {})", &self.x, &self.y)
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug)]
 pub struct AlignmentDirectional {
     start: f64,
     y: f64,
 }
 
-impl AlignmentGeometry for AlignmentDirectional {
-    fn x(&self) -> f64 {
-        0.0
-    }
-
-    fn start(&self) -> f64 {
-        self.start
-    }
-
-    fn y(&self) -> f64 {
-        self.y
-    }
-
-    fn along(&self, other: Size) -> Offset {
-        let center_x = other.width / 2.0;
-        let center_y = other.height / 2.0;
-        Offset {
-            x: center_x + self.x() * center_x,
-            y: center_y + self.y * center_y,
-        }
+impl PartialEq for AlignmentDirectional {
+    fn eq(&self, other: &Self) -> bool {
+        self.start == other.start && self.y == other.y
     }
 }
 
 impl AlignmentDirectional {
-    fn new(start: f64, y: f64) -> Self {
+    const fn new(start: f64, y: f64) -> Self {
         Self { start, y }
     }
 
-    pub const TOP_START: AlignmentDirectional = AlignmentDirectional {
-        start: -1f64,
-        y: -1f64,
-    };
-    pub const TOP_CENTER: AlignmentDirectional = AlignmentDirectional {
-        start: 0f64,
-        y: -1f64,
-    };
-    pub const TOP_END: AlignmentDirectional = AlignmentDirectional {
-        start: 1f64,
-        y: -1f64,
-    };
-    pub const CENTER_START: AlignmentDirectional = AlignmentDirectional {
-        start: -1f64,
-        y: 0f64,
-    };
-    pub const CENTER: AlignmentDirectional = AlignmentDirectional {
-        start: 0f64,
-        y: 0f64,
-    };
-    pub const CENTER_END: AlignmentDirectional = AlignmentDirectional {
-        start: 1f64,
-        y: 0f64,
-    };
-    pub const BOTTOM_START: AlignmentDirectional = AlignmentDirectional {
-        start: -1f64,
-        y: 1f64,
-    };
-    pub const BOTTOM_CENTER: AlignmentDirectional = AlignmentDirectional {
-        start: 0f64,
-        y: 1f64,
-    };
-    pub const BOTTOM_END: AlignmentDirectional = AlignmentDirectional {
-        start: 1f64,
-        y: 1f64,
-    };
+    pub const TOP_START: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(-1., -1.));
+    pub const TOP_CENTER: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(0., -1.));
+    pub const TOP_END: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(1., -1.));
+    pub const CENTER_START: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(-1., 0.));
+    pub const CENTER: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(0., 0.));
+    pub const CENTER_END: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(1., 0.));
+    pub const BOTTOM_START: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(-1., 1.));
+    pub const BOTTOM_CENTER: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(0., 1.));
+    pub const BOTTOM_END: AlignmentGeometry = AlignmentGeometry::Directional(Self::new(1., 1.));
 
-    const PRELUDES: [(AlignmentDirectional, &'static str); 9] = [
+    const PRELUDES: [(&AlignmentGeometry, &'static str); 9] = [
         (
-            AlignmentDirectional::TOP_START,
+            &AlignmentDirectional::TOP_START,
             "AlignmentDirectional::TOP_START",
         ),
         (
-            AlignmentDirectional::TOP_CENTER,
+            &AlignmentDirectional::TOP_CENTER,
             "AlignmentDirectional::TOP_CENTER",
         ),
         (
-            AlignmentDirectional::TOP_END,
+            &AlignmentDirectional::TOP_END,
             "AlignmentDirectional::TOP_END",
         ),
         (
-            AlignmentDirectional::CENTER_START,
+            &AlignmentDirectional::CENTER_START,
             "AlignmentDirectional::CENTER_START",
         ),
-        (AlignmentDirectional::CENTER, "AlignmentDirectional::CENTER"),
         (
-            AlignmentDirectional::CENTER_END,
+            &AlignmentDirectional::CENTER,
+            "AlignmentDirectional::CENTER",
+        ),
+        (
+            &AlignmentDirectional::CENTER_END,
             "AlignmentDirectional::CENTER_END",
         ),
         (
-            AlignmentDirectional::BOTTOM_START,
+            &AlignmentDirectional::BOTTOM_START,
             "AlignmentDirectional::BOTTOM_START",
         ),
         (
-            AlignmentDirectional::BOTTOM_CENTER,
+            &AlignmentDirectional::BOTTOM_CENTER,
             "AlignmentDirectional::BOTTOM_CENTER",
         ),
         (
-            AlignmentDirectional::BOTTOM_END,
+            &AlignmentDirectional::BOTTOM_END,
             "AlignmentDirectional::BOTTOM_END",
         ),
     ];
@@ -268,9 +242,11 @@ impl Div<f64> for AlignmentDirectional {
 
 impl Display for AlignmentDirectional {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for (alignment, name) in AlignmentDirectional::PRELUDES {
-            if alignment == *self {
-                return write!(f, "{}", name);
+        for prelude in AlignmentDirectional::PRELUDES {
+            if let (AlignmentGeometry::Directional(alignment), name) = prelude {
+                if alignment == self {
+                    return write!(f, "{}", name);
+                }
             }
         }
         write!(f, "AlignmentDirectional({}, {})", &self.start, &self.y)

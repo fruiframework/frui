@@ -10,7 +10,7 @@ struct App;
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
         Stack::builder() //
-            .alignment(Alignment::TOP_CENTER)
+            .alignment(AlignmentDirectional::CENTER_END)
             .children((
                 Text::new("🦀").size(100.0).weight(FontWeight::BOLD),
                 Positioned {
