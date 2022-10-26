@@ -646,6 +646,8 @@ impl Hash for WidgetNodeRef {
 pub(crate) struct RenderData {
     /// Render state used by this widget.
     pub state: Box<dyn Any>,
+    /// Data that can be accessed from parent widget.
+    pub parent_data: Box<dyn Any>,
     /// Size computed during last layout.
     pub size: Size,
     /// Position computed during last paint.
@@ -661,6 +663,7 @@ impl RenderData {
     fn new(widget: &WidgetPtr) -> RenderData {
         RenderData {
             state: widget.create_render_state(),
+            parent_data: widget.create_parent_data(),
             size: Size::default(),
             offset: Offset::default(),
             constraints: Constraints::default(),

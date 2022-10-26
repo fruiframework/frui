@@ -69,11 +69,15 @@ impl Stack<(), AlignmentDirectional> {
         }
     }
 
-    fn layout_positioned_child(child: &mut ChildContext, size: Size, alignment: &Alignment) -> bool {
+    fn layout_positioned_child(
+        child: &mut ChildContext,
+        size: Size,
+        alignment: &Alignment,
+    ) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
         {
-            let child_layout_data = child.try_data::<StackLayoutData>().unwrap();
+            let child_layout_data = child.try_parent_data::<StackLayoutData>().unwrap();
             if child_layout_data.left.is_some() && child_layout_data.right.is_some() {
                 child_constraints = child_constraints.tighten(
                     Some(
@@ -103,7 +107,7 @@ impl Stack<(), AlignmentDirectional> {
         child.layout(child_constraints);
         let child_size = child.size();
         {
-            let mut child_layout_data = child.try_data_mut::<StackLayoutData>().unwrap();
+            let mut child_layout_data = child.try_parent_data_mut::<StackLayoutData>().unwrap();
             let x = child_layout_data.left.unwrap_or_else(|| {
                 child_layout_data.right.map_or_else(
                     || alignment.along(size - child_size).x,
@@ -130,7 +134,7 @@ impl Stack<(), AlignmentDirectional> {
 
     fn is_positioned(child: &ChildContext) -> bool {
         child
-            .try_data::<StackLayoutData>()
+            .try_parent_data::<StackLayoutData>()
             .map_or(false, |d| d.is_positioned())
     }
 }
@@ -166,7 +170,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
 
     fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
-        child.try_data::<StackLayoutData>().map_or_else(
+        child.try_parent_data::<StackLayoutData>().map_or_else(
             || alignment.along(size - child_size),
             |data| data.base.offset,
         )
@@ -206,7 +210,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
         for mut child in ctx.children() {
             let child_size = child.size();
             if !Stack::is_positioned(&child) {
-                if let Some(mut layout_data) = child.try_data_mut::<StackLayoutData>() {
+                if let Some(mut layout_data) = child.try_parent_data_mut::<StackLayoutData>() {
                     layout_data.base.offset = alignment.along(size - child_size);
                 }
             } else {
@@ -236,10 +240,10 @@ pub struct Positioned<T: Widget> {
     pub height: Option<f64>,
 }
 
-impl<T: Widget> RenderState for Positioned<T> {
-    type State = StackLayoutData;
+impl<T: Widget> ParentData for Positioned<T> {
+    type Data = StackLayoutData;
 
-    fn create_state(&self) -> Self::State {
+    fn create_data(&self) -> Self::Data {
         StackLayoutData {
             base: BoxLayoutData::default(),
             top: self.top,

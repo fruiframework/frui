@@ -205,7 +205,7 @@ fn compute_main_axis_offset(
 }
 
 fn get_flex(child: &ChildContext) -> usize {
-    match child.try_data::<FlexData>() {
+    match child.try_parent_data::<FlexData>() {
         Some(data) => data.flex_factor,
         None => 0,
     }
@@ -231,10 +231,10 @@ pub struct Flexible<W: Widget> {
     pub child: W,
 }
 
-impl<W: Widget> RenderState for Flexible<W> {
-    type State = FlexData;
+impl<W: Widget> ParentData for Flexible<W> {
+    type Data = FlexData;
 
-    fn create_state(&self) -> Self::State {
+    fn create_data(&self) -> Self::Data {
         FlexData {
             flex_factor: self.flex,
         }

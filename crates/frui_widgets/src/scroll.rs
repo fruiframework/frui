@@ -1,9 +1,6 @@
 //! This is a bad prototype.
 
-use frui::{
-    api::events::{Event, WidgetEvent},
-    prelude::*,
-};
+use frui::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ScrollDirection {

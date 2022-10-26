@@ -20,7 +20,7 @@ mod sealed {
         api::{
             contexts::{
                 build_ctx::{WidgetStateOS, _BuildContext},
-                render_ctx::{AnyRenderContext, RenderStateOS, _RenderContext},
+                render_ctx::{AnyRenderContext, ParentDataOS, RenderStateOS, _RenderContext},
                 Context,
             },
             events::WidgetEventOS,
@@ -34,6 +34,7 @@ mod sealed {
     /// `OS` stands for "object safe".
     pub trait MultiChildWidgetOS:
         WidgetStateOS
+        + ParentDataOS
         + RenderStateOS
         + StructuralEqOS
         + WidgetLocalKey
