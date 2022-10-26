@@ -1,5 +1,5 @@
-use crate::alignment::{AlignmentDirectional, AlignmentGeometry};
-use crate::{BoxLayoutData, LayoutData, WidgetList};
+use crate::alignment::{Alignment, AlignmentDirectional};
+use crate::{AlignmentGeometry, BoxLayoutData, LayoutData, TextDirection, WidgetList};
 
 use frui::prelude::*;
 
@@ -10,10 +10,11 @@ pub enum StackFit {
 }
 
 #[derive(MultiChildWidget)]
-pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
+pub struct Stack<WL: WidgetList> {
     pub children: WL,
     pub fit: StackFit,
-    pub alignment: A,
+    pub alignment: AlignmentGeometry,
+    pub text_direction: TextDirection,
 }
 
 /// RenderData which Stack's children should hold, if not the child widget
@@ -58,20 +59,17 @@ impl LayoutData for StackLayoutData {
     }
 }
 
-impl Stack<(), AlignmentDirectional> {
+impl Stack<()> {
     pub fn builder() -> Self {
         Stack {
             children: (),
             fit: StackFit::Loose,
             alignment: AlignmentDirectional::TOP_START,
+            text_direction: TextDirection::Ltr,
         }
     }
 
-    fn layout_positioned_child(
-        child: &mut ChildContext,
-        size: Size,
-        alignment: &impl AlignmentGeometry,
-    ) -> bool {
+    fn layout_positioned_child(child: &mut ChildContext, size: Size, alignment: Alignment) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
         {
@@ -137,19 +135,21 @@ impl Stack<(), AlignmentDirectional> {
     }
 }
 
-impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
-    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList, A> {
+impl<WL: WidgetList> Stack<WL> {
+    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList> {
         Stack {
             children,
             fit: self.fit,
             alignment: self.alignment,
+            text_direction: self.text_direction,
         }
     }
 
-    pub fn alignment(self, alignment: impl AlignmentGeometry) -> Stack<WL, impl AlignmentGeometry> {
+    pub fn alignment(self, alignment: AlignmentGeometry) -> Stack<WL> {
         Stack {
             children: self.children,
             fit: self.fit,
+            text_direction: self.text_direction,
             alignment,
         }
     }
@@ -159,21 +159,22 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
         self
     }
 
-    fn get_layout_offset(&self, child: &ChildContext, size: Size) -> Offset {
+    fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_data::<StackLayoutData>().map_or_else(
-            || self.alignment.along(size - child_size),
+            || alignment.along(size - child_size),
             |data| data.base.offset,
         )
     }
 }
 
-impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
+impl<WL: WidgetList> MultiChildWidget for Stack<WL> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+        let alignment = self.alignment.resolve(&self.text_direction);
         let mut width = constraints.min_width;
         let mut height = constraints.min_height;
         let non_positioned_constraints = match self.fit {
@@ -201,19 +202,21 @@ impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
             let child_size = child.size();
             if !Stack::is_positioned(&child) {
                 if let Some(mut layout_data) = child.try_data_mut::<StackLayoutData>() {
-                    layout_data.base.offset = self.alignment.along(size - child_size);
+                    layout_data.base.offset = alignment.along(size - child_size);
                 }
             } else {
-                Stack::layout_positioned_child(&mut child, size, &self.alignment);
+                Stack::layout_positioned_child(&mut child, size, alignment);
             }
         }
         size
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, _: &Offset) {
+        let alignment = self.alignment.resolve(&self.text_direction);
         let size = ctx.size();
         for mut child in ctx.children() {
-            child.paint(canvas, &self.get_layout_offset(&child, size));
+            let offset = self.get_layout_offset(&child, &alignment, size);
+            child.paint(canvas, &offset);
         }
     }
 }
