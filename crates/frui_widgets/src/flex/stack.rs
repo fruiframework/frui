@@ -136,7 +136,7 @@ impl Stack<(), AlignmentDirectional> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
-    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList, impl AlignmentGeometry> {
+    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList, A> {
         Stack {
             children,
             fit: self.fit,
@@ -145,7 +145,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
         }
     }
 
-    pub fn alignment(self, alignment: A) -> Stack<WL, A> {
+    pub fn alignment(self, alignment: impl AlignmentGeometry) -> Stack<WL, impl AlignmentGeometry> {
         Stack {
             children: self.children,
             fit: self.fit,
@@ -215,8 +215,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
         let alignment = self.alignment.resolve(&self.text_direction);
         let size = ctx.size();
         for mut child in ctx.children() {
-            let offset = self.get_layout_offset(&child, &alignment, size);
-            child.paint(canvas, &offset);
+            child.paint(canvas, &self.get_layout_offset(&child, &alignment, size));
         }
     }
 }
