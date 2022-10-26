@@ -5,6 +5,12 @@ use druid_shell::piet::{
     TextLayoutBuilder,
 };
 
+#[derive(Debug)]
+pub enum TextDirection {
+    Rtl,
+    Ltr,
+}
+
 #[derive(LeafWidget)]
 pub struct Text<S: AsRef<str>> {
     text: S,
