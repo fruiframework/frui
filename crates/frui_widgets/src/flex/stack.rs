@@ -10,10 +10,10 @@ pub enum StackFit {
 }
 
 #[derive(MultiChildWidget)]
-pub struct Stack<WL: WidgetList> {
+pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
     pub children: WL,
     pub fit: StackFit,
-    pub alignment: AlignmentGeometry,
+    pub alignment: A,
     pub text_direction: TextDirection,
 }
 
@@ -59,7 +59,7 @@ impl LayoutData for StackLayoutData {
     }
 }
 
-impl Stack<()> {
+impl Stack<(), AlignmentDirectional> {
     pub fn builder() -> Self {
         Stack {
             children: (),
@@ -69,7 +69,7 @@ impl Stack<()> {
         }
     }
 
-    fn layout_positioned_child(child: &mut ChildContext, size: Size, alignment: Alignment) -> bool {
+    fn layout_positioned_child(child: &mut ChildContext, size: Size, alignment: &Alignment) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
         {
@@ -135,8 +135,8 @@ impl Stack<()> {
     }
 }
 
-impl<WL: WidgetList> Stack<WL> {
-    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList> {
+impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
+    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList, impl AlignmentGeometry> {
         Stack {
             children,
             fit: self.fit,
@@ -145,7 +145,7 @@ impl<WL: WidgetList> Stack<WL> {
         }
     }
 
-    pub fn alignment(self, alignment: AlignmentGeometry) -> Stack<WL> {
+    pub fn alignment(self, alignment: A) -> Stack<WL, A> {
         Stack {
             children: self.children,
             fit: self.fit,
@@ -168,7 +168,7 @@ impl<WL: WidgetList> Stack<WL> {
     }
 }
 
-impl<WL: WidgetList> MultiChildWidget for Stack<WL> {
+impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
@@ -205,7 +205,7 @@ impl<WL: WidgetList> MultiChildWidget for Stack<WL> {
                     layout_data.base.offset = alignment.along(size - child_size);
                 }
             } else {
-                Stack::layout_positioned_child(&mut child, size, alignment);
+                Stack::layout_positioned_child(&mut child, size, &alignment);
             }
         }
         size
