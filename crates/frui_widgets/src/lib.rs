@@ -17,6 +17,4 @@ pub use self::text::*;
 pub use self::widget_list::*;
 
 #[doc(hidden)]
-pub mod macro_exports {
-    pub use frui::prelude::{BoxedWidget, Widget};
-}
+pub use frui::macro_exports;

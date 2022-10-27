@@ -49,8 +49,15 @@ pub mod prelude {
 
 #[doc(hidden)]
 pub mod macro_exports {
-    pub use crate::api::implementors::WidgetDerive;
-    pub use crate::api::structural_eq::{StructuralEq, StructuralEqImpl};
+    pub use crate::{
+        api::{
+            contexts::{render_ctx::AnyRenderContext, Context},
+            implementors::WidgetDerive,
+            structural_eq::{StructuralEq, StructuralEqImpl},
+            WidgetPtr,
+        },
+        prelude::{Constraints, Offset, PaintContext, Size, Widget, WidgetKind},
+    };
 }
 
 #[doc(hidden)]
