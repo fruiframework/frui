@@ -11,44 +11,24 @@ pub enum TextDirection {
     Ltr,
 }
 
-#[derive(LeafWidget)]
+#[derive(LeafWidget, Builder)]
 pub struct Text<S: AsRef<str>> {
     text: S,
-    font_size: f64,
-    font_color: Color,
-    font_weight: FontWeight,
-    font_family: FontFamily,
+    size: f64,
+    color: Color,
+    weight: FontWeight,
+    family: FontFamily,
 }
 
 impl<S: AsRef<str>> Text<S> {
     pub fn new(string: S) -> Self {
         Self {
             text: string,
-            font_size: 16.,
-            font_color: Color::WHITE,
-            font_weight: FontWeight::default(),
-            font_family: FontFamily::default(),
+            size: 16.,
+            color: Color::WHITE,
+            weight: FontWeight::default(),
+            family: FontFamily::default(),
         }
-    }
-
-    pub fn size(mut self, size: f64) -> Self {
-        self.font_size = size;
-        self
-    }
-
-    pub fn color(mut self, color: Color) -> Self {
-        self.font_color = color;
-        self
-    }
-
-    pub fn weight(mut self, weight: FontWeight) -> Self {
-        self.font_weight = weight;
-        self
-    }
-
-    pub fn font(mut self, font: FontFamily) -> Self {
-        self.font_family = font;
-        self
     }
 }
 
@@ -69,9 +49,9 @@ impl<S: AsRef<str>> LeafWidget for Text<S> {
         *ctx.rstate_mut() = TEXT_FACTORY.with(|f| {
             f.get()
                 .new_text_layout(self.text.as_ref().to_owned())
-                .font(self.font_family.clone(), self.font_size)
-                .text_color(self.font_color.clone())
-                .range_attribute(.., self.font_weight)
+                .font(self.family.clone(), self.size)
+                .text_color(self.color.clone())
+                .range_attribute(.., self.weight)
                 .max_width(max_width)
                 .build()
                 .unwrap()

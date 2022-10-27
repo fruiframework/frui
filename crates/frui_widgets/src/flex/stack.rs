@@ -9,7 +9,7 @@ pub enum StackFit {
     Passthrough,
 }
 
-#[derive(MultiChildWidget)]
+#[derive(MultiChildWidget, Builder)]
 pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
     pub children: WL,
     pub fit: StackFit,
@@ -67,6 +67,12 @@ impl Stack<(), AlignmentDirectional> {
             alignment: AlignmentDirectional::TOP_START,
             text_direction: TextDirection::Ltr,
         }
+    }
+
+    fn is_positioned(child: &ChildContext) -> bool {
+        child
+            .try_parent_data::<StackLayoutData>()
+            .map_or(false, |d| d.is_positioned())
     }
 
     fn layout_positioned_child(
@@ -131,43 +137,9 @@ impl Stack<(), AlignmentDirectional> {
         }
         has_visual_overflow
     }
-
-    fn is_positioned(child: &ChildContext) -> bool {
-        child
-            .try_parent_data::<StackLayoutData>()
-            .map_or(false, |d| d.is_positioned())
-    }
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
-    pub fn children(self, children: impl WidgetList) -> Stack<impl WidgetList, A> {
-        Stack {
-            children,
-            fit: self.fit,
-            alignment: self.alignment,
-            text_direction: self.text_direction,
-        }
-    }
-
-    pub fn alignment(self, alignment: impl AlignmentGeometry) -> Stack<WL, impl AlignmentGeometry> {
-        Stack {
-            children: self.children,
-            fit: self.fit,
-            text_direction: self.text_direction,
-            alignment,
-        }
-    }
-
-    pub fn fit(mut self, fit: StackFit) -> Self {
-        self.fit = fit;
-        self
-    }
-
-    pub fn text_direction(mut self, text_direction: TextDirection) -> Self {
-        self.text_direction = text_direction;
-        self
-    }
-
     fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(

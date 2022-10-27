@@ -9,7 +9,8 @@ pub enum ScrollDirection {
     // Todo: All,
 }
 
-#[derive(SingleChildWidget)]
+/// Todo: Finish implementation.
+#[derive(SingleChildWidget, Builder)]
 pub struct Scroll<W: Widget> {
     pub child: W,
     pub scroll_direction: ScrollDirection,
@@ -21,20 +22,6 @@ impl Scroll<()> {
             child: (),
             scroll_direction: ScrollDirection::Vertical,
         }
-    }
-}
-
-impl<W: Widget> Scroll<W> {
-    pub fn child(self, child: impl Widget) -> Scroll<impl Widget> {
-        Scroll {
-            child,
-            scroll_direction: self.scroll_direction,
-        }
-    }
-
-    pub fn scroll_direction(mut self, scroll_direction: ScrollDirection) -> Self {
-        self.scroll_direction = scroll_direction;
-        self
     }
 }
 
