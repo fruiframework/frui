@@ -29,7 +29,7 @@ impl Column<()> {
     }
 }
 
-impl<WidgetList_: WidgetList> Column<WidgetList_> {
+impl<WL: WidgetList> Column<WL> {
     /// List of children widgets to be laid out by the [`Column`].
     ///
     /// # Note

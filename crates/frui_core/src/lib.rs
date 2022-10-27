@@ -43,6 +43,8 @@ pub mod prelude {
         KeyEvent, MouseButton,
     };
 
+    pub use frui_macros::Builder;
+
     // Widget exports.
     pub use super::api::local_key::LocalKey;
 }
