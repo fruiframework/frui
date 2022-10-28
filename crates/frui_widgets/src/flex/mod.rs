@@ -17,22 +17,6 @@ pub struct BoxLayoutData {
     offset: Offset,
 }
 
-pub trait LayoutData<T = BoxLayoutData> {
-    fn layout_data(&self) -> &T;
-
-    fn layout_data_mut(&mut self) -> &mut T;
-}
-
-impl LayoutData for BoxLayoutData {
-    fn layout_data(&self) -> &BoxLayoutData {
-        self
-    }
-
-    fn layout_data_mut(&mut self) -> &mut BoxLayoutData {
-        self
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 pub enum MainAxisSize {
     Min,

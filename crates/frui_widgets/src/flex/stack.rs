@@ -1,5 +1,7 @@
+use std::ops::{Deref, DerefMut};
+
 use crate::alignment::{Alignment, AlignmentDirectional};
-use crate::{AlignmentGeometry, BoxLayoutData, LayoutData, TextDirection, WidgetList};
+use crate::{AlignmentGeometry, BoxLayoutData, TextDirection, WidgetList};
 
 use frui::prelude::*;
 
@@ -21,7 +23,7 @@ pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
 /// will be located at top-left with it's own size.
 #[derive(Copy, Clone, Default, Debug)]
 pub struct StackLayoutData {
-    pub base: BoxLayoutData,
+    base: BoxLayoutData,
     pub top: Option<f64>,
     pub right: Option<f64>,
     pub bottom: Option<f64>,
@@ -49,12 +51,16 @@ impl StackLayoutData {
     }
 }
 
-impl LayoutData for StackLayoutData {
-    fn layout_data(&self) -> &BoxLayoutData {
+impl Deref for StackLayoutData {
+    type Target = BoxLayoutData;
+
+    fn deref(&self) -> &Self::Target {
         &self.base
     }
+}
 
-    fn layout_data_mut(&mut self) -> &mut BoxLayoutData {
+impl DerefMut for StackLayoutData {
+    fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.base
     }
 }
@@ -133,7 +139,7 @@ impl Stack<(), AlignmentDirectional> {
                 || y < 0.0
                 || y + child_size.height > size.height;
 
-            child_layout_data.base.offset = Offset { x, y };
+            child_layout_data.offset = Offset { x, y };
         }
         has_visual_overflow
     }
@@ -144,7 +150,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(
             || alignment.along(size - child_size),
-            |data| data.base.offset,
+            |data| data.offset,
         )
     }
 }
@@ -183,7 +189,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             let child_size = child.size();
             if !Stack::is_positioned(&child) {
                 if let Some(mut layout_data) = child.try_parent_data_mut::<StackLayoutData>() {
-                    layout_data.base.offset = alignment.along(size - child_size);
+                    layout_data.offset = alignment.along(size - child_size);
                 }
             } else {
                 Stack::layout_positioned_child(&mut child, size, &alignment);

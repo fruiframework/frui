@@ -63,10 +63,10 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
 
         let text_size = ctx.rstate().size();
 
-        Size {
+        constraints.constrain(Size {
             width: text_size.width,
             height: text_size.height,
-        }
+        })
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {

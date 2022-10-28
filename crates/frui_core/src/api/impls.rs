@@ -95,7 +95,7 @@ impl RenderWidget for () {
     }
 
     fn layout(&self, _: RenderContext<Self>, _: Constraints) -> Size {
-        Size::default()
+        Size::ZERO
     }
 
     fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}
