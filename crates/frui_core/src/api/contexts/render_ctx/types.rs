@@ -49,6 +49,8 @@ impl Size {
     pub fn aspect_ratio(&self) -> f64 {
         self.width / self.height
     }
+
+    pub const ZERO: Size = Size { width: 0.0, height: 0.0 };
 }
 
 impl From<druid_shell::kurbo::Size> for Size {
@@ -131,6 +133,22 @@ pub struct Constraints {
 }
 
 impl Constraints {
+    pub const ZERO: Constraints = Constraints {
+        min_width: 0.0,
+        max_width: 0.0,
+        min_height: 0.0,
+        max_height: 0.0,
+    };
+
+    pub fn new(min_width: f64, max_width: f64, min_height: f64, max_height: f64) -> Self {
+        Self {
+            min_width,
+            max_width,
+            min_height,
+            max_height,
+        }
+    }
+
     pub fn max(&self) -> Size {
         Size {
             width: self.max_width,
