@@ -47,9 +47,9 @@ pub trait FruiWindowHandler {
 
     fn mouse_down(&mut self, event: &MouseEvent);
 
-    fn mouse_move(&mut self, event: &MouseEvent);
-
     fn mouse_up(&mut self, event: &MouseEvent);
+
+    fn mouse_move(&mut self, event: &MouseEvent);
 
     fn wheel(&mut self, event: &MouseEvent);
 

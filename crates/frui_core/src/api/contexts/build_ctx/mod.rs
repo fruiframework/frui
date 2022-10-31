@@ -1,5 +1,3 @@
-use crate::{app::tree::WidgetNodeRef, prelude::InheritedWidget};
-
 use std::{
     any::Any,
     cell::{Ref, RefMut},
@@ -8,32 +6,14 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
+use crate::{app::tree::WidgetNodeRef, prelude::InheritedWidget};
+
+pub mod widget_state;
+pub use widget_state::WidgetState;
+
 /// Set by framework when accessing state mutably shouldn't register widget for
 /// state updates (e.g. in unmount/mount methods).
 pub(crate) static STATE_UPDATE_SUPRESSED: AtomicBool = AtomicBool::new(false);
-
-pub trait WidgetState: Sized {
-    type State: 'static;
-
-    fn create_state(&self) -> Self::State;
-
-    /// Called when the widget is mounted into the tree (before build).
-    ///
-    /// Accessing `state_mut` of the provided `BuildContext` will not cause a
-    /// rebuild of this widget to be scheduled.
-    fn mount<'a>(&'a self, ctx: BuildContext<'a, Self>) {
-        let _ = ctx;
-    }
-
-    /// Called when the widget is unmounted from the tree. At this point given
-    /// widget may be dropped or mounted again with its configuration updated.
-    ///
-    /// Accessing `state_mut` of the provided `BuildContext` will not cause a
-    /// rebuild of this widget to be scheduled.
-    fn unmount<'a>(&'a self, ctx: BuildContext<'a, Self>) {
-        let _ = ctx;
-    }
-}
 
 // `BuildContext` is borrowed to make it so that closures don't take ownership
 // of it, which would be inconvenient - user would have to clone `BuildContext`
@@ -178,63 +158,5 @@ impl<'a, T> Deref for InheritedStateRefMut<'a, T> {
 impl<'a, T> DerefMut for InheritedStateRefMut<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.state.downcast_mut().unwrap()
-    }
-}
-
-pub(crate) use sealed::WidgetStateOS;
-
-mod sealed {
-    use std::{
-        any::{Any, TypeId},
-        cell::RefCell,
-    };
-
-    use crate::api::contexts::Context;
-
-    use super::_BuildContext;
-
-    /// `OS` stands for "object safe".
-    pub trait WidgetStateOS {
-        fn state_type_id(&self) -> TypeId;
-
-        fn create_state(&self) -> Box<dyn Any>;
-        fn mount(&self, build_ctx: &Context);
-        fn unmount(&self, build_ctx: &Context);
-    }
-
-    impl<T> WidgetStateOS for T {
-        default fn state_type_id(&self) -> TypeId {
-            struct WidgetHasNoState;
-            TypeId::of::<WidgetHasNoState>()
-        }
-
-        default fn create_state(&self) -> Box<dyn Any> {
-            Box::new(RefCell::new(()))
-        }
-
-        default fn mount(&self, _ctx: &Context) {}
-        default fn unmount(&self, _ctx: &Context) {}
-    }
-
-    impl<T: super::WidgetState> WidgetStateOS for T {
-        fn state_type_id(&self) -> TypeId {
-            TypeId::of::<T::State>()
-        }
-
-        fn create_state(&self) -> Box<dyn Any> {
-            Box::new(T::create_state(&self))
-        }
-
-        fn mount(&self, ctx: &Context) {
-            let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
-
-            T::mount(&self, ctx)
-        }
-
-        fn unmount(&self, ctx: &Context) {
-            let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
-
-            T::unmount(&self, ctx)
-        }
     }
 }

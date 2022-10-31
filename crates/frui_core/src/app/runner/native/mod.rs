@@ -23,13 +23,14 @@ pub fn run_app<'a>(widget: impl Widget + 'static) {
     }
 
     // Enable debug logging:
-    TermLogger::init(
+    if let Err(_) = TermLogger::init(
         LevelFilter::Info,
         Config::default(),
         TerminalMode::Mixed,
         ColorChoice::AlwaysAnsi,
-    )
-    .unwrap();
+    ) {
+        // If logger was already set, ignore...
+    }
 
     //
     // Run app:
@@ -95,12 +96,12 @@ impl WinHandler for WindowHandler {
         FruiWindowHandler::mouse_down(self, event)
     }
 
-    fn mouse_move(&mut self, event: &MouseEvent) {
-        FruiWindowHandler::mouse_move(self, event)
-    }
-
     fn mouse_up(&mut self, event: &MouseEvent) {
         FruiWindowHandler::mouse_up(self, event)
+    }
+
+    fn mouse_move(&mut self, event: &MouseEvent) {
+        FruiWindowHandler::mouse_move(self, event)
     }
 
     fn wheel(&mut self, event: &MouseEvent) {

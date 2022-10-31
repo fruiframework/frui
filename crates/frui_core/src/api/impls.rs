@@ -1,11 +1,11 @@
 use std::ops::Deref;
 
 use crate::{
-    api::{implementors::leaf::LeafWidget, Widget, WidgetKind},
+    api::{implementors::leaf::LeafWidget, Widget},
     prelude::*,
 };
 
-use super::implementors::WidgetDerive;
+use super::implementors::{LeafWidgetOS, RawWidget, WidgetDerive};
 
 pub trait BoxedWidget: Widget + Sized {
     /// Convenience method used to type erase and box a widget.
@@ -38,69 +38,58 @@ impl<T: Widget> BoxedWidget for Box<T> {
 //
 
 impl<T: Widget> Widget for &T {
-    fn unique_type(&self) -> std::any::TypeId {
-        T::unique_type(&self)
-    }
-
-    fn kind(&self) -> WidgetKind {
-        T::kind(&self)
+    fn as_raw(&self) -> &dyn RawWidget {
+        T::as_raw(*self)
     }
 }
 
 impl<T: Widget> Widget for &mut T {
-    fn unique_type(&self) -> std::any::TypeId {
-        T::unique_type(&self)
-    }
-
-    fn kind(&self) -> WidgetKind {
-        T::kind(&self)
+    fn as_raw(&self) -> &dyn RawWidget {
+        T::as_raw(*self)
     }
 }
 
 impl<'a> Widget for &'a dyn Widget {
-    fn unique_type(&self) -> std::any::TypeId {
-        self.deref().unique_type()
-    }
-
-    fn kind(&self) -> WidgetKind {
-        self.deref().kind()
+    fn as_raw(&self) -> &dyn RawWidget {
+        self.deref().as_raw()
     }
 }
 
 impl<'a> Widget for Box<dyn Widget + 'a> {
-    fn unique_type(&self) -> std::any::TypeId {
-        self.deref().unique_type()
-    }
-
-    fn kind(&self) -> WidgetKind {
-        self.deref().kind()
+    fn as_raw(&self) -> &dyn RawWidget {
+        self.deref().as_raw()
     }
 }
 
 impl<T: Widget> Widget for Box<T> {
-    fn unique_type(&self) -> std::any::TypeId {
-        self.deref().unique_type()
-    }
-
-    fn kind(&self) -> WidgetKind {
-        self.deref().kind()
+    fn as_raw(&self) -> &dyn RawWidget {
+        self.deref().as_raw()
     }
 }
 
-impl Widget for () {
-    fn unique_type(&self) -> std::any::TypeId {
-        std::any::TypeId::of::<()>()
-    }
+impl_widget_os_deref!(impl<T: Widget> RawWidget for &T);
+impl_widget_os_deref!(impl<T: Widget> RawWidget for &mut T);
+impl_widget_os_deref!(impl<T: Widget> RawWidget for Box<T>);
+impl_widget_os_deref!(impl<'a> RawWidget for &'a dyn Widget);
+impl_widget_os_deref!(impl<'a> RawWidget for Box<dyn Widget + 'a>);
 
-    fn kind(&self) -> WidgetKind {
-        WidgetKind::Leaf(self)
+//
+// Unit type implementation
+//
+
+#[doc(hidden)]
+pub enum Unique {}
+
+impl Widget for () {
+    fn as_raw(&self) -> &dyn RawWidget {
+        self
     }
 }
 
 impl WidgetDerive for () {
     type Widget<'a> = ();
 
-    type UniqueTypeId = ();
+    type UniqueTypeId = Unique;
 }
 
 impl LeafWidget for () {
@@ -110,3 +99,65 @@ impl LeafWidget for () {
 
     fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}
 }
+
+impl RawWidget for () {
+    fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
+        <Self as LeafWidgetOS>::build(self, ctx)
+    }
+
+    fn layout<'w>(
+        &self,
+        ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+        constraints: Constraints,
+    ) -> Size {
+        <Self as LeafWidgetOS>::layout(self, ctx, constraints)
+    }
+
+    fn paint<'w>(
+        &'w self,
+        ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+        canvas: &mut PaintContext,
+        offset: &Offset,
+    ) {
+        <Self as LeafWidgetOS>::paint(self, ctx, canvas, offset)
+    }
+
+    fn inherited_key(&self) -> Option<std::any::TypeId> {
+        <Self as LeafWidgetOS>::inherited_key(self)
+    }
+}
+
+macro_rules! impl_widget_os_deref_ {
+    ($($impl:tt)*) => {
+        $($impl)* {
+            fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
+                self.deref().build(ctx)
+            }
+
+            fn layout<'w>(
+                &self,
+                ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+                constraints: Constraints,
+            ) -> Size {
+                self.deref().layout(ctx, constraints)
+            }
+
+            fn paint<'w>(
+                &'w self,
+                ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+                canvas: &mut PaintContext,
+                offset: &Offset,
+            ) {
+                self.deref().paint(ctx, canvas, offset)
+            }
+
+
+            fn inherited_key(&self) -> Option<std::any::TypeId> {
+                self.deref().inherited_key()
+            }
+        }
+
+    };
+}
+
+pub(self) use impl_widget_os_deref_ as impl_widget_os_deref;

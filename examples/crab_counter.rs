@@ -50,3 +50,25 @@ impl ViewWidget for CrabCounter {
 fn main() {
     run_app(CrabCounter);
 }
+
+#[cfg(all(test, feature = "miri"))]
+mod test {
+    use super::*;
+    use frui::{
+        app::runner::miri::MiriAppRunner,
+        druid_shell::{keyboard_types::Key, Modifiers},
+    };
+
+    #[test]
+    pub fn run_example_under_miri() {
+        let mut runner = MiriAppRunner::new(CrabCounter);
+
+        for _ in 0..4 {
+            runner.send_keyboard_event(KeyEvent::for_test(
+                Modifiers::default(),
+                Key::Character(" ".into()),
+            ));
+            runner.update();
+        }
+    }
+}
