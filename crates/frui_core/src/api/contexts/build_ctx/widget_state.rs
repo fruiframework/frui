@@ -32,8 +32,8 @@ pub trait WidgetState: Sized {
 #[sealed(crate)]
 pub trait WidgetStateOS {
     fn state_type_id(&self) -> TypeId;
-
     fn create_state(&self) -> Box<dyn Any>;
+
     fn mount(&self, build_ctx: &Context);
     fn unmount(&self, build_ctx: &Context);
 }
