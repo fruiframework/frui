@@ -54,7 +54,7 @@ pub mod macro_exports {
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
             implementors::{
-                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidgetOS,
+                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget,
                 SingleChildWidgetOS, ViewWidgetOS, WidgetDerive,
             },
             structural_eq::{StructuralEq, StructuralEqImpl},

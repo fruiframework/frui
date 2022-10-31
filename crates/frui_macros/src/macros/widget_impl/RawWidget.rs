@@ -10,7 +10,7 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
     #[rustfmt::skip]
     let Imports {
         Vec, TypeId,
-        RawWidgetOS, WidgetPtr,
+        RawWidget, WidgetPtr,
         Context, PaintContext, AnyRenderContext,
         Size, Offset, Constraints, 
     } = imports_impl_widget_os();
@@ -19,7 +19,7 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
     let (impl_generics, ty_generics, where_clause) = item.generics.split_for_impl();
 
     quote! {
-        impl #impl_generics #RawWidgetOS for #Target #ty_generics #where_clause {
+        impl #impl_generics #RawWidget for #Target #ty_generics #where_clause {
             fn build<'w>(&'w self, ctx: &'w #Context) -> #Vec<#WidgetPtr<'w>> {
                 <Self as #WidgetKindOS>::build(self, ctx)
             }
@@ -61,7 +61,7 @@ struct Imports {
     Vec: TokenStream,
     TypeId: TokenStream,
     // Traits
-    RawWidgetOS: TokenStream,
+    RawWidget: TokenStream,
     WidgetPtr: TokenStream,
     // Contextes
     Context: TokenStream,
@@ -79,7 +79,7 @@ fn imports_impl_widget_os() -> Imports {
     Imports {
         Vec: quote!(::std::vec::Vec),
         TypeId: quote!(::std::any::TypeId),
-        RawWidgetOS: quote!(#exports::RawWidgetOS),
+        RawWidget: quote!(#exports::RawWidget),
         WidgetPtr: quote!(#exports::WidgetPtr),
         Context: quote!(#exports::Context),
         PaintContext: quote!(#exports::PaintContext),

@@ -4,8 +4,11 @@ use druid_shell::{
     kurbo::{Rect, Shape, Vec2},
     MouseEvent,
 };
+use frui_macros::sealed;
 
-use crate::prelude::RenderContext;
+use crate::{macro_exports::AnyRenderContext, prelude::RenderContext};
+
+use super::contexts::render_ctx::_RenderContext;
 
 #[derive(Debug, Clone)]
 #[non_exhaustive]
@@ -63,28 +66,21 @@ pub trait WidgetEvent: Sized {
     fn handle_event(&self, ctx: RenderContext<Self>, event: &Event) -> bool;
 }
 
-pub(crate) use sealed::WidgetEventOS;
+#[sealed(crate)]
+pub trait WidgetEventOS {
+    fn handle_event(&self, ctx: &mut AnyRenderContext, event: &Event) -> bool;
+}
 
-mod sealed {
-    use super::Event;
-    use crate::api::contexts::render_ctx::{AnyRenderContext, _RenderContext};
-
-    /// `OS` stands for "object safe".
-    pub trait WidgetEventOS {
-        fn handle_event(&self, ctx: &mut AnyRenderContext, event: &Event) -> bool;
+impl<T> WidgetEventOS for T {
+    default fn handle_event(&self, _: &mut AnyRenderContext, _: &Event) -> bool {
+        false
     }
+}
 
-    impl<T> WidgetEventOS for T {
-        default fn handle_event(&self, _: &mut AnyRenderContext, _: &Event) -> bool {
-            false
-        }
-    }
+impl<T: WidgetEvent> WidgetEventOS for T {
+    fn handle_event(&self, ctx: &mut AnyRenderContext, event: &Event) -> bool {
+        let ctx = &mut <_RenderContext<T>>::new(ctx);
 
-    impl<T: super::WidgetEvent> WidgetEventOS for T {
-        fn handle_event(&self, ctx: &mut AnyRenderContext, event: &Event) -> bool {
-            let ctx = &mut <_RenderContext<T>>::new(ctx);
-
-            T::handle_event(self, ctx, event)
-        }
+        T::handle_event(self, ctx, event)
     }
 }
