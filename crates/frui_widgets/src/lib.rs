@@ -1,4 +1,4 @@
-#![feature(type_alias_impl_trait, min_specialization,associated_type_bounds)]
+#![feature(type_alias_impl_trait)]
 mod basic;
 mod container;
 mod event_detectors;

@@ -9,10 +9,11 @@ struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        ColoredBox {
-            child: Text::new("Hello world!"),
-            color: Color::RED,
-            constraints: Some(Constraints::tight(Size::new(100.0, 100.0))),
+        UnconstrainedBox {
+            child: ColoredBox {
+                child: Text::new("Hello world!"),
+                color: Color::RED,
+            },
         }
     }
 }
