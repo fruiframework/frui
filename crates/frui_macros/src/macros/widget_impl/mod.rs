@@ -55,7 +55,7 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
     let Imports {
         LT,
         Widget,
-        RawWidgetOS,
+        RawWidget,
         ..
     } = imports();
 
@@ -83,7 +83,7 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
                 ::std::any::TypeId::of::<#UniqueTypeId>()
             }
 
-            fn as_os<#LT>(&#LT self) -> &#LT dyn #RawWidgetOS {
+            fn as_raw<#LT>(&#LT self) -> &#LT dyn #RawWidget {
                 self
             }
         }
@@ -122,7 +122,7 @@ fn unique_type_id(name: &Ident) -> Ident {
 struct Imports {
     LT: TokenStream,
     Widget: TokenStream,
-    RawWidgetOS: TokenStream,
+    RawWidget: TokenStream,
     WidgetDerive: TokenStream,
 }
 
@@ -132,7 +132,7 @@ fn imports() -> Imports {
     Imports {
         LT: quote! { 'frui },
         Widget: quote! { #exports::Widget },
-        RawWidgetOS: quote! { #exports::RawWidgetOS },
+        RawWidget: quote! { #exports::RawWidget },
         WidgetDerive: quote! { #exports::WidgetDerive },
     }
 }

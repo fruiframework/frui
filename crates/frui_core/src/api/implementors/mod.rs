@@ -7,7 +7,7 @@ use crate::prelude::{Constraints, Offset, PaintContext, Size};
 use super::{
     any_ext::AnyExt,
     contexts::{
-        build_ctx::WidgetStateOS,
+        build_ctx::widget_state::WidgetStateOS,
         render_ctx::{AnyRenderContext, ParentDataOS, RenderStateOS},
         Context,
     },
@@ -35,23 +35,22 @@ pub trait WidgetDerive {
     type UniqueTypeId: 'static;
 }
 
-// todo: rename rawwidget to rawwidgetos
 /// Object safe implementation for each widget kind, e.g. `ViewWidget` has its
 /// matching `ViewWidgetOS`.
 /// 
-/// Those implemetations are then routed through `RawWidgetOS` using the derive
-/// macro and accessed by framework through `&dyn RawWidgetOS`.
+/// Those implemetations are then routed through `RawWidget` using the derive
+/// macro and accessed by framework through `&dyn RawWidget`.
 /// 
-/// ## `RawWidgetOS`
+/// ## `RawWidget`
 /// 
-/// `RawWidgetOS` is the base widget implementation containing all the necessary
+/// `RawWidget` is the base widget implementation containing all the necessary
 /// methods like `paint`, `layout`, `build`, etc. All widget implementations are
 /// routed through this trait (by the derive macro) and are accessed by
-/// framework through `&dyn RawWidgetOS`.
+/// framework through `&dyn RawWidget`.
 #[doc(hidden)]
 #[rustfmt::skip]
 #[copy_trait_as(
-    RawWidgetOS,
+    RawWidget,
     ViewWidgetOS, InheritedWidgetOS,
     LeafWidgetOS, SingleChildWidgetOS, MultiChildWidgetOS
 )]

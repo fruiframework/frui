@@ -5,7 +5,7 @@ use crate::{
     prelude::*,
 };
 
-use super::implementors::{LeafWidgetOS, RawWidgetOS, WidgetDerive};
+use super::implementors::{LeafWidgetOS, RawWidget, WidgetDerive};
 
 pub trait BoxedWidget: Widget + Sized {
     /// Convenience method used to type erase and box a widget.
@@ -42,8 +42,8 @@ impl<T: Widget> Widget for &T {
         <T as Widget>::unique_type(*self)
     }
 
-    fn as_os(&self) -> &dyn RawWidgetOS {
-        T::as_os(*self)
+    fn as_raw(&self) -> &dyn RawWidget {
+        T::as_raw(*self)
     }
 }
 
@@ -52,8 +52,8 @@ impl<T: Widget> Widget for &mut T {
         <T as Widget>::unique_type(*self)
     }
 
-    fn as_os(&self) -> &dyn RawWidgetOS {
-        T::as_os(*self)
+    fn as_raw(&self) -> &dyn RawWidget {
+        T::as_raw(*self)
     }
 }
 
@@ -62,8 +62,8 @@ impl<'a> Widget for &'a dyn Widget {
         Widget::unique_type(self.deref())
     }
 
-    fn as_os(&self) -> &dyn RawWidgetOS {
-        self.deref().as_os()
+    fn as_raw(&self) -> &dyn RawWidget {
+        self.deref().as_raw()
     }
 }
 
@@ -72,8 +72,8 @@ impl<'a> Widget for Box<dyn Widget + 'a> {
         Widget::unique_type(self.deref())
     }
 
-    fn as_os(&self) -> &dyn RawWidgetOS {
-        self.deref().as_os()
+    fn as_raw(&self) -> &dyn RawWidget {
+        self.deref().as_raw()
     }
 }
 
@@ -82,16 +82,16 @@ impl<T: Widget> Widget for Box<T> {
         Widget::unique_type(self.deref())
     }
 
-    fn as_os(&self) -> &dyn RawWidgetOS {
-        self.deref().as_os()
+    fn as_raw(&self) -> &dyn RawWidget {
+        self.deref().as_raw()
     }
 }
 
-impl_widget_os_deref!(impl<T: Widget> RawWidgetOS for &T);
-impl_widget_os_deref!(impl<T: Widget> RawWidgetOS for &mut T);
-impl_widget_os_deref!(impl<T: Widget> RawWidgetOS for Box<T>);
-impl_widget_os_deref!(impl<'a> RawWidgetOS for &'a dyn Widget);
-impl_widget_os_deref!(impl<'a> RawWidgetOS for Box<dyn Widget + 'a>);
+impl_widget_os_deref!(impl<T: Widget> RawWidget for &T);
+impl_widget_os_deref!(impl<T: Widget> RawWidget for &mut T);
+impl_widget_os_deref!(impl<T: Widget> RawWidget for Box<T>);
+impl_widget_os_deref!(impl<'a> RawWidget for &'a dyn Widget);
+impl_widget_os_deref!(impl<'a> RawWidget for Box<dyn Widget + 'a>);
 
 //
 // Unit type implementation
@@ -105,7 +105,7 @@ impl Widget for () {
         std::any::TypeId::of::<Unique>()
     }
 
-    fn as_os(&self) -> &dyn RawWidgetOS {
+    fn as_raw(&self) -> &dyn RawWidget {
         self
     }
 }
@@ -124,7 +124,7 @@ impl LeafWidget for () {
     fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}
 }
 
-impl RawWidgetOS for () {
+impl RawWidget for () {
     fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
         <Self as LeafWidgetOS>::build(self, ctx)
     }

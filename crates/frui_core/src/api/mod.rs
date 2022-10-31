@@ -4,7 +4,7 @@ use self::{
     any_ext::AnyExt,
     contexts::{build_ctx::STATE_UPDATE_SUPRESSED, Context},
     implementors::{
-        InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidgetOS, SingleChildWidgetOS,
+        InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget, SingleChildWidgetOS,
         ViewWidgetOS,
     },
     structural_eq::StructuralEqOS,
@@ -18,13 +18,13 @@ pub(crate) mod impls;
 pub(crate) mod local_key;
 pub(crate) mod structural_eq;
 
-pub trait Widget: RawWidgetOS {
+pub trait Widget: RawWidget {
     /// Implementation should return the same unique TypeId for given structure definition,
     /// even if that structure contains generic parameters. This is used to preserve state
     /// between generic widgets.
     fn unique_type(&self) -> TypeId;
 
-    fn as_os(&self) -> &dyn RawWidgetOS;
+    fn as_raw(&self) -> &dyn RawWidget;
 }
 
 #[derive(Clone, Copy)]
@@ -39,14 +39,14 @@ pub enum WidgetKind<'a> {
 #[derive(Clone)]
 pub struct WidgetPtr<'a> {
     /// Reference to the exact type of this widget. Used to properly dispatch methods.
-    kind: &'a dyn RawWidgetOS,
+    kind: &'a dyn RawWidget,
 
     /// Whether this pointer references or owns a widget. Used to properly drop it.
     pub(crate) owned: Option<*mut (dyn Widget + 'a)>,
 }
 
 impl<'a> WidgetPtr<'a> {
-    pub fn from_ref(widget: &'a dyn RawWidgetOS) -> Self {
+    pub fn from_ref(widget: &'a dyn RawWidget) -> Self {
         Self {
             kind: widget,
             owned: None,
@@ -64,7 +64,7 @@ impl<'a> WidgetPtr<'a> {
         // the lifetime of `WidgetPtr` until `drop` is called.
         unsafe {
             Self {
-                kind: std::mem::transmute::<&dyn RawWidgetOS, &dyn RawWidgetOS>(widget.as_os()),
+                kind: std::mem::transmute::<&dyn RawWidget, &dyn RawWidget>(widget.as_raw()),
                 owned: Some(Box::into_raw(widget)),
             }
         }
@@ -139,7 +139,7 @@ impl<'a> WidgetPtr<'a> {
     //
     //
 
-    pub fn raw(&self) -> &dyn RawWidgetOS {
+    pub fn raw(&self) -> &dyn RawWidget {
         self.kind
     }
 
@@ -239,7 +239,7 @@ impl<T: Widget> IntoWidgetPtr for &T {
     where
         Self: 'a,
     {
-        WidgetPtr::from_ref(self.as_os())
+        WidgetPtr::from_ref(self.as_raw())
     }
 }
 
@@ -248,6 +248,6 @@ impl IntoWidgetPtr for &dyn Widget {
     where
         Self: 'a,
     {
-        WidgetPtr::from_ref(self.as_os())
+        WidgetPtr::from_ref(self.as_raw())
     }
 }
