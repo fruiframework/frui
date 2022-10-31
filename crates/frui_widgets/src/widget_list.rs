@@ -2,10 +2,7 @@ pub use frui::prelude::Widget;
 
 /// Represents a list of widgets.
 ///
-///
-/// # Implementations
-///
-/// ## Widget tuple
+/// # Widget tuple
 ///
 /// Most often you will use [`WidgetList`] in form of a tuple:
 ///
@@ -21,11 +18,12 @@ pub use frui::prelude::Widget;
 /// bigger lists you can use [`wlist`] macro or [`Vec`]/array of widgets.
 ///
 ///
-/// ## Widget list macro
+/// # Widget list macro
 ///
 /// If tuple pattern doesn't make it for you, you can use [`wlist`] macro. It
 /// automatically erases types of provided children, boxes them and puts inside
 /// of a [`Vec`].
+///
 ///
 /// ```
 /// Column::builder()
@@ -38,13 +36,20 @@ pub use frui::prelude::Widget;
 /// Do note that using [`wlist`] boxes every widget which may cause performance
 /// issues if wildly overused.
 ///
+/// ## Todo
 ///
-/// ## Widget vector / array / slice
+/// It is possible to avoid boxing and allocating vec for that widget list, I've
+/// written the idea on the Discord. Implement it.
+///
+///
+/// # Widget vector / array / slice
 ///
 /// As an alternative to the previous patterns, you can also use vectors, arrays
 /// and slices as [`WidgetList`]. Those come with their respectful constraints,
 /// like the fact that types of elements stored in these kinds of collections
 /// must be the same.
+///
+/// [`wlist`]: (crate::wlist)
 pub trait WidgetList {
     fn get(&self) -> Vec<&dyn Widget>;
 }
