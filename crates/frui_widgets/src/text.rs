@@ -78,8 +78,22 @@ impl<S: AsRef<str>> LeafWidget for Text<S> {
 }
 
 #[cfg(feature = "miri")]
+pub struct TextRenderState([u8; 30]);
+
+#[cfg(feature = "miri")]
+impl<S: AsRef<str>> RenderState for Text<S> {
+    type State = TextRenderState;
+
+    fn create_state(&self) -> Self::State {
+        TextRenderState([1; 30])
+    }
+}
+
+#[cfg(feature = "miri")]
 impl<S: AsRef<str>> LeafWidget for Text<S> {
-    fn layout(&self, _: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+        let a: &mut TextRenderState = &mut ctx.rstate_mut();
+
         Size {
             width: constraints.max().width,
             height: constraints.max().height,

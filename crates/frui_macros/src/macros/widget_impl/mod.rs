@@ -1,14 +1,17 @@
 #![allow(bad_style)]
 
+mod RawWidget;
 mod StructuralEq;
 mod WidgetDerive;
 
 use proc_macro2::{Ident, Span, TokenStream};
 use proc_macro_crate::FoundCrate;
-use quote::{format_ident, quote, ToTokens};
+use quote::{format_ident, quote};
 use syn::ItemStruct;
 
-use self::{StructuralEq::impl_structural_eq, WidgetDerive::impl_widget_derive};
+use self::{
+    RawWidget::impl_raw_widget, StructuralEq::impl_structural_eq, WidgetDerive::impl_widget_derive,
+};
 
 //
 // Exports
@@ -45,19 +48,6 @@ pub enum WidgetKind {
     Inherited,
 }
 
-impl ToTokens for WidgetKind {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let variant = match self {
-            WidgetKind::Leaf => quote!(Leaf),
-            WidgetKind::SingleChild => quote!(SingleChild),
-            WidgetKind::MultiChild => quote!(MultiChild),
-            WidgetKind::View => quote!(View),
-            WidgetKind::Inherited => quote!(Inherited),
-        };
-        tokens.extend(Some(variant))
-    }
-}
-
 fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
     let Target = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -65,18 +55,21 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
     let Imports {
         LT,
         Widget,
-        WidgetKind,
+        RawWidgetOS,
         ..
     } = imports();
 
     let UniqueTypeId = unique_type_id(Target);
-    let WidgetKindVariant = kind;
 
+    let RawWidgetImplementation = impl_raw_widget(input, kind);
     let StructuralEqImplementation = impl_structural_eq(input);
     let WidgetDeriveImplementation = impl_widget_derive(kind, input, Target);
 
     quote! {
-        // Implement StructuralEq.
+        // Combine different WidgetKind implementations into one `RawWidget`.
+        #RawWidgetImplementation
+
+        // Implement StructuralEq
         #StructuralEqImplementation
 
         // Automatically derive `type Self::Widget<'a> = impl Widget`.
@@ -90,8 +83,8 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
                 ::std::any::TypeId::of::<#UniqueTypeId>()
             }
 
-            fn kind<#LT>(&#LT self) -> #WidgetKind {
-                #WidgetKind::#WidgetKindVariant(self)
+            fn as_os<#LT>(&#LT self) -> &#LT dyn #RawWidgetOS {
+                self
             }
         }
     }
@@ -129,7 +122,7 @@ fn unique_type_id(name: &Ident) -> Ident {
 struct Imports {
     LT: TokenStream,
     Widget: TokenStream,
-    WidgetKind: TokenStream,
+    RawWidgetOS: TokenStream,
     WidgetDerive: TokenStream,
 }
 
@@ -139,7 +132,7 @@ fn imports() -> Imports {
     Imports {
         LT: quote! { 'frui },
         Widget: quote! { #exports::Widget },
-        WidgetKind: quote! { #exports::WidgetKind },
+        RawWidgetOS: quote! { #exports::RawWidgetOS },
         WidgetDerive: quote! { #exports::WidgetDerive },
     }
 }

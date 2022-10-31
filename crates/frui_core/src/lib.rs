@@ -48,13 +48,15 @@ pub mod prelude {
     // Widget exports.
     pub use super::api::local_key::LocalKey;
 }
-
 #[doc(hidden)]
 pub mod macro_exports {
     pub use crate::{
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
-            implementors::WidgetDerive,
+            implementors::{
+                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidgetOS,
+                SingleChildWidgetOS, ViewWidgetOS, WidgetDerive,
+            },
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,
         },
