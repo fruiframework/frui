@@ -22,9 +22,6 @@ impl<K: 'static + PartialEq, W: Widget> ViewWidget for LocalKey<K, W> {
     }
 }
 
-//
-// LocalKeyAny
-
 pub struct LocalKeyAny<'a> {
     key: &'a dyn PartialEqAny,
 }
@@ -34,6 +31,29 @@ impl PartialEq for LocalKeyAny<'_> {
         self.key.eq(other.key)
     }
 }
+
+trait PartialEqAny: Any {
+    fn type_id(&self) -> TypeId;
+    fn eq(&self, other: &dyn PartialEqAny) -> bool;
+}
+
+impl<T: 'static + PartialEq> PartialEqAny for T {
+    fn type_id(&self) -> TypeId {
+        TypeId::of::<T>()
+    }
+
+    fn eq(&self, other: &dyn PartialEqAny) -> bool {
+        if TypeId::of::<T>() == PartialEqAny::type_id(other) {
+            // Safety: T is 'static and types match.
+            unsafe { return self.eq(&*(other as *const _ as *const T)) }
+        } else {
+            false
+        }
+    }
+}
+
+//
+//
 
 pub trait WidgetLocalKey {
     fn local_key(&self) -> Option<LocalKeyAny>;
@@ -48,27 +68,5 @@ impl<T> WidgetLocalKey for T {
 impl<K: 'static + PartialEq, W: Widget> WidgetLocalKey for LocalKey<K, W> {
     fn local_key(&self) -> Option<LocalKeyAny> {
         Some(LocalKeyAny { key: &self.key })
-    }
-}
-
-//
-// Helpers
-
-trait PartialEqAny: Any {
-    fn type_id(&self) -> TypeId;
-    fn eq(&self, other: &dyn PartialEqAny) -> bool;
-}
-
-impl<T: 'static + PartialEq> PartialEqAny for T {
-    fn type_id(&self) -> TypeId {
-        TypeId::of::<T>()
-    }
-
-    fn eq(&self, other: &dyn PartialEqAny) -> bool {
-        if TypeId::of::<T>() == PartialEqAny::type_id(other) {
-            unsafe { return self.eq(&*(other as *const _ as *const T)) }
-        } else {
-            false
-        }
     }
 }

@@ -38,50 +38,30 @@ impl<T: Widget> BoxedWidget for Box<T> {
 //
 
 impl<T: Widget> Widget for &T {
-    fn unique_type(&self) -> std::any::TypeId {
-        <T as Widget>::unique_type(*self)
-    }
-
     fn as_raw(&self) -> &dyn RawWidget {
         T::as_raw(*self)
     }
 }
 
 impl<T: Widget> Widget for &mut T {
-    fn unique_type(&self) -> std::any::TypeId {
-        <T as Widget>::unique_type(*self)
-    }
-
     fn as_raw(&self) -> &dyn RawWidget {
         T::as_raw(*self)
     }
 }
 
 impl<'a> Widget for &'a dyn Widget {
-    fn unique_type(&self) -> std::any::TypeId {
-        Widget::unique_type(self.deref())
-    }
-
     fn as_raw(&self) -> &dyn RawWidget {
         self.deref().as_raw()
     }
 }
 
 impl<'a> Widget for Box<dyn Widget + 'a> {
-    fn unique_type(&self) -> std::any::TypeId {
-        Widget::unique_type(self.deref())
-    }
-
     fn as_raw(&self) -> &dyn RawWidget {
         self.deref().as_raw()
     }
 }
 
 impl<T: Widget> Widget for Box<T> {
-    fn unique_type(&self) -> std::any::TypeId {
-        Widget::unique_type(self.deref())
-    }
-
     fn as_raw(&self) -> &dyn RawWidget {
         self.deref().as_raw()
     }
@@ -101,10 +81,6 @@ impl_widget_os_deref!(impl<'a> RawWidget for Box<dyn Widget + 'a>);
 pub enum Unique {}
 
 impl Widget for () {
-    fn unique_type(&self) -> std::any::TypeId {
-        std::any::TypeId::of::<Unique>()
-    }
-
     fn as_raw(&self) -> &dyn RawWidget {
         self
     }

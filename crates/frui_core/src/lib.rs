@@ -30,7 +30,7 @@ pub mod prelude {
                 single::SingleChildWidget, view::ViewWidget,
             },
             impls::BoxedWidget,
-            Widget, WidgetKind,
+            Widget,
         },
         app::runner::{native::run_app, PaintContext},
     };
@@ -60,7 +60,7 @@ pub mod macro_exports {
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,
         },
-        prelude::{Constraints, Offset, PaintContext, Size, Widget, WidgetKind},
+        prelude::{Constraints, Offset, PaintContext, Size, Widget},
     };
 }
 

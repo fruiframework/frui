@@ -79,10 +79,6 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
         pub enum #UniqueTypeId {}
 
         impl #impl_generics #Widget for #Target #ty_generics #where_clause {
-            fn unique_type(&self) -> ::std::any::TypeId {
-                ::std::any::TypeId::of::<#UniqueTypeId>()
-            }
-
             fn as_raw<#LT>(&#LT self) -> &#LT dyn #RawWidget {
                 self
             }

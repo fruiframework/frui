@@ -7,6 +7,7 @@ pub trait ParentData {
 
     fn create_data(&self) -> Self::Data;
 }
+
 #[sealed(crate)]
 pub trait ParentDataOS {
     fn create_parent_data(&self) -> Box<dyn Any>;

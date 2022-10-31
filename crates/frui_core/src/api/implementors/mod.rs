@@ -31,18 +31,21 @@ pub trait WidgetDerive {
     where
         Self: 'a;
 
+    /// Implementation should make sure [`TypeId`] of this type is unique for
+    /// given structure definition, even if that structure contains generic
+    /// parameters. This is used to preserve state between generic widgets.
     #[doc(hidden)]
     type UniqueTypeId: 'static;
 }
 
-/// Object safe implementation for each widget kind, e.g. `ViewWidget` has its
-/// matching `ViewWidgetOS`.
-/// 
+/// Object safe implementation for each widget kind. For example, `ViewWidget`
+/// has its matching `ViewWidgetOS`.
+///
 /// Those implemetations are then routed through `RawWidget` using the derive
 /// macro and accessed by framework through `&dyn RawWidget`.
-/// 
+///
 /// ## `RawWidget`
-/// 
+///
 /// `RawWidget` is the base widget implementation containing all the necessary
 /// methods like `paint`, `layout`, `build`, etc. All widget implementations are
 /// routed through this trait (by the derive macro) and are accessed by
@@ -55,14 +58,14 @@ pub trait WidgetDerive {
     LeafWidgetOS, SingleChildWidgetOS, MultiChildWidgetOS
 )]
 pub trait OS:
-    StructuralEqOS
-    + WidgetStateOS
+    WidgetStateOS
+    + RenderStateOS
+    + ParentDataOS
+    + WidgetEventOS
     + WidgetLocalKey
     + WidgetUniqueType
-    + RenderStateOS
-    + WidgetEventOS
-    + ParentDataOS
     + WidgetDebug
+    + StructuralEqOS
     + AnyExt
 {
     fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>>;
