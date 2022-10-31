@@ -39,7 +39,7 @@ impl<W: Widget> WidgetState for InheritedSwitch<W> {
 }
 
 impl<W: Widget> InheritedWidget for InheritedSwitch<W> {
-    fn child<'w>(&'w self) -> &'w Self::Widget<'w> {
+    fn build<'w>(&'w self) -> Self::Widget<'w> {
         &self.child
     }
 }
@@ -138,7 +138,7 @@ mod test {
     };
 
     #[test]
-    pub fn run_example_under_miri() {
+    pub fn inherited_widget() {
         let mut runner = MiriAppRunner::new(InheritedSwitch { child: App });
 
         for _ in 0..4 {

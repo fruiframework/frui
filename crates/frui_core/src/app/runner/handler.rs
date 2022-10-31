@@ -166,15 +166,15 @@ impl FruiWindowHandler for WindowHandler {
             .handle_event(Event::MouseDown(event.clone()));
     }
 
+    fn mouse_up(&mut self, event: &MouseEvent) {
+        self.widget_tree.handle_event(Event::MouseUp(event.clone()));
+    }
+
     fn mouse_move(&mut self, event: &MouseEvent) {
         self.widget_tree
             .handle_event(Event::MouseMove(event.clone()));
 
         self.window_handle.set_cursor(&Cursor::Arrow);
-    }
-
-    fn mouse_up(&mut self, event: &MouseEvent) {
-        self.widget_tree.handle_event(Event::MouseUp(event.clone()));
     }
 
     fn wheel(&mut self, event: &MouseEvent) {

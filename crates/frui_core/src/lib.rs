@@ -30,7 +30,7 @@ pub mod prelude {
                 single::SingleChildWidget, view::ViewWidget,
             },
             impls::BoxedWidget,
-            Widget, WidgetKind,
+            Widget,
         },
         app::runner::{native::run_app, PaintContext},
     };
@@ -48,17 +48,19 @@ pub mod prelude {
     // Widget exports.
     pub use super::api::local_key::LocalKey;
 }
-
 #[doc(hidden)]
 pub mod macro_exports {
     pub use crate::{
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
-            implementors::WidgetDerive,
+            implementors::{
+                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget,
+                SingleChildWidgetOS, ViewWidgetOS, WidgetDerive,
+            },
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,
         },
-        prelude::{Constraints, Offset, PaintContext, Size, Widget, WidgetKind},
+        prelude::{Constraints, Offset, PaintContext, Size, Widget},
     };
 }
 

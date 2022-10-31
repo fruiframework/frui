@@ -40,6 +40,8 @@ impl WindowHandle {
 
     pub fn invalidate(&self) {}
 
+    pub fn close(&self) {}
+
     #[track_caller]
     pub fn text(&self) -> PietText {
         todo!()

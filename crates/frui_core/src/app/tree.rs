@@ -17,7 +17,7 @@ use crate::{
         IntoWidgetPtr, WidgetPtr,
     },
     app::runner::handler::{APP_HANDLE, NEED_REBUILD},
-    prelude::{Constraints, Offset, PaintContext, Size, WidgetKind},
+    prelude::{Constraints, Offset, PaintContext, Size},
 };
 
 pub struct WidgetTree {
@@ -138,7 +138,7 @@ impl WidgetNode {
             },
             inner: RefCell::new(WidgetInner {
                 dirty: false,
-                state: widget.create_state(),
+                state: widget.raw().create_state(),
                 render_data: RenderData::new(&widget),
                 inheritance: Inheritance::new(&widget, &inherited_ancestor),
             }),
@@ -402,7 +402,7 @@ impl WidgetNode {
 
         let mut render_ctx = AnyRenderContext::new(s.clone());
 
-        if !widget_ref.handle_event(&mut render_ctx, event) {
+        if !widget_ref.raw().handle_event(&mut render_ctx, event) {
             for child in children_ref.iter() {
                 let child = WidgetNode::node_ref(child);
                 WidgetNode::handle_event(&child, event);
@@ -469,7 +469,7 @@ impl WidgetNode {
     pub fn debug_name_short(s: &UnsafeCell<Box<Self>>) -> &'static str {
         let widget = unsafe { &*s.widget_ptr() };
 
-        widget.debug_name_short()
+        widget.raw().debug_name_short()
     }
 
     pub fn mount(s: &UnsafeCell<Box<Self>>) {
@@ -494,7 +494,7 @@ impl WidgetNode {
     }
 
     pub fn local_key<'a>(s: &UnsafeCell<Box<WidgetNode>>) -> Option<LocalKeyAny<'a>> {
-        unsafe { (&*s.widget_ptr()).local_key() }
+        unsafe { (&*s.widget_ptr()).raw().local_key() }
     }
 }
 
@@ -662,8 +662,8 @@ pub(crate) struct RenderData {
 impl RenderData {
     fn new(widget: &WidgetPtr) -> RenderData {
         RenderData {
-            state: widget.create_render_state(),
-            parent_data: widget.create_parent_data(),
+            state: widget.raw().create_render_state(),
+            parent_data: widget.raw().create_parent_data(),
             size: Size::default(),
             offset: Offset::default(),
             constraints: Constraints::default(),
@@ -674,19 +674,20 @@ impl RenderData {
 
 impl Inheritance {
     fn new(widget: &WidgetPtr, inherited_ancestor: &WidgetNodeRef) -> Self {
-        match widget.kind {
-            WidgetKind::Inherited(_) => Inheritance::Inheritor {
+        if widget.is_inherited_widget() {
+            Inheritance::Inheritor {
                 active_inheritors: inherited_ancestor
                     .borrow()
                     .inheritance
                     .active_inheritors()
                     .clone(),
                 inheriting_widgets: HashSet::new(),
-            },
-            _ => Inheritance::Inheritee {
+            }
+        } else {
+            Inheritance::Inheritee {
                 inherited_ancestor: inherited_ancestor.clone(),
                 inherits_from: HashSet::new(),
-            },
+            }
         }
     }
 
@@ -735,7 +736,7 @@ trait FindKey {
 
 impl FindKey for Vec<Option<UnsafeCell<Box<WidgetNode>>>> {
     fn find_key(&mut self, key: &WidgetPtr) -> Option<usize> {
-        if let None = key.local_key() {
+        if let None = key.raw().local_key() {
             return None;
         }
 
@@ -743,7 +744,7 @@ impl FindKey for Vec<Option<UnsafeCell<Box<WidgetNode>>>> {
             .enumerate()
             .find(|(_, w)| match w {
                 Some(w) => match WidgetNode::local_key(w) {
-                    Some(k) => k == key.local_key().unwrap(),
+                    Some(k) => k == key.raw().local_key().unwrap(),
                     None => false,
                 },
                 None => false,
@@ -768,7 +769,7 @@ impl WidgetNode {
             },
             inner: RefCell::new(WidgetInner {
                 dirty: false,
-                state: widget_ptr.create_state(),
+                state: widget_ptr.raw().create_state(),
                 render_data: RenderData::new(&widget_ptr),
                 inheritance: Inheritance::Inheritor {
                     active_inheritors: HashMap::new(),

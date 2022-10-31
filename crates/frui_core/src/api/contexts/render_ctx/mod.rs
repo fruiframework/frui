@@ -220,12 +220,12 @@ impl AnyRenderContext {
 
     pub(crate) fn layout(&mut self, constraints: Constraints) -> Size {
         let widget = self.node.widget().clone();
-        let size = widget.layout(self, constraints);
+        let size = widget.raw().layout(self, constraints);
 
         if cfg!(debug_assertions) {
             if size > constraints.max() {
-                if widget.debug_name_short() != "DebugContainer" {
-                    log::warn!("`{}` overflowed", widget.debug_name_short());
+                if widget.raw().debug_name_short() != "DebugContainer" {
+                    log::warn!("`{}` overflowed", widget.raw().debug_name_short());
                 }
             }
         }
@@ -248,11 +248,11 @@ impl AnyRenderContext {
         // This should probably be calculated during layout probably.
         self.node.borrow_mut().render_data.offset = offset.clone();
 
-        self.node.widget().clone().paint(self, piet, offset);
+        self.node.widget().clone().raw().paint(self, piet, offset);
     }
 
     pub(crate) fn handle_event(&mut self, event: &Event) {
-        self.node.widget().clone().handle_event(self, event);
+        self.node.widget().clone().raw().handle_event(self, event);
     }
 }
 
