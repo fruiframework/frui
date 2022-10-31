@@ -165,6 +165,15 @@ impl Constraints {
         }
     }
 
+    pub fn enforce(&self, constraints: Constraints) -> Self {
+        Self {
+            min_width: self.min_width.clamp(constraints.min_width, constraints.max_width),
+            max_width: self.max_width.clamp(constraints.min_width, constraints.max_width),
+            min_height: self.min_height.clamp(constraints.min_height, constraints.max_height),
+            max_height: self.max_height.clamp(constraints.min_height, constraints.max_height),
+        }
+    }
+
     pub fn tighten(&self, width: Option<f64>, height: Option<f64>) -> Self {
         Self {
             min_width: width.map_or(self.min_width, |w| w.clamp(self.min_width, self.max_width)),
