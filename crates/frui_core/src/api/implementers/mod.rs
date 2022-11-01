@@ -50,6 +50,8 @@ pub trait WidgetDerive {
 /// methods like `paint`, `layout`, `build`, etc. All widget implementations are
 /// routed through this trait (by the derive macro) and are accessed by
 /// framework through `&dyn RawWidget`.
+/// 
+/// ## Render widget implem
 #[doc(hidden)]
 #[rustfmt::skip]
 #[copy_trait_as(
