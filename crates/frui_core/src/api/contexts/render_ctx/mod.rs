@@ -14,7 +14,7 @@ use crate::{
         runner::{handler::APP_HANDLE, PaintContext},
         tree::WidgetNodeRef,
     },
-    prelude::{SingleChildWidget, WidgetState},
+    prelude::WidgetState,
 };
 
 mod parent_data;
@@ -96,14 +96,11 @@ impl<'a, T> _RenderContext<'a, T> {
 
     //
 
-    pub fn child(&mut self) -> ChildContext
-    where
-        T: SingleChildWidget,
-    {
-        self.ctx.child()
+    pub fn child(&mut self, index: usize) -> ChildContext {
+        self.ctx.child(index)
     }
 
-    pub fn children(&mut self) -> ChildContextIter {
+    pub fn children(&mut self) -> ChildrenIter {
         self.ctx.children()
     }
 
@@ -195,21 +192,22 @@ impl AnyRenderContext {
         Self { node }
     }
 
-    pub(crate) fn child(&mut self) -> ChildContext {
-        let child_node = self
+    #[track_caller]
+    pub fn child(&self, index: usize) -> ChildContext {
+        let child = self
             .node
             .children()
-            .get(0)
+            .get(index)
             .expect("specified node didn't have any children");
 
         ChildContext {
-            ctx: AnyRenderContext::new(crate::app::tree::WidgetNode::node_ref(child_node)),
+            ctx: AnyRenderContext::new(crate::app::tree::WidgetNode::node_ref(child)),
             _p: PhantomData,
         }
     }
 
-    pub(crate) fn children(&mut self) -> ChildContextIter {
-        ChildContextIter {
+    pub fn children(&mut self) -> ChildrenIter {
+        ChildrenIter {
             child_idx: 0,
             parent: &self.node,
         }
@@ -253,28 +251,18 @@ impl AnyRenderContext {
     }
 }
 
-pub struct ChildContextIter<'a> {
+pub struct ChildrenIter<'a> {
     child_idx: usize,
     parent: &'a WidgetNodeRef,
 }
 
-impl<'a> ChildContextIter<'a> {
+impl<'a> ChildrenIter<'a> {
     pub fn len(&self) -> usize {
         self.parent.children().len()
     }
-
-    #[track_caller]
-    pub fn get(&self, index: usize) -> ChildContext {
-        let child = self.parent.children().get(index).unwrap();
-
-        ChildContext {
-            ctx: AnyRenderContext::new(crate::app::tree::WidgetNode::node_ref(child)),
-            _p: PhantomData,
-        }
-    }
 }
 
-impl<'a> Iterator for ChildContextIter<'a> {
+impl<'a> Iterator for ChildrenIter<'a> {
     type Item = ChildContext<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -9,7 +9,7 @@ pub enum StackFit {
     Passthrough,
 }
 
-#[derive(MultiChildWidget, Builder)]
+#[derive(RenderWidget, Builder)]
 pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
     pub children: WL,
     pub fit: StackFit,
@@ -149,7 +149,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
     }
 }
 
-impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
+impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
@@ -201,7 +201,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> MultiChildWidget for Stack<WL, A> {
     }
 }
 
-#[derive(SingleChildWidget, Default)]
+#[derive(RenderWidget, Default)]
 pub struct Positioned<T: Widget> {
     pub child: T,
     pub left: Option<f64>,
@@ -228,19 +228,19 @@ impl<T: Widget> ParentData for Positioned<T> {
     }
 }
 
-impl<T> SingleChildWidget for Positioned<T>
+impl<T> RenderWidget for Positioned<T>
 where
     T: Widget,
 {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        ctx.child().layout(constraints)
+        ctx.child(0).layout(constraints)
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        ctx.child().paint(canvas, offset)
+        ctx.child(0).paint(canvas, offset)
     }
 }

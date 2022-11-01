@@ -10,9 +10,9 @@ use crate::{
     prelude::{BuildContext, Constraints, Offset, PaintContext, RenderContext, Size},
 };
 
-use super::{SingleChildWidgetOS, WidgetDerive};
+use super::{RenderWidgetOS, WidgetDerive};
 
-pub trait SingleChildWidget: WidgetDerive + Sized {
+pub trait RenderWidget: WidgetDerive + Sized {
     fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w>;
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
@@ -24,7 +24,7 @@ pub trait SingleChildWidget: WidgetDerive + Sized {
     }
 }
 
-impl<T: SingleChildWidget> SingleChildWidgetOS for T {
+impl<T: RenderWidget> RenderWidgetOS for T {
     fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>> {
         let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
 

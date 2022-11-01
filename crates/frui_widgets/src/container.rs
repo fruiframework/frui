@@ -2,7 +2,7 @@ use druid_shell::kurbo::Rect;
 
 use frui::prelude::*;
 
-#[derive(SingleChildWidget)]
+#[derive(RenderWidget)]
 pub struct Container<W: Widget> {
     child: W,
     width: Option<f64>,
@@ -51,13 +51,13 @@ impl<W: Widget> Container<W> {
     }
 }
 
-impl<W: Widget> SingleChildWidget for Container<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<W: Widget> RenderWidget for Container<W> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let size = ctx.child().layout(Constraints {
+        let size = ctx.child(0).layout(Constraints {
             max_width: self.width.unwrap_or(constraints.max_width),
             max_height: self.height.unwrap_or(constraints.max_height),
             ..constraints
@@ -76,6 +76,6 @@ impl<W: Widget> SingleChildWidget for Container<W> {
             PietRenderContext::fill(canvas, Rect::from_origin_size(offset, ctx.size()), brush);
         }
 
-        ctx.child().paint(canvas, offset)
+        ctx.child(0).paint(canvas, offset)
     }
 }

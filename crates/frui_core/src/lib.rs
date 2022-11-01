@@ -9,9 +9,7 @@ pub mod api;
 pub mod app;
 
 pub mod prelude {
-    pub use frui_macros::{
-        InheritedWidget, LeafWidget, MultiChildWidget, RenderWidget, SingleChildWidget, ViewWidget,
-    };
+    pub use frui_macros::{InheritedWidget, RenderWidget, ViewWidget};
 
     pub use super::{
         api::{
@@ -25,10 +23,7 @@ pub mod prelude {
                 },
             },
             events::{Event, WidgetEvent},
-            implementers::{
-                inherited::InheritedWidget, leaf::LeafWidget, multi::MultiChildWidget,
-                render::RenderWidget, single::SingleChildWidget, view::ViewWidget,
-            },
+            implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
             impls::BoxedWidget,
             Widget,
         },
@@ -54,8 +49,7 @@ pub mod macro_exports {
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
             implementers::{
-                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget, RenderWidgetOS,
-                SingleChildWidgetOS, ViewWidgetOS, WidgetDerive,
+                InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,
             },
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,

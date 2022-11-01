@@ -1,11 +1,8 @@
 use std::ops::Deref;
 
-use crate::{
-    api::{implementers::leaf::LeafWidget, Widget},
-    prelude::*,
-};
+use crate::{api::Widget, macro_exports::RenderWidgetOS, prelude::*};
 
-use super::implementers::{LeafWidgetOS, RawWidget, WidgetDerive};
+use super::implementers::{RawWidget, WidgetDerive};
 
 pub trait BoxedWidget: Widget + Sized {
     /// Convenience method used to type erase and box a widget.
@@ -92,7 +89,11 @@ impl WidgetDerive for () {
     type UniqueTypeId = Unique;
 }
 
-impl LeafWidget for () {
+impl RenderWidget for () {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![]
+    }
+
     fn layout(&self, _: RenderContext<Self>, _: Constraints) -> Size {
         Size::default()
     }
@@ -102,7 +103,7 @@ impl LeafWidget for () {
 
 impl RawWidget for () {
     fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
-        <Self as LeafWidgetOS>::build(self, ctx)
+        <Self as RenderWidgetOS>::build(self, ctx)
     }
 
     fn layout<'w>(
@@ -110,7 +111,7 @@ impl RawWidget for () {
         ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
         constraints: Constraints,
     ) -> Size {
-        <Self as LeafWidgetOS>::layout(self, ctx, constraints)
+        <Self as RenderWidgetOS>::layout(self, ctx, constraints)
     }
 
     fn paint<'w>(
@@ -119,11 +120,11 @@ impl RawWidget for () {
         canvas: &mut PaintContext,
         offset: &Offset,
     ) {
-        <Self as LeafWidgetOS>::paint(self, ctx, canvas, offset)
+        <Self as RenderWidgetOS>::paint(self, ctx, canvas, offset)
     }
 
     fn inherited_key(&self) -> Option<std::any::TypeId> {
-        <Self as LeafWidgetOS>::inherited_key(self)
+        <Self as RenderWidgetOS>::inherited_key(self)
     }
 }
 

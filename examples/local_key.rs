@@ -1,4 +1,4 @@
-//! This example shows how to annotate children of a [`MultiChildWidget`] in a way
+//! This example shows how to annotate children of a [`RenderWidget`] in a way
 //! that allows Frui to preserve the state of those widgets between rebuilds.
 //!
 //! [`RandomState`] is a widget that will generate and display a new number

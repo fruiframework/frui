@@ -19,7 +19,7 @@ impl<L: Widget, F: Fn()> RenderWidget for Button<L, F> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, _: Constraints) -> Size {
-        ctx.children().get(0).layout(Constraints {
+        ctx.child(0).layout(Constraints {
             min_width: 0.,
             max_width: WIDTH,
             min_height: 0.,
@@ -57,7 +57,7 @@ impl<L: Widget, F: Fn()> RenderWidget for Button<L, F> {
             brush,
         );
 
-        ctx.children().get(0).paint(canvas, offset)
+        ctx.child(0).paint(canvas, offset)
     }
 }
 

@@ -6,7 +6,7 @@ use crate::{
 
 use super::{compute_cross_axis_offset, compute_main_axis_offset, get_flex};
 
-#[derive(MultiChildWidget)]
+#[derive(RenderWidget)]
 pub struct Column<T: WidgetList> {
     pub children: T,
     pub space_between: f64,
@@ -117,7 +117,7 @@ impl<T: WidgetList> RenderState for Column<T> {
     }
 }
 
-impl<T: WidgetList> MultiChildWidget for Column<T> {
+impl<T: WidgetList> RenderWidget for Column<T> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }

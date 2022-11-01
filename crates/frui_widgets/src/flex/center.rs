@@ -1,6 +1,6 @@
 use frui::prelude::*;
 
-#[derive(SingleChildWidget)]
+#[derive(RenderWidget)]
 pub struct Center<W: Widget> {
     pub child: W,
 }
@@ -11,13 +11,13 @@ impl<W: Widget> Center<W> {
     }
 }
 
-impl<W: Widget> SingleChildWidget for Center<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<W: Widget> RenderWidget for Center<W> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let child_size = ctx.child().layout(constraints.loosen());
+        let child_size = ctx.child(0).layout(constraints.loosen());
 
         let mut size = constraints.max();
 
@@ -32,13 +32,13 @@ impl<W: Widget> SingleChildWidget for Center<W> {
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
         let self_size = ctx.size();
-        let child_size = ctx.child().size();
+        let child_size = ctx.child(0).size();
 
         let child_offset = Offset {
             x: offset.x + (self_size.width - child_size.width) / 2.,
             y: offset.y + (self_size.height - child_size.height) / 2.,
         };
 
-        ctx.child().paint(canvas, &child_offset);
+        ctx.child(0).paint(canvas, &child_offset);
     }
 }

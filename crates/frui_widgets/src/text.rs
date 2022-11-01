@@ -11,7 +11,7 @@ pub enum TextDirection {
     Ltr,
 }
 
-#[derive(LeafWidget, Builder)]
+#[derive(RenderWidget, Builder)]
 pub struct Text<S: AsRef<str>> {
     text: S,
     size: f64,
@@ -42,7 +42,11 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 }
 
 #[cfg(not(feature = "miri"))]
-impl<S: AsRef<str>> LeafWidget for Text<S> {
+impl<S: AsRef<str>> RenderWidget for Text<S> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![] as Vec<()>
+    }
+
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
         let max_width = constraints.max().width;
 
@@ -90,7 +94,7 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 }
 
 #[cfg(feature = "miri")]
-impl<S: AsRef<str>> LeafWidget for Text<S> {
+impl<S: AsRef<str>> RenderWidget for Text<S> {
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
         let a: &mut TextRenderState = &mut ctx.rstate_mut();
 
