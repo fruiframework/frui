@@ -1,11 +1,11 @@
 use std::ops::Deref;
 
 use crate::{
-    api::{implementors::leaf::LeafWidget, Widget},
+    api::{implementers::leaf::LeafWidget, Widget},
     prelude::*,
 };
 
-use super::implementors::{LeafWidgetOS, RawWidget, WidgetDerive};
+use super::implementers::{LeafWidgetOS, RawWidget, WidgetDerive};
 
 pub trait BoxedWidget: Widget + Sized {
     /// Convenience method used to type erase and box a widget.

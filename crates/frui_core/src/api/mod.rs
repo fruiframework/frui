@@ -1,11 +1,11 @@
 use std::any::TypeId;
 
-use self::implementors::{RawWidget, WidgetDerive};
+use self::implementers::{RawWidget, WidgetDerive};
 
 pub(crate) mod any_ext;
 pub(crate) mod contexts;
 pub(crate) mod events;
-pub(crate) mod implementors;
+pub(crate) mod implementers;
 pub(crate) mod impls;
 pub(crate) mod local_key;
 pub(crate) mod structural_eq;

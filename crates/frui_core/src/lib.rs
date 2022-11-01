@@ -25,7 +25,7 @@ pub mod prelude {
                 },
             },
             events::{Event, WidgetEvent},
-            implementors::{
+            implementers::{
                 inherited::InheritedWidget, leaf::LeafWidget, multi::MultiChildWidget,
                 single::SingleChildWidget, view::ViewWidget,
             },
@@ -53,7 +53,7 @@ pub mod macro_exports {
     pub use crate::{
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
-            implementors::{
+            implementers::{
                 InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget,
                 SingleChildWidgetOS, ViewWidgetOS, WidgetDerive,
             },
