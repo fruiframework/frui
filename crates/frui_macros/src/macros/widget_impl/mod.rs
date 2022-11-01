@@ -36,6 +36,10 @@ pub fn Inherited(structure: &ItemStruct) -> TokenStream {
     impl_widget(structure, WidgetKind::Inherited)
 }
 
+pub fn Render(structure: &ItemStruct) -> TokenStream {
+    impl_widget(structure, WidgetKind::Render)
+}
+
 //
 // Impl
 
@@ -46,6 +50,7 @@ pub enum WidgetKind {
     MultiChild,
     View,
     Inherited,
+    Render,
 }
 
 fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {

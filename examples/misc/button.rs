@@ -7,19 +7,19 @@ const HEIGHT: f64 = 60.0;
 
 const COLOR: Color = Color::rgb8(255, 144, 54);
 
-#[derive(SingleChildWidget)]
+#[derive(RenderWidget)]
 pub struct Button<L: Widget, F: Fn()> {
     pub label: L,
     pub on_click: F,
 }
 
-impl<L: Widget, F: Fn()> SingleChildWidget for Button<L, F> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        Center { child: &self.label }
+impl<L: Widget, F: Fn()> RenderWidget for Button<L, F> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![Center { child: &self.label }]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, _: Constraints) -> Size {
-        ctx.child().layout(Constraints {
+        ctx.children().get(0).layout(Constraints {
             min_width: 0.,
             max_width: WIDTH,
             min_height: 0.,
@@ -57,7 +57,7 @@ impl<L: Widget, F: Fn()> SingleChildWidget for Button<L, F> {
             brush,
         );
 
-        ctx.child().paint(canvas, offset)
+        ctx.children().get(0).paint(canvas, offset)
     }
 }
 

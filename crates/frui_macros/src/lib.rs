@@ -54,3 +54,8 @@ pub fn view_widget(tokens: TokenStream) -> TokenStream {
 pub fn inherited_widget(tokens: TokenStream) -> TokenStream {
     macros::widget_impl::Inherited(&syn::parse_macro_input!(tokens as syn::ItemStruct)).into()
 }
+
+#[proc_macro_derive(RenderWidget)]
+pub fn render_widget(tokens: TokenStream) -> TokenStream {
+    macros::widget_impl::Render(&syn::parse_macro_input!(tokens as syn::ItemStruct)).into()
+}

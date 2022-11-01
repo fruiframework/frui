@@ -53,6 +53,7 @@ fn kind_to_os(widget_kind: WidgetKind) -> TokenStream {
         WidgetKind::MultiChild => quote!(#exports::MultiChildWidgetOS),
         WidgetKind::View => quote!(#exports::ViewWidgetOS),
         WidgetKind::Inherited => quote!(#exports::InheritedWidgetOS),
+        WidgetKind::Render => quote!(#exports::RenderWidgetOS),
     }
 }
 
