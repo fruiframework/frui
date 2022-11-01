@@ -28,22 +28,6 @@ pub fn derive_builder(tokens: TokenStream) -> TokenStream {
 
 //
 // Widget Implementations
-//
-
-#[proc_macro_derive(LeafWidget)]
-pub fn leaf_widget(tokens: TokenStream) -> TokenStream {
-    macros::widget_impl::Leaf(&syn::parse_macro_input!(tokens as syn::ItemStruct)).into()
-}
-
-#[proc_macro_derive(SingleChildWidget)]
-pub fn single_child_widget(tokens: TokenStream) -> TokenStream {
-    macros::widget_impl::SingleChild(&syn::parse_macro_input!(tokens as syn::ItemStruct)).into()
-}
-
-#[proc_macro_derive(MultiChildWidget)]
-pub fn multi_child_widget(tokens: TokenStream) -> TokenStream {
-    macros::widget_impl::MultiChild(&syn::parse_macro_input!(tokens as syn::ItemStruct)).into()
-}
 
 #[proc_macro_derive(ViewWidget)]
 pub fn view_widget(tokens: TokenStream) -> TokenStream {

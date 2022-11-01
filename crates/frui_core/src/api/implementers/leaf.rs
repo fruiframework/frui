@@ -3,15 +3,15 @@ use crate::{
     prelude::{Constraints, Offset, PaintContext, RenderContext, Size},
 };
 
-use super::{LeafWidgetOS, WidgetDerive};
+use super::{RenderWidgetOS, WidgetDerive};
 
-pub trait LeafWidget: WidgetDerive + Sized {
+pub trait RenderWidget: WidgetDerive + Sized {
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size;
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset);
 }
 
-impl<T: LeafWidget> LeafWidgetOS for T {
+impl<T: RenderWidget> RenderWidgetOS for T {
     fn build<'w>(&'w self, _: &'w crate::api::contexts::Context) -> Vec<crate::api::WidgetPtr<'w>> {
         vec![]
     }

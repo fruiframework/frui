@@ -2,9 +2,9 @@ use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::{format_ident, quote, ToTokens};
 use syn::{GenericParam, Generics, Ident, ItemStruct, Lifetime, LifetimeDef, TypeParamBound};
 
-use super::{unique_type_id, WidgetKind};
+use super::unique_type_id;
 
-pub fn impl_widget_derive(kind: WidgetKind, input: &ItemStruct, target: &Ident) -> TokenStream2 {
+pub fn impl_widget_derive(input: &ItemStruct, target: &Ident) -> TokenStream2 {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let super::Imports {
@@ -23,35 +23,24 @@ pub fn impl_widget_derive(kind: WidgetKind, input: &ItemStruct, target: &Ident) 
 
     let UniqueTypeId = unique_type_id(target);
 
-    match kind {
-        WidgetKind::Leaf => quote! {
-            // Leaf widget doesn't have any children, that's why we don't infer their type.
-            //
-            impl #impl_generics #WidgetDerive for #target #ty_generics #where_clause {
-                type Widget<#LT> = () where Self: #LT;
+    quote! {
+        // At the moment of implementing this, TAIT (Type Alias Implement Trait feature)
+        // doesn't work inside of the definition of `WidgetDerive` implementation.
+        //
+        // As a workaround we use a secondary type alias that is outside of `WidgetDerive`
+        // definition, which helps the compiler to correctly infer type from `build` method.
+        //
+        // This however requires that used type parameters must be explicitly defined
+        // in the type alias. Those are `AliasImplBounds` and `AliasTypeBounds` here.
+        //
+        #[doc(hidden)]
+        type #Alias #AliasGenerics #AliasWhere = impl #Widget + #LT;
 
-                type UniqueTypeId = #UniqueTypeId;
-            }
-        },
-        _ => quote! {
-            // At the moment of implementing this, TAIT (Type Alias Implement Trait feature)
-            // doesn't work inside of the definition of `WidgetDerive` implementation.
-            //
-            // As a workaround we use a secondary type alias that is outside of `WidgetDerive`
-            // definition, which helps the compiler to correctly infer type from `build` method.
-            //
-            // This however requires that used type parameters must be explicitly defined
-            // in the type alias. Those are `AliasImplBounds` and `AliasTypeBounds` here.
-            //
-            #[doc(hidden)]
-            type #Alias #AliasGenerics #AliasWhere = impl #Widget + #LT;
+        impl #impl_generics #WidgetDerive for #target #ty_generics #where_clause {
+            type Widget<#LT> = #Alias #AssocParams where Self: #LT;
 
-            impl #impl_generics #WidgetDerive for #target #ty_generics #where_clause {
-                type Widget<#LT> = #Alias #AssocParams where Self: #LT;
-
-                type UniqueTypeId = #UniqueTypeId;
-            }
-        },
+            type UniqueTypeId = #UniqueTypeId;
+        }
     }
 }
 

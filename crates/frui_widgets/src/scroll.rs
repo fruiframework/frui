@@ -10,7 +10,7 @@ pub enum ScrollDirection {
 }
 
 /// Todo: Finish implementation.
-#[derive(SingleChildWidget, Builder)]
+#[derive(RenderWidget, Builder)]
 pub struct Scroll<W: Widget> {
     pub child: W,
     pub scroll_direction: ScrollDirection,
@@ -40,9 +40,9 @@ impl<W: Widget> WidgetState for Scroll<W> {
     }
 }
 
-impl<W: Widget> SingleChildWidget for Scroll<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<W: Widget> RenderWidget for Scroll<W> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
@@ -59,7 +59,7 @@ impl<W: Widget> SingleChildWidget for Scroll<W> {
             },
         };
 
-        ctx.child().layout(child_constraints);
+        ctx.child(0).layout(child_constraints);
 
         constraints.max()
     }
@@ -74,7 +74,7 @@ impl<W: Widget> SingleChildWidget for Scroll<W> {
         canvas.clip(viewport);
         canvas.transform(Affine::translate(-ctx.wstate().scroll_offset));
 
-        ctx.child().paint(canvas, offset);
+        ctx.child(0).paint(canvas, offset);
 
         if let Err(e) = canvas.restore() {
             log::error!("restoring render context failed: {:?}", e);
@@ -94,11 +94,11 @@ impl<W: Widget> WidgetEvent for Scroll<W> {
             .transform_scroll(ctx.wstate().scroll_offset, viewport)
             .unwrap();
 
-        ctx.child().handle_event(&event);
+        ctx.child(0).handle_event(&event);
 
         if let Event::MouseWheel(event) = event {
             let size = ctx.size();
-            let child_size = ctx.child().size();
+            let child_size = ctx.child(0).size();
 
             scroll(
                 &mut ctx.wstate_mut().scroll_offset,

@@ -16,18 +16,6 @@ use self::{
 //
 // Exports
 
-pub fn Leaf(structure: &ItemStruct) -> TokenStream {
-    impl_widget(structure, WidgetKind::Leaf)
-}
-
-pub fn SingleChild(structure: &ItemStruct) -> TokenStream {
-    impl_widget(structure, WidgetKind::SingleChild)
-}
-
-pub fn MultiChild(structure: &ItemStruct) -> TokenStream {
-    impl_widget(structure, WidgetKind::MultiChild)
-}
-
 pub fn View(structure: &ItemStruct) -> TokenStream {
     impl_widget(structure, WidgetKind::View)
 }
@@ -45,9 +33,6 @@ pub fn Render(structure: &ItemStruct) -> TokenStream {
 
 #[derive(Debug, Clone, Copy)]
 pub enum WidgetKind {
-    Leaf,
-    SingleChild,
-    MultiChild,
     View,
     Inherited,
     Render,
@@ -68,7 +53,7 @@ fn impl_widget(input: &ItemStruct, kind: WidgetKind) -> TokenStream {
 
     let RawWidgetImplementation = impl_raw_widget(input, kind);
     let StructuralEqImplementation = impl_structural_eq(input);
-    let WidgetDeriveImplementation = impl_widget_derive(kind, input, Target);
+    let WidgetDeriveImplementation = impl_widget_derive(input, Target);
 
     quote! {
         // Combine different WidgetKind implementations into one `RawWidget`.

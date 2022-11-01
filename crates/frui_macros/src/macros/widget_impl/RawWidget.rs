@@ -48,9 +48,6 @@ fn kind_to_os(widget_kind: WidgetKind) -> TokenStream {
     let exports = exports_path();
 
     match widget_kind {
-        WidgetKind::Leaf => quote!(#exports::LeafWidgetOS),
-        WidgetKind::SingleChild => quote!(#exports::SingleChildWidgetOS),
-        WidgetKind::MultiChild => quote!(#exports::MultiChildWidgetOS),
         WidgetKind::View => quote!(#exports::ViewWidgetOS),
         WidgetKind::Inherited => quote!(#exports::InheritedWidgetOS),
         WidgetKind::Render => quote!(#exports::RenderWidgetOS),

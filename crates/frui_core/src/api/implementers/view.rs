@@ -24,7 +24,7 @@ impl<T: ViewWidget> ViewWidgetOS for T {
     }
 
     fn layout<'w>(&self, ctx: &'w mut AnyRenderContext, constraints: Constraints) -> Size {
-        ctx.child().layout(constraints)
+        ctx.child(0).layout(constraints)
     }
 
     fn paint<'w>(
@@ -33,6 +33,6 @@ impl<T: ViewWidget> ViewWidgetOS for T {
         canvas: &mut PaintContext,
         offset: &Offset,
     ) {
-        ctx.child().paint(canvas, offset)
+        ctx.child(0).paint(canvas, offset)
     }
 }

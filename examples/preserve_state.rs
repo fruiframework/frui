@@ -1,4 +1,4 @@
-//! This example shows how the order of children of a [`MultiChildWidget`]
+//! This example shows how the order of children of a [`RenderWidget`]
 //! affects whether the state of those children widgets will be preserved.
 //!
 //! [`RandomState`] is a widget that will generate and display a new number

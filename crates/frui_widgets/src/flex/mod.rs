@@ -224,7 +224,7 @@ pub enum FlexFit {
     Tight,
 }
 
-#[derive(SingleChildWidget)]
+#[derive(RenderWidget)]
 pub struct Flexible<W: Widget> {
     pub fit: FlexFit,
     pub flex: usize,
@@ -241,16 +241,16 @@ impl<W: Widget> ParentData for Flexible<W> {
     }
 }
 
-impl<W: Widget> SingleChildWidget for Flexible<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<W: Widget> RenderWidget for Flexible<W> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        ctx.child().layout(constraints)
+        ctx.child(0).layout(constraints)
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        ctx.child().paint(canvas, offset)
+        ctx.child(0).paint(canvas, offset)
     }
 }
