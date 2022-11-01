@@ -20,6 +20,7 @@ use super::{
 pub(crate) mod inherited;
 pub(crate) mod leaf;
 pub(crate) mod multi;
+pub mod render;
 pub(crate) mod single;
 pub(crate) mod view;
 
@@ -51,13 +52,24 @@ pub trait WidgetDerive {
 /// routed through this trait (by the derive macro) and are accessed by
 /// framework through `&dyn RawWidget`.
 /// 
-/// ## Render widget implem
+/// ## Render widget implementers
+/// 
+/// `LeafWidget`, `SingleChildWidget`, and `MultiChildWidget` are all "widget
+/// implementers" that allow for implementing render methods, like `layout` and
+/// `paint`. Initially I made the distinction between the amount of children
+/// each implementer can have to make methods like `child()` and `children()` of
+/// given `ctx` infallible. 
+/// 
+/// However, as of now that distinction seems to only introduce unnecessary
+/// complexity, so I added `RenderWidget` implementer which combines
+/// `LeafWidget`, `SingleChildWidget`, and `MultiChildWidget` implementers into
+/// one.
 #[doc(hidden)]
 #[rustfmt::skip]
 #[copy_trait_as(
     RawWidget,
     ViewWidgetOS, InheritedWidgetOS,
-    LeafWidgetOS, SingleChildWidgetOS, MultiChildWidgetOS
+    LeafWidgetOS, SingleChildWidgetOS, MultiChildWidgetOS, RenderWidgetOS
 )]
 pub trait OS:
     WidgetStateOS

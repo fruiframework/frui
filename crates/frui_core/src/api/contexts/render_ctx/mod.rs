@@ -14,7 +14,7 @@ use crate::{
         runner::{handler::APP_HANDLE, PaintContext},
         tree::WidgetNodeRef,
     },
-    prelude::{MultiChildWidget, SingleChildWidget, WidgetState},
+    prelude::{SingleChildWidget, WidgetState},
 };
 
 mod parent_data;
@@ -103,10 +103,7 @@ impl<'a, T> _RenderContext<'a, T> {
         self.ctx.child()
     }
 
-    pub fn children(&mut self) -> ChildContextIter
-    where
-        T: MultiChildWidget,
-    {
+    pub fn children(&mut self) -> ChildContextIter {
         self.ctx.children()
     }
 
@@ -264,6 +261,16 @@ pub struct ChildContextIter<'a> {
 impl<'a> ChildContextIter<'a> {
     pub fn len(&self) -> usize {
         self.parent.children().len()
+    }
+
+    #[track_caller]
+    pub fn get(&self, index: usize) -> ChildContext {
+        let child = self.parent.children().get(index).unwrap();
+
+        ChildContext {
+            ctx: AnyRenderContext::new(crate::app::tree::WidgetNode::node_ref(child)),
+            _p: PhantomData,
+        }
     }
 }
 

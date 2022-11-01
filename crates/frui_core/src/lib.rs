@@ -10,7 +10,7 @@ pub mod app;
 
 pub mod prelude {
     pub use frui_macros::{
-        InheritedWidget, LeafWidget, MultiChildWidget, SingleChildWidget, ViewWidget,
+        InheritedWidget, LeafWidget, MultiChildWidget, RenderWidget, SingleChildWidget, ViewWidget,
     };
 
     pub use super::{
@@ -27,7 +27,7 @@ pub mod prelude {
             events::{Event, WidgetEvent},
             implementers::{
                 inherited::InheritedWidget, leaf::LeafWidget, multi::MultiChildWidget,
-                single::SingleChildWidget, view::ViewWidget,
+                render::RenderWidget, single::SingleChildWidget, view::ViewWidget,
             },
             impls::BoxedWidget,
             Widget,
@@ -54,7 +54,7 @@ pub mod macro_exports {
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
             implementers::{
-                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget,
+                InheritedWidgetOS, LeafWidgetOS, MultiChildWidgetOS, RawWidget, RenderWidgetOS,
                 SingleChildWidgetOS, ViewWidgetOS, WidgetDerive,
             },
             structural_eq::{StructuralEq, StructuralEqImpl},
