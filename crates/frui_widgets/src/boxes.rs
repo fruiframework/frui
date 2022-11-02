@@ -7,7 +7,9 @@ pub trait ChildWidget {
 }
 
 pub trait BoxLayoutWidget {
-    fn get_constraints(&self) -> Constraints;
+    fn get_constraints(&self) -> Constraints {
+        Constraints::default()
+    }
 
     fn get_min_intrinsic_width(&self, height: f64) -> f64 {
         // wrap compute result with cache, maybe `memorize`?
@@ -48,20 +50,14 @@ pub trait BoxLayoutWidget {
     }
 }
 
-impl<T: LeafWidget> BoxLayoutWidget for T {
-    fn get_constraints(&self) -> Constraints {
-        Constraints::default()
-    }
-}
-
 pub trait BoxChildWidget: BoxLayoutWidget + Widget {}
 
 impl <T: BoxLayoutWidget + Widget> BoxChildWidget for T {}
 
-pub trait BoxSingleChildWidget: SingleChildWidget + BoxLayoutWidget {
+pub trait BoxSingleChildWidget: RenderWidget + BoxLayoutWidget {
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
         println!("Default BoxSingleChildWidget's layout");
-        let child_size = ctx.child().layout(constraints);
+        let child_size = ctx.child(0).layout(constraints);
         if child_size != Size::ZERO {
             child_size
         } else {
@@ -70,4 +66,4 @@ pub trait BoxSingleChildWidget: SingleChildWidget + BoxLayoutWidget {
     }
 }
 
-impl<T: SingleChildWidget + BoxLayoutWidget> BoxSingleChildWidget for T {}
+impl<T: RenderWidget + BoxLayoutWidget> BoxSingleChildWidget for T {}
