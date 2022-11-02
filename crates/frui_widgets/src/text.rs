@@ -5,6 +5,8 @@ use druid_shell::piet::{
     TextLayoutBuilder,
 };
 
+use crate::BoxLayoutWidget;
+
 #[derive(Debug)]
 pub enum TextDirection {
     Rtl,
@@ -80,6 +82,8 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         );
     }
 }
+
+impl<S: AsRef<str>> BoxLayoutWidget for Text<S> {}
 
 #[cfg(feature = "miri")]
 pub struct TextRenderState([u8; 30]);

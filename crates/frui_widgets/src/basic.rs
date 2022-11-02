@@ -3,7 +3,7 @@ use frui::prelude::*;
 use crate::{BoxChildWidget, BoxLayoutWidget, ChildWidget, BoxLayoutData};
 
 
-#[derive(SingleChildWidget, Default, Builder)]
+#[derive(RenderWidget, Default, Builder)]
 pub struct ConstrainedBox<T: BoxChildWidget> {
     pub child: T,
     pub constraints: Constraints,
@@ -25,24 +25,28 @@ impl<T: BoxChildWidget> ChildWidget for ConstrainedBox<T> {
     }
 }
 
-impl<T: BoxChildWidget> SingleChildWidget for ConstrainedBox<T> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<T: BoxChildWidget> RenderWidget for ConstrainedBox<T> {
+    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let child_size = ctx.child().layout(constraints.enforce(constraints));
+        let child_size = ctx.child(0).layout(constraints.enforce(constraints));
         if child_size != Size::ZERO {
             child_size
         } else {
             self.constraints.enforce(constraints).constrain(Size::ZERO)
         }
     }
+
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+        ctx.child(0).paint(canvas, offset)
+    }
 }
 
-impl<'a, T> BoxLayoutWidget for ConstrainedBox<T>
+impl<T> BoxLayoutWidget for ConstrainedBox<T>
 where
-    T: BoxChildWidget + 'a
+    T: BoxChildWidget
 {
     fn get_constraints(&self) -> Constraints {
         self.constraints
@@ -130,7 +134,7 @@ where
     }
 }
 
-#[derive(SingleChildWidget, Builder)]
+#[derive(RenderWidget, Builder)]
 pub struct UnconstrainedBox<T: BoxChildWidget> {
     pub child: T
 }
@@ -151,22 +155,26 @@ impl<T: BoxChildWidget> ChildWidget for UnconstrainedBox<T> {
     }
 }
 
-impl<T: BoxChildWidget> SingleChildWidget for UnconstrainedBox<T> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<T: BoxChildWidget> RenderWidget for UnconstrainedBox<T> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let child_size = ctx.child().layout(constraints.loosen());
+        let child_size = ctx.child(0).layout(constraints.loosen());
         if child_size != Size::ZERO {
             child_size
         } else {
             constraints.biggest()
         }
     }
+
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+        ctx.child(0).paint(canvas, offset)
+    }
 }
 
-#[derive(SingleChildWidget, Builder)]
+#[derive(RenderWidget, Builder)]
 pub struct ColoredBox<T: BoxChildWidget> {
     pub child: T,
     pub color: Color,
@@ -180,13 +188,13 @@ impl<T: BoxChildWidget> ChildWidget for ColoredBox<T> {
     }
 }
 
-impl<T: BoxChildWidget> SingleChildWidget for ColoredBox<T> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        &self.child
+impl<T: BoxChildWidget> RenderWidget for ColoredBox<T> {
+    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let child_size = ctx.child().layout(constraints.loosen());
+        let child_size = ctx.child(0).layout(constraints.loosen());
         if child_size != Size::ZERO {
             child_size
         } else {
@@ -198,7 +206,7 @@ impl<T: BoxChildWidget> SingleChildWidget for ColoredBox<T> {
         let rect = Rect::from_origin_size(*offset, ctx.size());
         let brush = &canvas.solid_brush(self.color.clone());
         canvas.fill(rect, brush);
-        ctx.child().paint(canvas, offset)
+        ctx.child(0).paint(canvas, offset)
     }
 }
 
