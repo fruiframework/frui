@@ -1,13 +1,21 @@
 use druid_shell::{
-    kurbo::Size, piet::Piet, Application, IdleToken, KeyEvent, MouseEvent, Region, WinHandler,
-    WindowBuilder, WindowHandle,
+    kurbo::Size,
+    piet::Piet,
+    Application,
+    IdleToken,
+    KeyEvent,
+    MouseEvent,
+    Region,
+    WinHandler,
+    WindowBuilder,
+    WindowHandle,
 };
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 
 use crate::prelude::Widget;
 
-use super::{handler::WindowHandler, FruiWindowHandler};
+use super::{window_handler::WindowHandler, FruiWindowHandler};
 
 // Currently there is `'static` lifetime requirement for the root widget
 // because of the requirements of `WinHandle` from the druid_shell.

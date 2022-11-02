@@ -6,6 +6,7 @@ mod flex;
 mod scroll;
 mod testing;
 mod text;
+mod transform;
 mod widget_list;
 
 pub use self::container::*;
@@ -14,6 +15,7 @@ pub use self::flex::*;
 pub use self::scroll::*;
 pub use self::testing::*;
 pub use self::text::*;
+pub use self::transform::*;
 pub use self::widget_list::*;
 
 #[doc(hidden)]

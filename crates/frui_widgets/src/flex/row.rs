@@ -1,7 +1,11 @@
 use frui::prelude::*;
 
 use crate::{
-    widget_list::WidgetList, CrossAxisAlignment, CrossAxisSize, MainAxisAlignment, MainAxisSize,
+    widget_list::WidgetList,
+    CrossAxisAlignment,
+    CrossAxisSize,
+    MainAxisAlignment,
+    MainAxisSize,
 };
 
 use super::{compute_cross_axis_offset, compute_main_axis_offset, get_flex};
@@ -230,5 +234,21 @@ impl<T: WidgetList> RenderWidget for Row<T> {
             child.paint(canvas, &offset);
             offset_x += child.size().width + space_between_x;
         }
+    }
+}
+
+impl<T: WidgetList> HitTest for Row<T> {
+    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
+        if ctx.layout_box().contains(point) {
+            for mut child in ctx.children() {
+                // We don't transform children widgets apart from simple offset
+                // translation, so we can use `hit_test_with_paint_offset`.
+                if child.hit_test_with_paint_offset(point) {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 }

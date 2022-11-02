@@ -21,7 +21,11 @@ frui_core = { path = "crates/frui_core", version = "0.0.1" }
 frui_widgets = { path = "crates/frui_widgets", version = "0.0.1" }
 
 [dev-dependencies]
+log = "0.4.17"
 rand = "0.8.5"
 
 [features]
 miri = ["frui_core/miri", "frui_widgets/miri"]
+
+# MIRIFLAGS="-Zmiri-disable-isolation" cargo miri test --example [EXAMPLE] --features "miri"
+# MIRIFLAGS="-Zmiri-disable-isolation" cargo miri test --examples --features "miri"

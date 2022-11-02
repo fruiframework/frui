@@ -1,11 +1,13 @@
 use druid_shell::{
     kurbo::{Rect, Size},
-    KeyEvent, Region,
+    KeyEvent,
+    MouseEvent,
+    Region,
 };
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 
-use super::{handler::WindowHandler, FruiWindowHandler};
+use super::{window_handler::WindowHandler, FruiWindowHandler};
 use crate::{app::listeners::keyboard::KEYBOARD_EVENT_LISTENERS, prelude::Widget};
 
 mod substitutes;
@@ -45,18 +47,22 @@ impl MiriAppRunner {
         this
     }
 
+    pub fn update(&mut self) {
+        self.handler.prepare_paint();
+        self.handler
+            .paint(&mut PaintContext::default(), &default_region());
+    }
+
+    pub fn mouse_down(&mut self, event: &MouseEvent) {
+        self.handler.mouse_down(&event);
+    }
+
     pub fn send_keyboard_event(&mut self, event: KeyEvent) {
         KEYBOARD_EVENT_LISTENERS.with(|listeners| {
             for listener in listeners.borrow_mut().iter() {
                 listener(event.clone());
             }
         });
-    }
-
-    pub fn update(&mut self) {
-        self.handler.prepare_paint();
-        self.handler
-            .paint(&mut PaintContext::default(), &default_region());
     }
 }
 

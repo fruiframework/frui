@@ -7,20 +7,21 @@ use std::{
     sync::Arc,
 };
 
-use druid_shell::IdleToken;
+use druid_shell::{kurbo::Affine, IdleToken};
 
 use crate::{
     api::{
         contexts::{render_ctx::AnyRenderContext, Context},
-        events::Event,
         local_key::LocalKeyAny,
-        IntoWidgetPtr, WidgetPtr,
+        pointer_events::{context::HitTestCtxOS, events::PointerEvent},
+        IntoWidgetPtr,
+        WidgetPtr,
     },
-    app::runner::handler::{APP_HANDLE, NEED_REBUILD},
+    app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
     prelude::{Constraints, Offset, PaintContext, Size},
 };
 
-pub struct WidgetTree {
+pub(crate) struct WidgetTree {
     /// Root widget contains necessary configuration to support `InheritedWidget`s.
     /// Child of that dummy node is the actual root node.
     dummy_root: UnsafeCell<Box<WidgetNode>>,
@@ -40,21 +41,63 @@ impl WidgetTree {
         Self { dummy_root }
     }
 
-    pub(crate) fn layout(&mut self, constraints: Constraints) {
-        AnyRenderContext::new(self.get_root()).layout(constraints);
+    pub fn layout(&mut self, constraints: Constraints) {
+        AnyRenderContext::new(self.root()).layout(constraints);
     }
 
-    pub(crate) fn paint(&mut self, piet: &mut PaintContext) {
-        AnyRenderContext::new(self.get_root()).paint(piet, &Offset::default());
+    pub fn paint(&mut self, piet: &mut PaintContext) {
+        AnyRenderContext::new(self.root()).paint(piet, &Offset::default());
     }
 
-    pub(crate) fn handle_event(&mut self, event: Event) {
-        // Handle the event.
-        self.get_root().handle_event(event);
+    pub fn handle_pointer_event(&mut self, event: PointerEvent) {
+        // Todo: match event kind and dispatch exit events.
+
+        // Todo: Change self.widget() to returns `&dyn RawWidget`.
+
+        let new_hit_entries: Rc<RefCell<HashMap<WidgetNodeRef, Affine>>> =
+            Rc::new(RefCell::default());
+
+        let ctx = HitTestCtxOS::new(self.root(), new_hit_entries.clone(), Affine::default());
+
+        self.root()
+            .widget()
+            .raw()
+            .hit_test_os(ctx.clone(), event.pos());
+
+        // println!("{:#?}", new_hit_entries.borrow());
+
+        for (node, affine) in new_hit_entries.borrow().iter() {
+            // Transform event position to local coordinates of child.
+            let pos = *affine * event.pos();
+            let event = event.clone_at(pos);
+
+            // match event {
+            //     PointerEvent::PointerMove(_) => todo!(),
+            //     PointerEvent::PointerUp(_) => todo!(),
+            //     PointerEvent::PointerDown(_) => todo!(),
+            //     PointerEvent::PointerScroll(_) => todo!(),
+            // }
+
+            // println!("WidgetTree::handle_pointer_event:");
+            // println!("affine     = {:?}", affine);
+            // println!("pos before = {}", pos_before);
+            // println!("pos after  = {}", event.pos());
+
+            // Problem: Button should register pointer moves I think, even if it
+            // is outside of the hit area; But for sure, it has to register the
+            // PointerUp event outside of the are.
+
+            let ctx =
+                HitTestCtxOS::new(node.clone(), Rc::new(RefCell::default()), Affine::default());
+
+            node.widget()
+                .raw()
+                .handle_event_os(ctx.clone(), &event, false);
+        }
     }
 
     /// Returns the root widget node, extracting it from the dummy node.
-    fn get_root(&mut self) -> WidgetNodeRef {
+    fn root(&mut self) -> WidgetNodeRef {
         unsafe { WidgetNode::node_ref(&(&*self.dummy_root.children_ptr_mut())[0]) }
     }
 }
@@ -133,7 +176,8 @@ impl WidgetNode {
             context: Context {
                 node: WidgetNodeRef {
                     is_alive: Rc::new(Cell::new(true)),
-                    ptr: std::ptr::null_mut(), // We swap it later.
+                    ptr: std::ptr::null_mut(),
+                    debug_name: "", // We swap it later.
                 },
             },
             inner: RefCell::new(WidgetInner {
@@ -155,6 +199,7 @@ impl WidgetNode {
         );
 
         context_ref_mut.node.ptr = this.node_ptr_mut();
+        context_ref_mut.node.debug_name = widget.raw().debug_name_short();
 
         let node_ref = WidgetNode::node_ref(&this);
 
@@ -388,28 +433,6 @@ impl WidgetNode {
         }
     }
 
-    /// Following implementation of handling events is a bad prototype.
-    ///
-    /// Safety:
-    ///
-    /// There are more assumptions, but the main one is that `s: *mut WidgetNode`
-    /// must come from the `UnsafeCell` that was received from this `WidgetNode::new()`.
-    pub unsafe fn handle_event(s: &WidgetNodeRef, event: &Event) {
-        // This is used to not access to not mess up provinience of `WidgetNode`,
-        // and particularly `Context`.
-        let widget_ref = &*s.ptr.widget_ptr();
-        let children_ref = &*s.ptr.children_ptr();
-
-        let mut render_ctx = AnyRenderContext::new(s.clone());
-
-        if !widget_ref.raw().handle_event(&mut render_ctx, event) {
-            for child in children_ref.iter() {
-                let child = WidgetNode::node_ref(child);
-                WidgetNode::handle_event(&child, event);
-            }
-        }
-    }
-
     /// Drop this widget node and all its descendants.
     pub fn drop(mut s: UnsafeCell<Box<Self>>) {
         // Safety: `drop_mut` can be called only once, since we own `s`.
@@ -499,20 +522,22 @@ impl WidgetNode {
 }
 
 #[derive(Clone)]
-pub(crate) struct WidgetNodeRef {
+pub struct WidgetNodeRef {
     is_alive: Rc<Cell<bool>>,
     ptr: *mut WidgetNode,
+    // Todo: Remove
+    debug_name: &'static str,
 }
 
 impl WidgetNodeRef {
     #[track_caller]
-    pub fn borrow(&self) -> Ref<'_, WidgetInner> {
+    pub(crate) fn borrow(&self) -> Ref<'_, WidgetInner> {
         assert_eq!(self.is_alive.get(), true);
         unsafe { (&*self.ptr.inner_ptr()).borrow() }
     }
 
     #[track_caller]
-    pub fn borrow_mut(&self) -> RefMut<'_, WidgetInner> {
+    pub(crate) fn borrow_mut(&self) -> RefMut<'_, WidgetInner> {
         assert_eq!(self.is_alive.get(), true);
         unsafe { (&*self.ptr.inner_ptr()).borrow_mut() }
     }
@@ -522,11 +547,6 @@ impl WidgetNodeRef {
     pub fn update_subtree(&self) {
         assert_eq!(self.is_alive.get(), true);
         unsafe { WidgetNode::update_subtree_ptr(self.ptr) }
-    }
-
-    pub fn handle_event(&self, event: Event) {
-        assert_eq!(self.is_alive.get(), true);
-        unsafe { WidgetNode::handle_event(self, &event) }
     }
 
     pub fn mark_dirty(&self) {
@@ -623,9 +643,14 @@ impl WidgetNodeRef {
     }
 
     #[track_caller]
-    pub fn children<'a>(&'a self) -> &'a [UnsafeCell<Box<WidgetNode>>] {
+    pub(crate) fn children<'a>(&'a self) -> &'a [UnsafeCell<Box<WidgetNode>>] {
         assert!(self.is_alive.get());
         unsafe { &*self.ptr.children_ptr() }
+    }
+
+    #[allow(unused)]
+    pub fn debug_name_short(&self) -> &'static str {
+        self.widget().raw().debug_name_short()
     }
 }
 
@@ -643,6 +668,22 @@ impl Hash for WidgetNodeRef {
     }
 }
 
+impl std::fmt::Debug for WidgetNodeRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.is_alive.get() {
+            write!(
+                f,
+                "WidgetNodeRef ({})",
+                self.widget().raw().debug_name_short()
+            )
+        } else {
+            f.debug_struct("WidgetNodeRef (removed)")
+                .field("ptr", &self.ptr)
+                .finish()
+        }
+    }
+}
+
 pub(crate) struct RenderData {
     /// Render state used by this widget.
     pub state: Box<dyn Any>,
@@ -650,8 +691,9 @@ pub(crate) struct RenderData {
     pub parent_data: Box<dyn Any>,
     /// Size computed during last layout.
     pub size: Size,
-    /// Position computed during last paint.
-    pub offset: Offset,
+    // Todo: Use Point instead of Offset.
+    /// Offset received during last paint.
+    pub local_offset: Offset,
     /// Incoming constraints received during last layout.
     pub constraints: Constraints,
     /// Whether child was laid out. Used to display an error message when
@@ -665,7 +707,7 @@ impl RenderData {
             state: widget.raw().create_render_state(),
             parent_data: widget.raw().create_parent_data(),
             size: Size::default(),
-            offset: Offset::default(),
+            local_offset: Offset::default(),
             constraints: Constraints::default(),
             laid_out: false,
         }
@@ -764,7 +806,8 @@ impl WidgetNode {
             context: Context {
                 node: WidgetNodeRef {
                     is_alive: Rc::new(Cell::new(true)),
-                    ptr: std::ptr::null_mut(), // <-- We swap it later.
+                    ptr: std::ptr::null_mut(),
+                    debug_name: "", // <-- We swap it later.
                 },
             },
             inner: RefCell::new(WidgetInner {
@@ -787,6 +830,8 @@ impl WidgetNode {
         unsafe {
             // Set it inside the Context.
             (&mut *this.context_ptr_mut()).node.ptr = this.node_ptr_mut(); // <-- Override that null.
+            (&mut *this.context_ptr_mut()).node.debug_name =
+                (&*this.widget_ptr()).raw().debug_name_short();
         };
 
         this
