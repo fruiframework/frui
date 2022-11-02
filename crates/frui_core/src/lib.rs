@@ -15,16 +15,26 @@ pub mod prelude {
         api::{
             contexts::{
                 build_ctx::{
-                    BuildContext, InheritedState, InheritedStateRef, InheritedStateRefMut,
+                    BuildContext,
+                    InheritedState,
+                    InheritedStateRef,
+                    InheritedStateRefMut,
                     WidgetState,
                 },
                 render_ctx::{
-                    ChildContext, Constraints, Offset, ParentData, RenderContext, RenderState, Size,
+                    ChildContext,
+                    Constraints,
+                    Offset,
+                    ParentData,
+                    RenderContext,
+                    RenderState,
+                    Size,
                 },
             },
             events::{Event, WidgetEvent},
             implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
             impls::BoxedWidget,
+            pointer_events::*,
             Widget,
         },
         app::runner::{native::run_app, PaintContext},
@@ -33,9 +43,15 @@ pub mod prelude {
     pub use druid_shell::{
         kurbo::*,
         piet::{
-            Brush, Color, FontFamily, FontStyle, FontWeight, RenderContext as PietRenderContext,
+            Brush,
+            Color,
+            FontFamily,
+            FontStyle,
+            FontWeight,
+            RenderContext as PietRenderContext,
         },
-        KeyEvent, MouseButton,
+        KeyEvent,
+        MouseButton,
     };
 
     pub use frui_macros::Builder;
@@ -49,7 +65,11 @@ pub mod macro_exports {
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
             implementers::{
-                InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,
+                InheritedWidgetOS,
+                RawWidget,
+                RenderWidgetOS,
+                ViewWidgetOS,
+                WidgetDerive,
             },
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,

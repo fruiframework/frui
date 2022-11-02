@@ -7,57 +7,25 @@ const HEIGHT: f64 = 60.0;
 
 const COLOR: Color = Color::rgb8(255, 144, 54);
 
-#[derive(RenderWidget)]
+#[derive(ViewWidget)]
 pub struct Button<L: Widget, F: Fn()> {
     pub label: L,
     pub on_click: F,
 }
 
-impl<L: Widget, F: Fn()> RenderWidget for Button<L, F> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
-        vec![Center { child: &self.label }]
-    }
-
-    fn layout(&self, ctx: RenderContext<Self>, _: Constraints) -> Size {
-        ctx.child(0).layout(Constraints {
-            min_width: 0.,
-            max_width: WIDTH,
-            min_height: 0.,
-            max_height: HEIGHT,
-        });
-
-        Size {
-            width: WIDTH,
-            height: HEIGHT,
-        }
-    }
-
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        let color;
-        let hover_shade = 0.2;
-
-        if ctx.rstate().is_hovered.get() {
-            let (mut r, mut g, mut b, a) = COLOR.as_rgba8();
-
-            // User-chosen color darkened.
-            r = (r as f32 * (1. - hover_shade)) as u8;
-            g = (g as f32 * (1. - hover_shade)) as u8;
-            b = (b as f32 * (1. - hover_shade)) as u8;
-
-            color = Color::rgba8(r, g, b, a);
-        } else {
-            color = COLOR.clone();
-        }
-
-        let brush = &canvas.solid_brush(color);
-
-        PietRenderContext::fill(
-            canvas,
-            RoundedRect::new(offset.x, offset.y, offset.x + WIDTH, offset.y + HEIGHT, 15.),
-            brush,
-        );
-
-        ctx.child(0).paint(canvas, offset)
+impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+        PointerRegion::builder()
+            .on_enter(|e| log::info!("enter {}", e.0.pos))
+            .on_move(|e| log::info!("move {}", e.0.pos))
+            .on_exit(|e| log::info!("exit {}", e.0.pos))
+            .child(
+                Container::builder()
+                    .width(WIDTH)
+                    .height(HEIGHT)
+                    .color(COLOR)
+                    .child(Center::child(&self.label)),
+            )
     }
 }
 

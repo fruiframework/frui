@@ -2,9 +2,15 @@ use std::{borrow::Cow, marker::PhantomData};
 
 use druid_shell::{
     piet::{
-        Color, CoreGraphicsImage, CoreGraphicsText, CoreGraphicsTextLayout, IntoBrush, PietText,
+        Color,
+        CoreGraphicsImage,
+        CoreGraphicsText,
+        CoreGraphicsTextLayout,
+        IntoBrush,
+        PietText,
     },
-    Cursor, IdleToken,
+    Cursor,
+    IdleToken,
 };
 
 /// Placeholder for [`IdleHandle`](druid_shell::IdleHandle) that allows us to test Frui in Miri.
@@ -129,20 +135,20 @@ impl druid_shell::piet::RenderContext for PaintContext<'_> {
     }
 
     fn save(&mut self) -> Result<(), druid_shell::piet::Error> {
-        todo!()
+        // Todo: This is incorrect, we should create a stack for this.
+        Ok(())
     }
 
     fn restore(&mut self) -> Result<(), druid_shell::piet::Error> {
-        todo!()
+        // Todo: This is incorrect, we should create a stack for this.
+        Ok(())
     }
 
     fn finish(&mut self) -> Result<(), druid_shell::piet::Error> {
         todo!()
     }
 
-    fn transform(&mut self, transform: druid_shell::kurbo::Affine) {
-        todo!()
-    }
+    fn transform(&mut self, transform: druid_shell::kurbo::Affine) {}
 
     fn make_image(
         &mut self,

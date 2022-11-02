@@ -64,6 +64,15 @@ impl<'a, T> _BuildContext<'a, T> {
             .node
             .depend_on_inherited_widget_of_key::<W::UniqueTypeId>()?;
 
+        // Todo:
+        //
+        // 1. Get node above.
+        // 2. Increase rc/borrow count.
+        // 3. Get reference to the widget's state (can be done at once in step
+        //    above).
+        // 4. Return InheritedGuard<'a> with that `node`, `refcell` guard, and
+        //    extracted reference. Possibly transmute.
+
         Some(InheritedState {
             node,
             _p: PhantomData,
