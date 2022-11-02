@@ -196,6 +196,15 @@ impl Constraints {
         }
     }
 
+    pub fn tight_for(width: Option<f64>, height: Option<f64>) -> Self {
+        Self {
+            min_width: width.unwrap_or(0.0),
+            max_width: width.unwrap_or(f64::INFINITY),
+            min_height: height.unwrap_or(0.0),
+            max_height: height.unwrap_or(f64::INFINITY),
+        }
+    }
+
     pub fn loose(size: Size) -> Self {
         Self {
             min_width: 0.0,

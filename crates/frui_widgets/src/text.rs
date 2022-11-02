@@ -5,8 +5,6 @@ use druid_shell::piet::{
     TextLayoutBuilder,
 };
 
-use crate::BoxLayoutWidget;
-
 #[derive(Debug)]
 pub enum TextDirection {
     Rtl,
@@ -65,10 +63,11 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
 
         let text_size = ctx.rstate().size();
 
-        constraints.constrain(Size {
-            width: text_size.width,
-            height: text_size.height,
-        })
+        let size = constraints.constrain_dimensions(
+            text_size.width,
+            text_size.height,
+        );
+        size
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
@@ -82,8 +81,6 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         );
     }
 }
-
-impl<S: AsRef<str>> BoxLayoutWidget for Text<S> {}
 
 #[cfg(feature = "miri")]
 pub struct TextRenderState([u8; 30]);
