@@ -168,6 +168,14 @@ impl<'a> ChildContext<'a> {
         }))
     }
 
+    pub fn set_parent_data<T: 'static>(&mut self, data: T) {
+        self.ctx
+            .node
+            .borrow_mut()
+            .render_data
+            .parent_data = Box::new(data);
+    }
+
     pub fn layout(&mut self, constraints: Constraints) -> Size {
         self.ctx.layout(constraints.clone())
     }
