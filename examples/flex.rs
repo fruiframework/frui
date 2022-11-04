@@ -35,12 +35,12 @@ impl ViewWidget for App {
                     color: Color::GREEN,
                 }),
             ),
-            direction: Axis::Horizontal,
+            direction: Axis::Vertical,
             main_axis_size: MainAxisSize::Max,
             main_axis_alignment: MainAxisAlignment::Start,
             cross_axis_alignment: CrossAxisAlignment::Center,
             text_direction: TextDirection::Ltr,
-            vertial_direction: VerticalDirection::Down,
+            vertical_direction: VerticalDirection::Down,
         }
     }
 }

@@ -4,15 +4,11 @@ use frui::prelude::*;
 
 pub use alignment::*;
 pub use center::*;
-pub use column::*;
-pub use row::*;
 pub use stack::*;
 pub use flex::*;
 
 pub mod alignment;
 pub mod center;
-pub mod column;
-pub mod row;
 pub mod stack;
 pub mod flex;
 

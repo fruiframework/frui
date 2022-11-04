@@ -37,7 +37,7 @@ impl ViewWidget for App {
             main_axis_alignment: MainAxisAlignment::Start,
             cross_axis_alignment: CrossAxisAlignment::Stretch,
             text_direction: TextDirection::Ltr,
-            vertial_direction: VerticalDirection::Down,
+            vertical_direction: VerticalDirection::Down,
         }
     }
 }
