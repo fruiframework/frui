@@ -1,7 +1,11 @@
 use frui::prelude::*;
 
 use crate::{
-    widget_list::WidgetList, CrossAxisAlignment, CrossAxisSize, MainAxisAlignment, MainAxisSize,
+    widget_list::WidgetList,
+    CrossAxisAlignment,
+    CrossAxisSize,
+    MainAxisAlignment,
+    MainAxisSize,
 };
 
 use super::{compute_cross_axis_offset, compute_main_axis_offset, get_flex};
@@ -29,7 +33,7 @@ impl Row<()> {
     }
 }
 
-impl<WidgetList_: WidgetList> Row<WidgetList_> {
+impl<WL: WidgetList> Row<WL> {
     /// List of children widgets to be laid out by the [`Row`].
     ///
     /// # Note
@@ -101,16 +105,16 @@ impl<WidgetList_: WidgetList> Row<WidgetList_> {
     }
 }
 
-pub struct ColumnRenderState {
+pub struct RowRenderState {
     initial_offset_x: f64,
     space_between_x: f64,
 }
 
 impl<T: WidgetList> RenderState for Row<T> {
-    type State = ColumnRenderState;
+    type State = RowRenderState;
 
     fn create_state(&self) -> Self::State {
-        ColumnRenderState {
+        RowRenderState {
             initial_offset_x: 0.,
             space_between_x: 0.,
         }

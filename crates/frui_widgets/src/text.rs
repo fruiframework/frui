@@ -1,7 +1,13 @@
 use frui::{app::TEXT_FACTORY, prelude::*};
 
 use druid_shell::piet::{
-    kurbo::Point, Color, FontFamily, FontWeight, PietTextLayout, Text as TextExt, TextLayout,
+    kurbo::Point,
+    Color,
+    FontFamily,
+    FontWeight,
+    PietTextLayout,
+    Text as TextExt,
+    TextLayout,
     TextLayoutBuilder,
 };
 
@@ -95,12 +101,16 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 
 #[cfg(feature = "miri")]
 impl<S: AsRef<str>> RenderWidget for Text<S> {
+    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![] as Vec<()>
+    }
+
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let a: &mut TextRenderState = &mut ctx.rstate_mut();
+        let _: &mut TextRenderState = &mut ctx.rstate_mut();
 
         Size {
-            width: constraints.max().width,
-            height: constraints.max().height,
+            width: constraints.min().width,
+            height: constraints.min().height,
         }
     }
 

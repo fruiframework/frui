@@ -3,11 +3,14 @@ use std::{cell::RefCell, sync::Mutex};
 use druid_shell::{
     kurbo::Rect,
     piet::{Color, RenderContext},
-    Cursor, IdleToken, KeyEvent, MouseEvent,
+    Cursor,
+    IdleToken,
+    KeyEvent,
+    MouseEvent,
 };
 
 use crate::{
-    api::{events::Event, WidgetPtr},
+    api::{pointer_events::events::PointerEvent, WidgetPtr},
     app::{
         listeners::keyboard::KEYBOARD_EVENT_LISTENERS,
         tree::{WidgetNodeRef, WidgetTree},
@@ -163,23 +166,24 @@ impl FruiWindowHandler for WindowHandler {
 
     fn mouse_down(&mut self, event: &MouseEvent) {
         self.widget_tree
-            .handle_event(Event::MouseDown(event.clone()));
+            .handle_pointer_event(PointerEvent::new(event, "down"));
     }
 
     fn mouse_up(&mut self, event: &MouseEvent) {
-        self.widget_tree.handle_event(Event::MouseUp(event.clone()));
+        self.widget_tree
+            .handle_pointer_event(PointerEvent::new(event, "up"));
     }
 
     fn mouse_move(&mut self, event: &MouseEvent) {
         self.widget_tree
-            .handle_event(Event::MouseMove(event.clone()));
+            .handle_pointer_event(PointerEvent::new(event, "move"));
 
         self.window_handle.set_cursor(&Cursor::Arrow);
     }
 
     fn wheel(&mut self, event: &MouseEvent) {
         self.widget_tree
-            .handle_event(Event::MouseWheel(event.clone()));
+            .handle_pointer_event(PointerEvent::new(event, "wheel"));
     }
 
     fn key_down(&mut self, event: KeyEvent) -> bool {

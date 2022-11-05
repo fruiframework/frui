@@ -11,10 +11,12 @@ use super::{
         render_ctx::{AnyRenderContext, ParentDataOS, RenderStateOS},
         Context,
     },
-    events::WidgetEventOS,
     local_key::WidgetLocalKey,
+    pointer_events::HitTestOS,
     structural_eq::StructuralEqOS,
-    WidgetDebug, WidgetPtr, WidgetUniqueType,
+    WidgetDebug,
+    WidgetPtr,
+    WidgetUniqueType,
 };
 
 pub(crate) mod inherited;
@@ -53,10 +55,10 @@ pub trait OS:
     WidgetStateOS
     + RenderStateOS
     + ParentDataOS
-    + WidgetEventOS
     + WidgetLocalKey
     + WidgetUniqueType
     + WidgetDebug
+    + HitTestOS
     + StructuralEqOS
     + AnyExt
 {

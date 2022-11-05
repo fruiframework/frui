@@ -1,7 +1,11 @@
 use frui::prelude::{RenderContext, *};
 
 use druid_shell::piet::{
-    kurbo::Rect, Color, LineCap, RenderContext as PietRenderContext, StrokeStyle,
+    kurbo::Rect,
+    Color,
+    LineCap,
+    RenderContext as PietRenderContext,
+    StrokeStyle,
 };
 
 #[derive(RenderWidget)]

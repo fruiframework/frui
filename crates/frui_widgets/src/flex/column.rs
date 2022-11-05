@@ -1,7 +1,11 @@
 use frui::prelude::*;
 
 use crate::{
-    widget_list::WidgetList, CrossAxisAlignment, CrossAxisSize, MainAxisAlignment, MainAxisSize,
+    widget_list::WidgetList,
+    CrossAxisAlignment,
+    CrossAxisSize,
+    MainAxisAlignment,
+    MainAxisSize,
 };
 
 use super::{compute_cross_axis_offset, compute_main_axis_offset, get_flex};
@@ -117,7 +121,7 @@ impl<T: WidgetList> RenderState for Column<T> {
     }
 }
 
-impl<T: WidgetList> RenderWidget for Column<T> {
+impl<WL: WidgetList> RenderWidget for Column<WL> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }

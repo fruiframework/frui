@@ -1,14 +1,17 @@
 //! This is an obligatory example of a counter app.
 
+#![allow(unused_attributes)]
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
 
-mod misc;
-use misc::Button;
+#[path = "button.rs"]
+mod button;
+
+use button::Button;
 
 #[derive(ViewWidget)]
-struct Counter;
+pub struct Counter;
 
 impl WidgetState for Counter {
     type State = isize;
@@ -46,6 +49,7 @@ impl ViewWidget for Counter {
     }
 }
 
+#[allow(unused)]
 fn main() {
     run_app(Counter);
 }

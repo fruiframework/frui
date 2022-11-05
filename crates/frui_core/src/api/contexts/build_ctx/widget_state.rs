@@ -1,10 +1,16 @@
-use std::any::{Any, TypeId};
+use std::{
+    any::{Any, TypeId},
+    cell::{Ref, RefMut},
+    marker::PhantomData,
+    ops::{Deref, DerefMut},
+    sync::atomic::Ordering,
+};
 
 use frui_macros::sealed;
 
-use crate::macro_exports::Context;
+use crate::{app::tree::WidgetNodeRef, macro_exports::Context, prelude::Widget};
 
-use super::{BuildContext, _BuildContext};
+use super::{BuildContext, StateGuard, StateGuardMut, _BuildContext, STATE_UPDATE_SUPRESSED};
 
 pub trait WidgetState: Sized {
     type State: 'static;
@@ -74,3 +80,38 @@ impl<T: WidgetState> WidgetStateOS for T {
         T::unmount(&self, ctx)
     }
 }
+
+pub trait CtxStateExt<W: Widget> {
+    #[doc(hidden)]
+    fn node(&self) -> &WidgetNodeRef;
+
+    fn state(&self) -> StateGuard<W::State>
+    where
+        W: WidgetState,
+    {
+        StateGuard {
+            guard: Ref::map(self.node().borrow(), |node| node.state.deref()),
+            _p: PhantomData,
+        }
+    }
+
+    fn state_mut(&self) -> StateGuardMut<W::State>
+    where
+        W: WidgetState,
+    {
+        if !STATE_UPDATE_SUPRESSED.load(Ordering::SeqCst) {
+            self.node().mark_dirty();
+        }
+
+        StateGuardMut {
+            guard: RefMut::map(self.node().borrow_mut(), |node| node.state.deref_mut()),
+            _p: PhantomData,
+        }
+    }
+}
+
+// impl<W: Widget> CtxStateExt<W> for _BuildContext<'_, W> {
+//     fn node(&self) -> &WidgetNodeRef {
+//         &self.node
+//     }
+// }
