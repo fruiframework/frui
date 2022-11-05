@@ -1,4 +1,7 @@
-use druid_shell::{kurbo::Point, MouseEvent};
+use druid_shell::{
+    kurbo::{Affine, Point},
+    MouseEvent,
+};
 
 #[derive(Debug, Clone)]
 pub enum PointerEvent {
@@ -28,7 +31,12 @@ impl PointerEvent {
         }
     }
 
-    pub(crate) fn clone_at(&self, pos: Point) -> Self {
+    pub fn transform(&self, affine: &Affine) -> Self {
+        let pos = *affine * self.pos();
+        self.clone_at(pos)
+    }
+
+    pub fn clone_at(&self, pos: Point) -> Self {
         let mut r = self.clone();
 
         match &mut r {

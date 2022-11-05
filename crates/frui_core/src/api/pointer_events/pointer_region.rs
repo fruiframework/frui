@@ -119,22 +119,6 @@ where
     PEX: FnPointerExit,
     CHILD: Widget,
 {
-    fn hit_test<'a>(
-        &'a self,
-        ctx: &'a mut HitTestCtx<Self>,
-        point: druid_shell::kurbo::Point,
-    ) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
-                if child.hit_test(point) {
-                    return true;
-                }
-            }
-        }
-
-        false
-    }
-
     fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent, out: bool) {
         // let hovered = ctx.use_state(|| false);
         // - hovered.set(v) calls RefCell::borrow_mut and replaces stuff.
