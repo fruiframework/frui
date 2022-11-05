@@ -27,7 +27,7 @@ impl ViewWidget for Counter {
         Transform(
             // Affine::default(),
             Affine::translate((child_width / 2., child_height / 2.))
-                * Affine::rotate(std::f64::consts::FRAC_PI_4)
+                * Affine::rotate(std::f64::consts::FRAC_PI_8)
                 * Affine::translate((-child_width / 2., -child_height / 2.)),
             Column::builder()
                 .space_between(60.0)
@@ -39,18 +39,23 @@ impl ViewWidget for Counter {
                     Text::new(ctx.state().to_string())
                         .size(150.0)
                         .weight(FontWeight::BOLD),
-                    Row::builder()
-                        .space_between(10.0) //
-                        .children((
-                            Button {
-                                label: Text::new("+").size(30.),
-                                on_click: || *ctx.state_mut() += 1,
-                            },
-                            Button {
-                                label: Text::new("-").size(30.),
-                                on_click: || *ctx.state_mut() -= 1,
-                            },
-                        )),
+                    PointerListener::builder()
+                        .on_pointer_down(|e| println!("{}", e.0.pos))
+                        .on_pointer_up(|e| println!("{}", e.0.pos))
+                        .child(
+                            Row::builder()
+                                .space_between(10.0) //
+                                .children((
+                                    Button {
+                                        label: Text::new("+").size(30.),
+                                        on_click: || *ctx.state_mut() += 1,
+                                    },
+                                    Button {
+                                        label: Text::new("-").size(30.),
+                                        on_click: || *ctx.state_mut() -= 1,
+                                    },
+                                )),
+                        ),
                 )),
         )
     }
@@ -65,11 +70,102 @@ fn main() {
 mod test {
     use super::*;
     use frui::{
-        app::runner::miri::MiriAppRunner,
+        app::runner::miri::MiriRunner,
         druid_shell::{Modifiers, MouseButtons, MouseEvent},
     };
 
-    fn mouse_event_default(pos: Point) -> MouseEvent {
+    static COUNT: std::sync::Mutex<isize> = std::sync::Mutex::new(0);
+
+    #[derive(ViewWidget)]
+    struct OnlyButtons;
+
+    impl WidgetState for OnlyButtons {
+        type State = isize;
+
+        fn create_state(&self) -> Self::State {
+            0
+        }
+    }
+
+    impl ViewWidget for OnlyButtons {
+        fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+            *COUNT.lock().unwrap() = *ctx.state();
+
+            Row::builder().space_between(10.0).children((
+                Button {
+                    label: (),
+                    on_click: || *ctx.state_mut() += 1,
+                },
+                Button {
+                    label: (),
+                    on_click: || *ctx.state_mut() -= 1,
+                },
+            ))
+        }
+    }
+
+    #[test]
+    pub fn run_example_under_miri() {
+        let mut runner = MiriRunner::new(OnlyButtons);
+
+        runner.size(frui::druid_shell::kurbo::Size {
+            width: 500.,
+            height: 400.,
+        });
+
+        click_plus(&mut runner);
+        fake_click_plus(&mut runner);
+
+        assert_eq!(*COUNT.lock().unwrap(), 1);
+
+        click_minus(&mut runner);
+        fake_click_minus(&mut runner);
+
+        assert_eq!(*COUNT.lock().unwrap(), 0);
+    }
+
+    fn click_plus(runner: &mut MiriRunner) {
+        let (x, y) = (20.0, 20.0);
+
+        runner.mouse_move(&mdef(Point::new(x, y)));
+        runner.mouse_down(&mdef(Point::new(x, y)));
+        runner.mouse_up(&mdef(Point::new(x, y)));
+        runner.update(false);
+    }
+
+    fn click_minus(runner: &mut MiriRunner) {
+        let (x, y) = (80.0, 40.0);
+
+        runner.mouse_move(&mdef(Point::new(x, y)));
+        runner.mouse_down(&mdef(Point::new(x, y)));
+        runner.mouse_up(&mdef(Point::new(x, y)));
+        runner.update(false);
+    }
+
+    fn fake_click_plus(runner: &mut MiriRunner) {
+        let (x, y) = (20.0, 20.0);
+        let (x2, y2) = (20.0, 100.0);
+
+        runner.mouse_move(&mdef(Point::new(x, y)));
+        runner.mouse_down(&mdef(Point::new(x, y)));
+        runner.mouse_move(&mdef(Point::new(x2, y2)));
+        runner.mouse_up(&mdef(Point::new(x2, y2)));
+        runner.update(false);
+    }
+
+    fn fake_click_minus(runner: &mut MiriRunner) {
+        let (x, y) = (80.0, 40.0);
+        let (x2, y2) = (80.0, 100.0);
+
+        runner.mouse_move(&mdef(Point::new(x, y)));
+        runner.mouse_down(&mdef(Point::new(x, y)));
+        runner.mouse_move(&mdef(Point::new(x2, y2)));
+        runner.mouse_up(&mdef(Point::new(x2, y2)));
+        runner.update(false);
+    }
+
+    /// Default mouse event.
+    fn mdef(pos: Point) -> MouseEvent {
         MouseEvent {
             pos,
             buttons: MouseButtons::new(),
@@ -78,16 +174,6 @@ mod test {
             focus: false,
             button: MouseButton::Left,
             wheel_delta: Vec2::default(),
-        }
-    }
-
-    #[test]
-    pub fn run_example_under_miri() {
-        let mut runner = MiriAppRunner::new(Counter);
-
-        for _ in 0..4 {
-            runner.mouse_down(&mouse_event_default(Point::new(0., 0.)));
-            runner.update();
         }
     }
 }

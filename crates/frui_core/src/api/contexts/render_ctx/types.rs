@@ -146,6 +146,13 @@ pub struct Constraints {
 }
 
 impl Constraints {
+    pub fn min(&self) -> Size {
+        Size {
+            width: self.min_width,
+            height: self.min_height,
+        }
+    }
+
     pub fn max(&self) -> Size {
         Size {
             width: self.max_width,

@@ -1,23 +1,22 @@
-use std::{borrow::Cow, marker::PhantomData};
+use std::{borrow::Cow, marker::PhantomData, sync::Mutex};
 
 use druid_shell::{
-    piet::{
-        Color,
-        CoreGraphicsImage,
-        CoreGraphicsText,
-        CoreGraphicsTextLayout,
-        IntoBrush,
-        PietText,
-    },
+    piet::{CoreGraphicsImage, CoreGraphicsText, CoreGraphicsTextLayout, IntoBrush, PietText},
     Cursor,
     IdleToken,
 };
+
+pub static REQUEST_ANIM_FRAME: Mutex<bool> = Mutex::new(false);
+
+pub static SCHEDULE_IDLE: Mutex<Vec<IdleToken>> = Mutex::new(Vec::new());
 
 /// Placeholder for [`IdleHandle`](druid_shell::IdleHandle) that allows us to test Frui in Miri.
 pub struct IdleHandle {}
 
 impl IdleHandle {
-    pub fn schedule_idle(&self, _token: IdleToken) {}
+    pub fn schedule_idle(&self, token: IdleToken) {
+        SCHEDULE_IDLE.lock().unwrap().push(token)
+    }
 }
 
 /// Placeholder for [`Application`](druid_shell::Application) that allows us to test Frui in Miri.
@@ -36,7 +35,9 @@ impl Application {
 pub struct WindowHandle {}
 
 impl WindowHandle {
-    pub fn request_anim_frame(&mut self) {}
+    pub fn request_anim_frame(&mut self) {
+        *REQUEST_ANIM_FRAME.lock().unwrap() = true;
+    }
 
     pub fn get_idle_handle(&self) -> Option<IdleHandle> {
         Some(IdleHandle {})

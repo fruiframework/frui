@@ -100,27 +100,17 @@ impl HitTestCtxOS {
         self.hit_test_with_transform(point, affine)
     }
 
-    // Todo:
-    // Add `hit_test_with_paint_transform` by wrapping `canvas.save()` with
-    // `canvas.current_transform()` and save it to the RenderState.
+    // Todo: Add `hit_test_with_paint_transform` by defining our own
+    // `canvas.save()` which will check `canvas.current_transform()` and store
+    // it in the RenderState.
 
     /// Add comment.
     pub fn hit_test_with_transform(&mut self, point: Point, transform: Affine) -> bool {
-        let point_after = transform * point;
-
+        let mut ctx = self.clone();
         let widget = self.node.widget().clone();
 
-        // if point_after != point {
-        //     println!("hit_test_with_offset:");
-        //     println!("point before = {:?}", point);
-        //     println!("point after  = {:?}", point_after);
-        // }
-
-        let mut ctx = self.clone();
-        ctx.affine = transform * self.affine; // is affine getting aplied?
-
-        // println!("affine before   = {:?}", self.affine);
-        // println!("affine combined = {:?}", ctx.affine);
+        let point_after = transform * point;
+        ctx.affine = transform * self.affine;
 
         widget.raw().hit_test_os(ctx, point_after)
     }

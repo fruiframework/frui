@@ -109,8 +109,8 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         let _: &mut TextRenderState = &mut ctx.rstate_mut();
 
         Size {
-            width: constraints.max().width,
-            height: constraints.max().height,
+            width: constraints.min().width,
+            height: constraints.min().height,
         }
     }
 
