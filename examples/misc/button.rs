@@ -15,16 +15,26 @@ pub struct Button<L: Widget, F: Fn()> {
 
 impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        PointerRegion::builder()
-            .on_enter(|e| log::info!("enter {}", e.0.pos))
-            .on_move(|e| log::info!("move {}", e.0.pos))
-            .on_exit(|e| log::info!("exit {}", e.0.pos))
+        // That's why PointerListener has PointerMove listener. Because until
+        // given registered widget receives PointerUp, that widget needs to
+        // receive PointerMove.
+
+        PointerListener::builder()
+            .on_pointer_down(|e| log::info!("down {}", e.0.pos))
+            .on_pointer_up(|e| log::info!("up {}", e.0.pos))
+            .on_pointer_scroll(|e| log::info!("scroll {}", e.0.pos))
             .child(
-                Container::builder()
-                    .width(WIDTH)
-                    .height(HEIGHT)
-                    .color(COLOR)
-                    .child(Center::child(&self.label)),
+                PointerRegion::builder()
+                    .on_enter(|e| log::info!("enter {}", e.0.pos))
+                    .on_move(|e| log::info!("move {}", e.0.pos))
+                    .on_exit(|e| log::info!("exit {}", e.0.pos))
+                    .child(
+                        Container::builder()
+                            .width(WIDTH)
+                            .height(HEIGHT)
+                            .color(COLOR)
+                            .child(Center::child(&self.label)),
+                    ),
             )
     }
 }

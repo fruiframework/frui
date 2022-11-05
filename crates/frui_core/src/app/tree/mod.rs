@@ -7,13 +7,13 @@ use std::{
     sync::Arc,
 };
 
-use druid_shell::{kurbo::Affine, IdleToken};
+use druid_shell::IdleToken;
 
 use crate::{
     api::{
         contexts::{render_ctx::AnyRenderContext, Context},
         local_key::LocalKeyAny,
-        pointer_events::{context::HitTestCtxOS, events::PointerEvent},
+        pointer_events::events::PointerEvent,
         IntoWidgetPtr,
         WidgetPtr,
     },
@@ -21,10 +21,15 @@ use crate::{
     prelude::{Constraints, Offset, PaintContext, Size},
 };
 
+use self::pointer_handler::PointerHandler;
+
+mod pointer_handler;
+
 pub(crate) struct WidgetTree {
     /// Root widget contains necessary configuration to support `InheritedWidget`s.
     /// Child of that dummy node is the actual root node.
     dummy_root: UnsafeCell<Box<WidgetNode>>,
+    pointer_handler: PointerHandler,
 }
 
 impl WidgetTree {
@@ -38,7 +43,10 @@ impl WidgetTree {
         // Make that root widget child of dummy node.
         unsafe { (&mut *dummy_root.children_ptr_mut()).push(root) };
 
-        Self { dummy_root }
+        Self {
+            dummy_root,
+            pointer_handler: PointerHandler::default(),
+        }
     }
 
     pub fn layout(&mut self, constraints: Constraints) {
@@ -50,50 +58,8 @@ impl WidgetTree {
     }
 
     pub fn handle_pointer_event(&mut self, event: PointerEvent) {
-        // Todo: match event kind and dispatch exit events.
-
-        // Todo: Change self.widget() to returns `&dyn RawWidget`.
-
-        let new_hit_entries: Rc<RefCell<HashMap<WidgetNodeRef, Affine>>> =
-            Rc::new(RefCell::default());
-
-        let ctx = HitTestCtxOS::new(self.root(), new_hit_entries.clone(), Affine::default());
-
-        self.root()
-            .widget()
-            .raw()
-            .hit_test_os(ctx.clone(), event.pos());
-
-        // println!("{:#?}", new_hit_entries.borrow());
-
-        for (node, affine) in new_hit_entries.borrow().iter() {
-            // Transform event position to local coordinates of child.
-            let pos = *affine * event.pos();
-            let event = event.clone_at(pos);
-
-            // match event {
-            //     PointerEvent::PointerMove(_) => todo!(),
-            //     PointerEvent::PointerUp(_) => todo!(),
-            //     PointerEvent::PointerDown(_) => todo!(),
-            //     PointerEvent::PointerScroll(_) => todo!(),
-            // }
-
-            // println!("WidgetTree::handle_pointer_event:");
-            // println!("affine     = {:?}", affine);
-            // println!("pos before = {}", pos_before);
-            // println!("pos after  = {}", event.pos());
-
-            // Problem: Button should register pointer moves I think, even if it
-            // is outside of the hit area; But for sure, it has to register the
-            // PointerUp event outside of the are.
-
-            let ctx =
-                HitTestCtxOS::new(node.clone(), Rc::new(RefCell::default()), Affine::default());
-
-            node.widget()
-                .raw()
-                .handle_event_os(ctx.clone(), &event, false);
-        }
+        let root = self.root();
+        self.pointer_handler.handle_pointer_event(root, event)
     }
 
     /// Returns the root widget node, extracting it from the dummy node.
@@ -106,6 +72,7 @@ impl Default for WidgetTree {
     fn default() -> Self {
         Self {
             dummy_root: WidgetNode::default(),
+            pointer_handler: Default::default(),
         }
     }
 }

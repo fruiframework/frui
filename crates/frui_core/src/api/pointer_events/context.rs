@@ -60,12 +60,12 @@ pub struct HitTestCtxOS {
 
 impl HitTestCtxOS {
     pub(crate) fn new(
-        node: WidgetNodeRef,
+        node: &WidgetNodeRef,
         hit_entries: Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>,
         affine: Affine,
     ) -> HitTestCtxOS {
         Self {
-            node,
+            node: node.clone(),
             hit_entries,
             affine,
         }

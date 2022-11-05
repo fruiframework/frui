@@ -54,26 +54,14 @@ impl<T> HitTestOS for T {
         // Todo : Rename debug+name-short to debug-name, and debug-name to type-name.
 
         if ctx.layout_box().contains(point) {
-            // We have to check for this, unless you want to implement
-            // `hit_test` for every single leaf widget.
-            if ctx.children().len() == 0 {
-                return true;
-            }
-
-            // Last issue before implementing PointerUp, PointerEnter, PointerExit:
-            // The passing implementation does not work ideally --
-            //
-            // Following?
-            if ctx.children().len() == 1 {
-                ctx.child(0).hit_test_with_paint_offset(point);
-                return true;
-            }
-
             for mut child in ctx.children() {
                 if child.hit_test_with_paint_offset(point) {
+                    // We can return early.
                     return true;
                 }
             }
+
+            return true;
         }
 
         false
