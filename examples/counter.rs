@@ -25,10 +25,10 @@ impl ViewWidget for Counter {
         let child_height = 400.;
 
         Transform(
-            Affine::default(),
-            // Affine::translate((child_width / 2., child_height / 2.))
-            //     * Affine::rotate(std::f64::consts::FRAC_PI_4)
-            //     * Affine::translate((-child_width / 2., -child_height / 2.)),
+            // Affine::default(),
+            Affine::translate((child_width / 2., child_height / 2.))
+                * Affine::rotate(std::f64::consts::FRAC_PI_4)
+                * Affine::translate((-child_width / 2., -child_height / 2.)),
             Column::builder()
                 .space_between(60.0)
                 .main_axis_size(MainAxisSize::Max)
@@ -36,19 +36,9 @@ impl ViewWidget for Counter {
                 .main_axis_alignment(MainAxisAlignment::Center)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
-                    DebugContainer::child(
-                        PointerListener::builder()
-                            .on_pointer_down(|e| log::info!("down ({}, {})", e.0.pos.x, e.0.pos.y))
-                            .on_pointer_up(|e| log::info!("up ({}, {})", e.0.pos.x, e.0.pos.y))
-                            .on_pointer_scroll(|e| {
-                                log::info!("scroll ({}, {})", e.0.pos.x, e.0.pos.y)
-                            })
-                            .child(
-                                Text::new(ctx.state().to_string())
-                                    .size(150.0)
-                                    .weight(FontWeight::BOLD),
-                            ),
-                    ),
+                    Text::new(ctx.state().to_string())
+                        .size(150.0)
+                        .weight(FontWeight::BOLD),
                     Row::builder()
                         .space_between(10.0) //
                         .children((

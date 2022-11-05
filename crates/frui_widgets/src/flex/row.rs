@@ -33,7 +33,7 @@ impl Row<()> {
     }
 }
 
-impl<WidgetList_: WidgetList> Row<WidgetList_> {
+impl<WL: WidgetList> Row<WL> {
     /// List of children widgets to be laid out by the [`Row`].
     ///
     /// # Note
@@ -105,16 +105,16 @@ impl<WidgetList_: WidgetList> Row<WidgetList_> {
     }
 }
 
-pub struct ColumnRenderState {
+pub struct RowRenderState {
     initial_offset_x: f64,
     space_between_x: f64,
 }
 
 impl<T: WidgetList> RenderState for Row<T> {
-    type State = ColumnRenderState;
+    type State = RowRenderState;
 
     fn create_state(&self) -> Self::State {
-        ColumnRenderState {
+        RowRenderState {
             initial_offset_x: 0.,
             space_between_x: 0.,
         }
@@ -234,21 +234,5 @@ impl<T: WidgetList> RenderWidget for Row<T> {
             child.paint(canvas, &offset);
             offset_x += child.size().width + space_between_x;
         }
-    }
-}
-
-impl<T: WidgetList> HitTest for Row<T> {
-    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
-                // We don't transform children widgets apart from simple offset
-                // translation, so we can use `hit_test_with_paint_offset`.
-                if child.hit_test_with_paint_offset(point) {
-                    return true;
-                }
-            }
-        }
-
-        false
     }
 }

@@ -4,7 +4,6 @@ use self::implementers::{RawWidget, WidgetDerive};
 
 pub(crate) mod any_ext;
 pub(crate) mod contexts;
-pub(crate) mod events;
 pub(crate) mod implementers;
 pub(crate) mod impls;
 pub(crate) mod local_key;

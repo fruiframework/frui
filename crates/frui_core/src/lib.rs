@@ -31,7 +31,6 @@ pub mod prelude {
                     Size,
                 },
             },
-            events::{Event, WidgetEvent},
             implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
             impls::BoxedWidget,
             pointer_events::*,
