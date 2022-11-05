@@ -1,6 +1,6 @@
 use druid_shell::{IdleToken, KeyEvent, MouseEvent};
 
-pub mod handler;
+pub mod window_handler;
 
 #[cfg(feature = "miri")]
 pub mod miri;

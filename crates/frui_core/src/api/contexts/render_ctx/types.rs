@@ -2,10 +2,21 @@ use std::ops::{AddAssign, Sub, SubAssign};
 
 use druid_shell::kurbo::Point;
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Offset {
     pub x: f64,
     pub y: f64,
+}
+
+impl Sub for Offset {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
 }
 
 impl From<Offset> for Point {
@@ -48,6 +59,10 @@ impl Size {
 
     pub fn aspect_ratio(&self) -> f64 {
         self.width / self.height
+    }
+
+    pub fn contains(&self, point: Point) -> bool {
+        point.x >= 0. && point.y >= 0. && point.x <= self.width && point.y <= self.height
     }
 }
 
@@ -131,6 +146,13 @@ pub struct Constraints {
 }
 
 impl Constraints {
+    pub fn min(&self) -> Size {
+        Size {
+            width: self.min_width,
+            height: self.min_height,
+        }
+    }
+
     pub fn max(&self) -> Size {
         Size {
             width: self.max_width,

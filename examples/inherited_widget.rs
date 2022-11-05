@@ -133,20 +133,20 @@ fn main() {
 mod test {
     use super::*;
     use frui::{
-        app::runner::miri::MiriAppRunner,
+        app::runner::miri::MiriRunner,
         druid_shell::{keyboard_types::Key, Modifiers},
     };
 
     #[test]
     pub fn inherited_widget() {
-        let mut runner = MiriAppRunner::new(InheritedSwitch { child: App });
+        let mut runner = MiriRunner::new(InheritedSwitch { child: App });
 
         for _ in 0..4 {
-            runner.send_keyboard_event(KeyEvent::for_test(
+            runner.key_down(KeyEvent::for_test(
                 Modifiers::default(),
                 Key::Character(" ".into()),
             ));
-            runner.update();
+            runner.update(true);
         }
     }
 }
