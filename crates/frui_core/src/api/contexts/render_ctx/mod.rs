@@ -5,7 +5,7 @@ use std::{
     sync::atomic::Ordering,
 };
 
-use druid_shell::{kurbo::Point, IdleToken};
+use druid_shell::IdleToken;
 
 use super::build_ctx::STATE_UPDATE_SUPRESSED;
 use crate::{
@@ -104,10 +104,6 @@ impl<'a, T> _RenderContext<'a, T> {
     pub fn size(&self) -> Size {
         self.ctx.size()
     }
-
-    pub fn point_in_layout_bounds(&self, point: Point) -> bool {
-        self.ctx.point_in_layout_rect(point)
-    }
 }
 
 pub struct ChildContext<'a> {
@@ -133,10 +129,6 @@ impl<'a> ChildContext<'a> {
 
     pub fn size(&self) -> Size {
         self.ctx.size()
-    }
-
-    pub fn point_in_layout_rect(&self, point: Point) -> bool {
-        self.ctx.point_in_layout_rect(point)
     }
 
     pub fn try_parent_data<T: 'static>(&self) -> Option<Ref<T>> {
@@ -217,12 +209,7 @@ impl AnyRenderContext {
 
         // Update local offset of this node.
         let local_offset = self.offset - self.parent_offset;
-        // println!("{:?} = {}", local_offset, self.node.debug_name_short());
         self.node.borrow_mut().render_data.local_offset = local_offset;
-
-        // if self.node.debug_name_short() == "PointerListener" {
-        //     print!("");
-        // }
 
         self.node.widget().clone().raw().paint(self, piet, offset);
     }
@@ -230,6 +217,13 @@ impl AnyRenderContext {
     pub fn child(&self, index: usize) -> ChildContext {
         self.try_child(index)
             .expect("specified node didn't have any children")
+    }
+
+    pub fn children(&mut self) -> ChildrenIter {
+        ChildrenIter {
+            child_idx: 0,
+            parent_ctx: self,
+        }
     }
 
     fn try_child(&self, index: usize) -> Option<ChildContext> {
@@ -243,23 +237,8 @@ impl AnyRenderContext {
         Some(ChildContext::new(ctx))
     }
 
-    pub fn children(&mut self) -> ChildrenIter {
-        ChildrenIter {
-            child_idx: 0,
-            parent_ctx: self,
-        }
-    }
-
     fn size(&self) -> Size {
         self.node.borrow().render_data.size
-    }
-
-    fn point_in_layout_rect(&self, point: Point) -> bool {
-        let Point { x, y } = point;
-        let Size { width, height } = self.size();
-
-        // Check if that point is in the widget bounds computed during layout.
-        x >= 0.0 && x <= width && y >= 0.0 && y <= height
     }
 }
 

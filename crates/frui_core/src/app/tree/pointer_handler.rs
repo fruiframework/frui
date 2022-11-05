@@ -68,8 +68,6 @@ impl PointerHandler {
             }
             _ => unreachable!(),
         }
-
-        // Todo: Make self.widget() return `&dyn RawWidget`.
     }
 
     fn hit_test(

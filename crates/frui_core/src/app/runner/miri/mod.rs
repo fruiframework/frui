@@ -69,7 +69,6 @@ impl MiriRunner {
 
     //
     // Pass window events:
-    //
 
     pub fn mouse_down(&mut self, event: &MouseEvent) {
         self.handler.mouse_down(&event);

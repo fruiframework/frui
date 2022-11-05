@@ -14,8 +14,7 @@ use crate::{
         contexts::{render_ctx::AnyRenderContext, Context},
         local_key::LocalKeyAny,
         pointer_events::events::PointerEvent,
-        IntoWidgetPtr,
-        WidgetPtr,
+        IntoWidgetPtr, WidgetPtr,
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
     prelude::{Constraints, Offset, PaintContext, Size},
@@ -144,7 +143,6 @@ impl WidgetNode {
                 node: WidgetNodeRef {
                     is_alive: Rc::new(Cell::new(true)),
                     ptr: std::ptr::null_mut(),
-                    debug_name: "", // We swap it later.
                 },
             },
             inner: RefCell::new(WidgetInner {
@@ -166,7 +164,6 @@ impl WidgetNode {
         );
 
         context_ref_mut.node.ptr = this.node_ptr_mut();
-        context_ref_mut.node.debug_name = widget.raw().debug_name_short();
 
         let node_ref = WidgetNode::node_ref(&this);
 
@@ -492,8 +489,6 @@ impl WidgetNode {
 pub struct WidgetNodeRef {
     is_alive: Rc<Cell<bool>>,
     ptr: *mut WidgetNode,
-    // Todo: Remove
-    debug_name: &'static str,
 }
 
 impl WidgetNodeRef {
@@ -774,7 +769,6 @@ impl WidgetNode {
                 node: WidgetNodeRef {
                     is_alive: Rc::new(Cell::new(true)),
                     ptr: std::ptr::null_mut(),
-                    debug_name: "", // <-- We swap it later.
                 },
             },
             inner: RefCell::new(WidgetInner {
@@ -797,8 +791,6 @@ impl WidgetNode {
         unsafe {
             // Set it inside the Context.
             (&mut *this.context_ptr_mut()).node.ptr = this.node_ptr_mut(); // <-- Override that null.
-            (&mut *this.context_ptr_mut()).node.debug_name =
-                (&*this.widget_ptr()).raw().debug_name_short();
         };
 
         this

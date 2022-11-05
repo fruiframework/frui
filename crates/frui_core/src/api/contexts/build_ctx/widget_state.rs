@@ -110,8 +110,8 @@ pub trait CtxStateExt<W: Widget> {
     }
 }
 
-impl<W: Widget> CtxStateExt<W> for _BuildContext<'_, W> {
-    fn node(&self) -> &WidgetNodeRef {
-        &self.node
-    }
-}
+// impl<W: Widget> CtxStateExt<W> for _BuildContext<'_, W> {
+//     fn node(&self) -> &WidgetNodeRef {
+//         &self.node
+//     }
+// }

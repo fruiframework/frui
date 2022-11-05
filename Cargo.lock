@@ -309,7 +309,6 @@ dependencies = [
  "proc-macro-crate 1.2.1",
  "proc-macro2",
  "quote",
- "rand",
  "syn",
 ]
 
