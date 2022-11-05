@@ -1,5 +1,3 @@
-use std::cell::Cell;
-
 use frui::prelude::*;
 
 const WIDTH: f64 = 60.0;
@@ -13,86 +11,73 @@ pub struct Button<L: Widget, F: Fn()> {
     pub on_click: F,
 }
 
+pub struct ButtonState {
+    is_pressed: bool,
+    is_hovered: bool,
+}
+
+impl<L: Widget, F: Fn()> WidgetState for Button<L, F> {
+    type State = ButtonState;
+
+    fn create_state(&self) -> Self::State {
+        ButtonState {
+            is_pressed: false,
+            is_hovered: false,
+        }
+    }
+}
+
 impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        // That's why PointerListener has PointerMove listener. Because until
-        // given registered widget receives PointerUp, that widget needs to
-        // receive PointerMove.
+    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+        let (is_hovered, is_pressed) = (ctx.state().is_hovered, ctx.state().is_pressed);
+
+        let color = if is_pressed {
+            COLOR.darken().darken()
+        } else if is_hovered {
+            COLOR.darken()
+        } else {
+            COLOR
+        };
 
         PointerListener::builder()
-            .on_pointer_down(|e| log::info!("down {}", e.0.pos))
-            .on_pointer_up(|e| log::info!("up {}", e.0.pos))
-            .on_pointer_scroll(|e| log::info!("scroll {}", e.0.pos))
+            .on_pointer_down(|_| ctx.state_mut().is_pressed = true)
+            .on_pointer_up(|_| {
+                ctx.state_mut().is_pressed = false;
+
+                if ctx.state().is_hovered {
+                    (self.on_click)();
+                }
+            })
             .child(
                 PointerRegion::builder()
-                    .on_enter(|e| log::info!("enter {}", e.0.pos))
-                    .on_move(|e| log::info!("move {}", e.0.pos))
-                    .on_exit(|e| log::info!("exit {}", e.0.pos))
+                    .on_enter(|_| ctx.state_mut().is_hovered = true)
+                    .on_exit(|_| ctx.state_mut().is_hovered = false)
                     .child(
                         Container::builder()
                             .width(WIDTH)
                             .height(HEIGHT)
-                            .color(COLOR)
+                            .color(color)
                             .child(Center::child(&self.label)),
                     ),
             )
     }
 }
 
-pub struct ButtonRenderState {
-    pub(crate) is_pressed: Cell<bool>,
-    pub(crate) is_hovered: Cell<bool>,
+trait ColorExt: Sized {
+    fn darken(&self) -> Color;
 }
 
-impl<L: Widget, F: Fn()> RenderState for Button<L, F> {
-    type State = ButtonRenderState;
+impl ColorExt for Color {
+    fn darken(&self) -> Color {
+        let darken_amount = 0.2;
 
-    fn create_state(&self) -> Self::State {
-        ButtonRenderState {
-            is_pressed: Cell::new(false),
-            is_hovered: Cell::new(false),
-        }
-    }
-}
+        let (mut r, mut g, mut b, a) = self.as_rgba8();
 
-impl<L: Widget, F: Fn()> WidgetEvent for Button<L, F> {
-    fn handle_event(&self, ctx: RenderContext<Self>, event: &Event) -> bool {
-        match event {
-            Event::MouseDown(e) => {
-                if let MouseButton::Left = e.button {
-                    if ctx.point_in_layout_bounds(e.pos) {
-                        ctx.rstate().is_pressed.set(true);
-                    }
-                }
-            }
-            Event::MouseUp(e) => {
-                if let MouseButton::Left = e.button {
-                    if ctx.rstate().is_pressed.replace(false) {
-                        // Call user-defined callback.
-                        (self.on_click)();
-                    }
-                }
-            }
-            Event::MouseMove(e) => {
-                if ctx.point_in_layout_bounds(e.pos) {
-                    if !ctx.rstate().is_hovered.replace(true) {
-                        // Repaint only if the hover state changed.
-                        ctx.schedule_layout();
-                    }
-                } else {
-                    if ctx.rstate().is_hovered.replace(false) {
-                        // Repaint only if the hover state changed.
-                        ctx.schedule_layout();
-                    }
-                }
-            }
-            _ => {}
-        };
+        // User-chosen color darkened.
+        r = (r as f32 * (1. - darken_amount)) as u8;
+        g = (g as f32 * (1. - darken_amount)) as u8;
+        b = (b as f32 * (1. - darken_amount)) as u8;
 
-        if let Event::MouseDown(_) | Event::MouseUp(_) | Event::MouseMove(_) = event {
-            true
-        } else {
-            false
-        }
+        Color::rgba8(r, g, b, a)
     }
 }

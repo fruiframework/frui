@@ -119,7 +119,7 @@ where
     PEX: FnPointerExit,
     CHILD: Widget,
 {
-    fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent, out: bool) {
+    fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent) {
         match event {
             PointerEvent::PointerMove(e) => {
                 if *ctx.state() {

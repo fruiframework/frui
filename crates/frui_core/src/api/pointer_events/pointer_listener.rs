@@ -124,7 +124,7 @@ where
         false
     }
 
-    fn handle_event(&self, _: &mut HitTestCtx<Self>, event: &PointerEvent, _: bool) {
+    fn handle_event(&self, _: &mut HitTestCtx<Self>, event: &PointerEvent) {
         match event {
             PointerEvent::PointerDown(e) => self.on_pointer_down.call(e),
             PointerEvent::PointerUp(e) => self.on_pointer_up.call(e),

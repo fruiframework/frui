@@ -34,19 +34,14 @@ pub trait HitTest: Sized {
         false
     }
 
-    /// - `out` indicates if event occured outside of the bounds of widget. That
-    /// might be the case for `PointerMove` or `PointerUp` events.
-    ///
-    /// `PointerMove` event will be delivered once after `hit_test` returned
-    /// `false` for this widget. This is used to detect "pointer exit".
     #[allow(unused_variables)]
-    fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent, out: bool) {}
+    fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent) {}
 }
 
 #[sealed(crate)]
 pub trait HitTestOS {
     fn hit_test_os(&self, ctx: HitTestCtxOS, point: Point) -> bool;
-    fn handle_event_os(&self, ctx: HitTestCtxOS, event: &PointerEvent, out: bool);
+    fn handle_event_os(&self, ctx: HitTestCtxOS, event: &PointerEvent);
 }
 
 impl<T> HitTestOS for T {
@@ -67,7 +62,7 @@ impl<T> HitTestOS for T {
         false
     }
 
-    default fn handle_event_os(&self, _: HitTestCtxOS, _: &PointerEvent, _: bool) {}
+    default fn handle_event_os(&self, _: HitTestCtxOS, _: &PointerEvent) {}
 }
 
 impl<T: HitTest> HitTestOS for T {
@@ -86,9 +81,9 @@ impl<T: HitTest> HitTestOS for T {
         }
     }
 
-    fn handle_event_os(&self, ctx: HitTestCtxOS, event: &PointerEvent, out: bool) {
+    fn handle_event_os(&self, ctx: HitTestCtxOS, event: &PointerEvent) {
         let ctx = &mut HitTestCtx::new(ctx);
 
-        T::handle_event(&self, ctx, event, out)
+        T::handle_event(&self, ctx, event)
     }
 }

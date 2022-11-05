@@ -84,8 +84,6 @@ impl PointerHandler {
 
     fn handle_event(&self, node: &WidgetNodeRef, event: PointerEvent) {
         let ctx = HitTestCtxOS::new(node, Rc::new(RefCell::default()), Affine::default());
-        node.widget()
-            .raw()
-            .handle_event_os(ctx.clone(), &event, false);
+        node.widget().raw().handle_event_os(ctx.clone(), &event);
     }
 }
