@@ -1,3 +1,5 @@
+#![feature(proc_macro_diagnostic)]
+
 use proc_macro::TokenStream;
 
 mod macros;
@@ -21,7 +23,7 @@ pub fn copy_trait_as(args: TokenStream, body: TokenStream) -> TokenStream {
 }
 
 /// Derives builder method for every field.
-#[proc_macro_derive(Builder)]
+#[proc_macro_derive(Builder, attributes(alias_generic))]
 pub fn derive_builder(tokens: TokenStream) -> TokenStream {
     macros::builder::derive_builder(tokens)
 }

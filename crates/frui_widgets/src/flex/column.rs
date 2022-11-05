@@ -236,19 +236,3 @@ impl<WL: WidgetList> RenderWidget for Column<WL> {
         }
     }
 }
-
-impl<WL: WidgetList> HitTest for Column<WL> {
-    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
-                // We don't transform children widgets apart from simple offset
-                // translation, so we can use `hit_test_with_paint_offset`.
-                if child.hit_test_with_paint_offset(point) {
-                    return true;
-                }
-            }
-        }
-
-        false
-    }
-}

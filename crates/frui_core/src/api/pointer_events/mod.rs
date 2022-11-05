@@ -14,21 +14,17 @@ pub use pointer_listener::PointerListener;
 pub use pointer_region::PointerRegion;
 
 pub trait HitTest: Sized {
-    // Todo: In druid apply transformations to square, then render small dot and
-    // try applying those transformations how you would do in Frui to see if you
-    // can multiply matricies to later transform exit event by multiplying sum
-    // transformation.
     fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
         if ctx.layout_box().contains(point) {
-            if ctx.children().len() == 0 {
-                return true;
-            }
-
             for mut child in ctx.children() {
                 if child.hit_test_with_paint_offset(point) {
+                    // Don't hit test other children if one already handled that
+                    // event.
                     return true;
                 }
             }
+
+            return true;
         }
 
         false
@@ -46,15 +42,11 @@ pub trait HitTestOS {
 
 impl<T> HitTestOS for T {
     default fn hit_test_os(&self, mut ctx: HitTestCtxOS, point: Point) -> bool {
-        // Todo : Rename debug+name-short to debug-name, and debug-name to type-name.
-
         if ctx.layout_box().contains(point) {
-            if ctx.children().len() == 0 {
-                return true;
-            }
-
             for mut child in ctx.children() {
                 if child.hit_test_with_paint_offset(point) {
+                    // Don't hit test other children if one already handled that
+                    // event.
                     return true;
                 }
             }

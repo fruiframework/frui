@@ -43,7 +43,14 @@ fn parse_fields(item: &ItemStruct) -> Vec<Field> {
     item.fields
         .iter()
         .map(|f| {
-            let ty = &f.ty;
+            let ty = f.ty.clone();
+
+            // Todo:
+            //
+            // if let Some(t) = is_type_alias(&f.attrs) {
+            //     ty = t;
+            // }
+
             let mut field = Field {
                 ty: quote!(#ty),
                 ident: f.ident.clone().unwrap(),
@@ -52,7 +59,7 @@ fn parse_fields(item: &ItemStruct) -> Vec<Field> {
                 generic_ret_ty: TokenStream::new(),
             };
 
-            if let Some(ty) = is_option_ty(f) {
+            if let Some(ty) = is_option_ty(&ty) {
                 field.ty = quote!(#ty);
                 field.is_option = true;
 
@@ -62,7 +69,7 @@ fn parse_fields(item: &ItemStruct) -> Vec<Field> {
                     field.generic_ret_ty = ret_ty;
                 }
             } else {
-                if let Some((arg_ty, ret_ty)) = is_generic(&f.ty, &item) {
+                if let Some((arg_ty, ret_ty)) = is_generic(&ty, &item) {
                     field.ty = arg_ty;
                     field.is_generic = true;
                     field.generic_ret_ty = ret_ty;
@@ -296,8 +303,8 @@ fn swap_param_for_impl(
     return tt;
 }
 
-fn is_option_ty(field: &syn::Field) -> Option<Type> {
-    if let Type::Path(p) = &field.ty {
+fn is_option_ty(ty: &Type) -> Option<Type> {
+    if let Type::Path(p) = ty {
         let type_ident = &p.path.segments.last().unwrap().ident;
 
         // Check type identifier.
@@ -317,3 +324,38 @@ fn is_option_ty(field: &syn::Field) -> Option<Type> {
 
     None
 }
+
+// Todo:
+//
+// /// Whether output type was aliased.
+// fn is_type_alias(attrs: &[syn::Attribute]) -> Option<Type> {
+//     for attr in attrs {
+//         if attr.path.to_token_stream().to_string() == "method_type" {
+//             let tokens = attr.tokens.clone().into();
+//             let r = syn::parse::<ExtractParen>(tokens).expect("incorrect alias");
+//             return Some(r.ty);
+//         }
+//     }
+
+//     None
+// }
+
+// struct ExtractParen {
+//     ty: Type,
+// }
+
+// impl Parse for ExtractParen {
+//     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+//         // (Fn(T))
+//         let input = &extract_paren(input)?;
+
+//         // Fn(T)
+//         Ok(ExtractParen { ty: input.parse()? })
+//     }
+// }
+
+// fn extract_paren<'a>(input: &'a ParseBuffer) -> syn::Result<ParseBuffer<'a>> {
+//     let content;
+//     let _: syn::token::Paren = parenthesized!(content in input);
+//     Ok(content)
+// }

@@ -14,8 +14,9 @@ use crate::{
 };
 
 /// This context allows to access state of given widget during hit testing (see
-/// [`CtxStateExt`] implementation below). Useful hit-testing methods are routed
-/// through [`HitTestCtxOS`] to which this structure derefs.
+/// [`CtxStateExt`] implementation below). Additionally, some methods useful for
+/// hit-testing are accessible through [`HitTestCtxOS`] to which this structure
+/// derefs.
 pub struct HitTestCtx<W> {
     pub(crate) inner: HitTestCtxOS,
     _p: PhantomData<W>,
