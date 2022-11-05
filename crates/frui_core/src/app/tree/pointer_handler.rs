@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use druid_shell::kurbo::Affine;
 
-use crate::prelude::{context::HitTestCtxOS, PointerEvent};
+use crate::prelude::{context::HitTestCtxOS, events::PointerExit, PointerEvent};
 
 use super::WidgetNodeRef;
 
@@ -33,18 +33,43 @@ impl PointerHandler {
                 }
             }
             PointerEvent::PointerScroll(_) => {
-                self.dispatch(root, event);
+                let results = HitTestResults::default();
+
+                self.hit_test(root, &results, &event);
+
+                for (node, affine) in results.borrow_mut().iter() {
+                    self.handle_event(&node, event.transform(affine));
+                }
             }
             PointerEvent::PointerMove(_) => {
-                // Dispatch almost directly.
+                let new_results = HitTestResults::default();
 
-                // Problem: Button should register pointer moves I think, even if it
-                // is outside of the hit area; But for sure, it has to register the
-                // PointerUp event outside of the are.
+                self.hit_test(root, &new_results, &event);
+
+                // Dispatch to all widgets that got hit.
+                for (node, affine) in new_results.borrow_mut().iter() {
+                    self.handle_event(&node, event.transform(affine));
+                }
+
+                // Dispatch to widgets that lost "hover status" by this event.
+                // Used to correctly dispatch PointerExit event.
+                for (node, affine) in self
+                    .pointer_hover_results_last
+                    .borrow_mut()
+                    .iter()
+                    .filter(|(last, _)| !new_results.borrow_mut().contains_key(last))
+                {
+                    let event = event.transform(affine).raw();
+                    let event = PointerEvent::PointerExit(PointerExit(event));
+                    self.handle_event(&node, event);
+                }
+
+                self.pointer_hover_results_last = new_results;
             }
+            _ => unreachable!(),
         }
 
-        // Todo: Change self.widget() to returns `&dyn RawWidget`.
+        // Todo: Make self.widget() return `&dyn RawWidget`.
     }
 
     fn hit_test(
@@ -62,16 +87,5 @@ impl PointerHandler {
         node.widget()
             .raw()
             .handle_event_os(ctx.clone(), &event, false);
-    }
-
-    /// Dispatches event to all widgets at event position.
-    fn dispatch(&mut self, root: WidgetNodeRef, event: PointerEvent) {
-        let results = HitTestResults::default();
-
-        self.hit_test(root, &results, &event);
-
-        for (node, affine) in results.borrow_mut().iter() {
-            self.handle_event(&node, event.transform(affine));
-        }
     }
 }
