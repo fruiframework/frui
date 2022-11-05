@@ -21,13 +21,12 @@ pub struct MiriRunner {
 impl MiriRunner {
     pub fn new<W: Widget + 'static>(widget: W) -> Self {
         // Enable debug logging:
-        TermLogger::init(
+        let _ = TermLogger::init(
             LevelFilter::Info,
             Config::default(),
             TerminalMode::Mixed,
             ColorChoice::AlwaysAnsi,
-        )
-        .unwrap();
+        );
 
         let mut window_handler = WindowHandler::new(widget);
 
