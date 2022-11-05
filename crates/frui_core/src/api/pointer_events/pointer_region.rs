@@ -120,30 +120,22 @@ where
     CHILD: Widget,
 {
     fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent, out: bool) {
-        // let hovered = ctx.use_state(|| false);
-        // - hovered.set(v) calls RefCell::borrow_mut and replaces stuff.
-        // - hovered.update(|v: &mut _| fn)
-        // - *hovered.borrow_mut()
-
         match event {
             PointerEvent::PointerMove(e) => {
-                if out {
-                    let hot = &mut *ctx.state_mut();
-                    *hot = false;
-
-                    self.on_exit.call(&PointerExit(e.0.clone()));
+                if *ctx.state() {
+                    self.on_move.call(&PointerMove(e.0.clone()));
                 } else {
-                    let is_hot = *ctx.state();
+                    // Pointer now hovers over this widget.
+                    *ctx.state_mut() = true;
 
-                    if !is_hot {
-                        let hot = &mut *ctx.state_mut();
-                        *hot = false;
-
-                        self.on_enter.call(&PointerEnter(e.0.clone()));
-                    } else {
-                        self.on_move.call(&PointerMove(e.0.clone()));
-                    }
+                    self.on_enter.call(&PointerEnter(e.0.clone()));
                 }
+            }
+            PointerEvent::PointerExit(e) => {
+                // Pointer no longer hovers over this widget.
+                *ctx.state_mut() = false;
+
+                self.on_exit.call(e);
             }
             _ => {}
         }

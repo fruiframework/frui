@@ -6,8 +6,9 @@ use druid_shell::{
 #[derive(Debug, Clone)]
 pub enum PointerEvent {
     PointerUp(PointerUp),
-    PointerMove(PointerMove),
     PointerDown(PointerDown),
+    PointerMove(PointerMove),
+    PointerExit(PointerExit),
     PointerScroll(PointerScroll),
 }
 
@@ -28,6 +29,7 @@ impl PointerEvent {
             PointerEvent::PointerUp(e) => e.0.pos,
             PointerEvent::PointerScroll(e) => e.0.pos,
             PointerEvent::PointerMove(e) => e.0.pos,
+            PointerEvent::PointerExit(e) => e.0.pos,
         }
     }
 
@@ -43,18 +45,31 @@ impl PointerEvent {
             PointerEvent::PointerUp(e) => {
                 e.0.pos = pos;
             }
-            PointerEvent::PointerMove(e) => {
-                e.0.pos = pos;
-            }
             PointerEvent::PointerDown(e) => {
                 e.0.pos = pos;
             }
             PointerEvent::PointerScroll(e) => {
                 e.0.pos = pos;
             }
+            PointerEvent::PointerMove(e) => {
+                e.0.pos = pos;
+            }
+            PointerEvent::PointerExit(e) => {
+                e.0.pos = pos;
+            }
         }
 
         r
+    }
+
+    pub(crate) fn raw(&self) -> MouseEvent {
+        match self.clone() {
+            PointerEvent::PointerUp(e) => e.0,
+            PointerEvent::PointerDown(e) => e.0,
+            PointerEvent::PointerMove(e) => e.0,
+            PointerEvent::PointerExit(e) => e.0,
+            PointerEvent::PointerScroll(e) => e.0,
+        }
     }
 }
 
