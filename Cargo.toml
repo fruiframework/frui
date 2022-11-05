@@ -27,5 +27,7 @@ rand = "0.8.5"
 [features]
 miri = ["frui_core/miri", "frui_widgets/miri"]
 
+# To run tests in examples with Miri, use one of the following commands:
+# 
 # MIRIFLAGS="-Zmiri-disable-isolation" cargo miri test --example [EXAMPLE] --features "miri"
 # MIRIFLAGS="-Zmiri-disable-isolation" cargo miri test --examples --features "miri"

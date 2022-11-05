@@ -49,9 +49,12 @@ impl<T> HitTestOS for T {
         // Todo : Rename debug+name-short to debug-name, and debug-name to type-name.
 
         if ctx.layout_box().contains(point) {
+            if ctx.children().len() == 0 {
+                return true;
+            }
+
             for mut child in ctx.children() {
                 if child.hit_test_with_paint_offset(point) {
-                    // We can return early.
                     return true;
                 }
             }
