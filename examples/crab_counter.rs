@@ -5,8 +5,9 @@
 
 use frui::prelude::*;
 
-mod misc;
-use misc::Button;
+mod button;
+
+use button::Button;
 
 #[derive(ViewWidget)]
 struct CrabCounter;
