@@ -1,6 +1,6 @@
 use crate::{
-    api::contexts::build_ctx::widget_state::CtxStateExt,
-    prelude::{BuildContext, ViewWidget, Widget, WidgetState},
+    api::contexts::render_ctx::ext::RenderExt,
+    prelude::{BuildContext, RenderState, ViewWidget, Widget},
 };
 
 use super::{events::*, HitTest, HitTestCtx};
@@ -31,7 +31,7 @@ where
     }
 }
 
-impl<PEN, PMV, PEX, CHILD> WidgetState for PointerRegion<PEN, PMV, PEX, CHILD>
+impl<PEN, PMV, PEX, CHILD> RenderState for PointerRegion<PEN, PMV, PEX, CHILD>
 where
     PEN: FnPointerEnter,
     PMV: FnPointerMove,
@@ -56,18 +56,18 @@ where
     fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent) {
         match event {
             PointerEvent::PointerMove(e) => {
-                if *ctx.state() {
+                if *ctx.render_state() {
                     self.on_move.call(&PointerMove(e.0.clone()));
                 } else {
                     // Pointer now hovers over this widget.
-                    *ctx.state_mut() = true;
+                    *ctx.render_state_mut() = true;
 
                     self.on_enter.call(&PointerEnter(e.0.clone()));
                 }
             }
             PointerEvent::PointerExit(e) => {
                 // Pointer no longer hovers over this widget.
-                *ctx.state_mut() = false;
+                *ctx.render_state_mut() = false;
 
                 self.on_exit.call(e);
             }
