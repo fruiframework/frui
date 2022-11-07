@@ -8,7 +8,7 @@ use std::{
 use druid_shell::kurbo::{Affine, Point};
 
 use crate::{
-    api::contexts::build_ctx::widget_state::CtxStateExt,
+    api::contexts::render_ctx::ext::RenderExt,
     app::tree::{WidgetNode, WidgetNodeRef},
     prelude::{Size, Widget},
 };
@@ -22,21 +22,7 @@ pub struct HitTestCtx<W> {
     _p: PhantomData<W>,
 }
 
-impl<W> std::ops::Deref for HitTestCtx<W> {
-    type Target = HitTestCtxOS;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-
-impl<W> std::ops::DerefMut for HitTestCtx<W> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
-    }
-}
-
-impl<W: Widget> CtxStateExt<W> for HitTestCtx<W> {
+impl<W: Widget> RenderExt<W> for HitTestCtx<W> {
     fn node(&self) -> &WidgetNodeRef {
         &self.inner.node
     }
@@ -142,5 +128,19 @@ impl<'a> Iterator for HitTestCtxIter<'a> {
         self.idx += 1;
 
         Some(r)
+    }
+}
+
+impl<W> std::ops::Deref for HitTestCtx<W> {
+    type Target = HitTestCtxOS;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl<W> std::ops::DerefMut for HitTestCtx<W> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
     }
 }

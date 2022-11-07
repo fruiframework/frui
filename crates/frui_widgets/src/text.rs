@@ -1,13 +1,7 @@
 use frui::{app::TEXT_FACTORY, prelude::*};
 
 use druid_shell::piet::{
-    kurbo::Point,
-    Color,
-    FontFamily,
-    FontWeight,
-    PietTextLayout,
-    Text as TextExt,
-    TextLayout,
+    kurbo::Point, Color, FontFamily, FontWeight, PietTextLayout, Text as TextExt, TextLayout,
     TextLayoutBuilder,
 };
 

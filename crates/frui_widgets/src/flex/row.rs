@@ -1,11 +1,7 @@
 use frui::prelude::*;
 
 use crate::{
-    widget_list::WidgetList,
-    CrossAxisAlignment,
-    CrossAxisSize,
-    MainAxisAlignment,
-    MainAxisSize,
+    widget_list::WidgetList, CrossAxisAlignment, CrossAxisSize, MainAxisAlignment, MainAxisSize,
 };
 
 use super::{compute_cross_axis_offset, compute_main_axis_offset, get_flex};

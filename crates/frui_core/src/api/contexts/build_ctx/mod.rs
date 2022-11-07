@@ -81,8 +81,8 @@ impl<'a, T> _BuildContext<'a, T> {
 }
 
 pub struct StateGuard<'a, T: 'static> {
-    guard: Ref<'a, dyn Any>,
-    _p: PhantomData<&'a T>,
+    pub(crate) guard: Ref<'a, dyn Any>,
+    pub(crate) _p: PhantomData<&'a T>,
 }
 
 impl<'a, T: 'static> Deref for StateGuard<'a, T> {
@@ -94,8 +94,8 @@ impl<'a, T: 'static> Deref for StateGuard<'a, T> {
 }
 
 pub struct StateGuardMut<'a, T: 'static> {
-    guard: RefMut<'a, dyn Any>,
-    _p: PhantomData<&'a T>,
+    pub(crate) guard: RefMut<'a, dyn Any>,
+    pub(crate) _p: PhantomData<&'a T>,
 }
 
 impl<'a, T: 'static> Deref for StateGuardMut<'a, T> {
