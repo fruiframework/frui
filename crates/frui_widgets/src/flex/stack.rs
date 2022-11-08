@@ -1,5 +1,5 @@
 use crate::alignment::{Alignment, AlignmentDirectional};
-use crate::{AlignmentGeometry, BoxLayoutData, LayoutData, TextDirection, WidgetList};
+use crate::{AlignmentGeometry, BoxLayoutData, TextDirection, WidgetList};
 
 use frui::prelude::*;
 
@@ -46,16 +46,6 @@ impl StackLayoutData {
             || self.left.is_some()
             || self.width.is_some()
             || self.height.is_some()
-    }
-}
-
-impl LayoutData for StackLayoutData {
-    fn layout_data(&self) -> &BoxLayoutData {
-        &self.base
-    }
-
-    fn layout_data_mut(&mut self) -> &mut BoxLayoutData {
-        &mut self.base
     }
 }
 
