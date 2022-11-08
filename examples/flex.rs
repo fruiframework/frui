@@ -13,13 +13,14 @@ impl ViewWidget for App {
             child: Flex {
                 children: (
                     Flexible {
-                        child: ColoredBox {
-                            child: Text::new("Hello world!"),
-                            color: Color::RED,
-                        },
+                        child: SizedBox::from_size(
+                            ColoredBox {
+                                child: Text::new("Hello world!"),
+                                color: Color::RED,
+                            }, Size::new(100.0, 100.0)
+                        ),
                         fit: FlexFit::Tight,
                         flex: 1,
-                        
                     },
                     Flexible {
                         child: ColoredBox {
@@ -35,14 +36,19 @@ impl ViewWidget for App {
                         child: Text::new("Hello world!"),
                         color: Color::GREEN,
                     }),
+                    SizedBox::from_size(
+                        ColoredBox {
+                            child: Text::new("Hello world!"),
+                            color: Color::BLUE,
+                        }, Size::new(100.0, 100.0))
                 ),
                 direction: Axis::Vertical,
                 main_axis_size: MainAxisSize::Max,
-                main_axis_alignment: MainAxisAlignment::Start,
+                main_axis_alignment: MainAxisAlignment::SpaceAround,
                 cross_axis_alignment: CrossAxisAlignment::Center,
                 text_direction: TextDirection::Ltr,
                 vertical_direction: VerticalDirection::Down,
-                spece_between: 0f64,
+                space_between: 20f64,
                 cross_axis_size: CrossAxisSize::Min,
             }
         }

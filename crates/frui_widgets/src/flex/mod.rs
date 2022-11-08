@@ -35,6 +35,7 @@ pub enum MainAxisAlignment {
     Center,
     End,
     SpaceBetween,
+    /// Leading space will not work with `MainAxisAlignment::SpaceAround` and `MainAxisAlignment::SpaceEvenly`
     SpaceAround,
     SpaceEvenly,
 }
