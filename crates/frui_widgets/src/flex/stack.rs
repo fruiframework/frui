@@ -148,10 +148,9 @@ impl Stack<(), AlignmentDirectional> {
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
     fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
-        child.try_parent_data::<StackLayoutData>().map_or_else(
-            || alignment.along(size - child_size),
-            |data| data.offset,
-        )
+        child
+            .try_parent_data::<StackLayoutData>()
+            .map_or_else(|| alignment.along(size - child_size), |data| data.offset)
     }
 }
 
@@ -170,7 +169,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             StackFit::Passthrough => constraints,
         };
         let mut has_non_positioned_child = false;
-        for mut child in ctx.children() {
+        for child in ctx.children() {
             if !Stack::is_positioned(&child) {
                 has_non_positioned_child = true;
                 let child_size = child.layout(non_positioned_constraints);
@@ -202,7 +201,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, _: &Offset) {
         let alignment = self.alignment.resolve(&self.text_direction);
         let size = ctx.size();
-        for mut child in ctx.children() {
+        for child in ctx.children() {
             child.paint(canvas, &self.get_layout_offset(&child, &alignment, size));
         }
     }

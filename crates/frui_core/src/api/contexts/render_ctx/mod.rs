@@ -1,5 +1,5 @@
 use std::{
-    cell::{Ref, RefMut},
+    cell::{Cell, Ref, RefMut},
     marker::PhantomData,
     ops::{Deref, DerefMut},
     sync::atomic::Ordering,
@@ -25,15 +25,15 @@ pub use parent_data::*;
 pub use render_state::*;
 pub use types::*;
 
-pub type RenderContext<'a, T> = &'a mut _RenderContext<'a, T>;
+pub type RenderContext<'a, T> = &'a _RenderContext<'a, T>;
 
 pub struct _RenderContext<'a, T> {
-    ctx: &'a mut AnyRenderContext,
+    ctx: &'a AnyRenderContext,
     _p: PhantomData<T>,
 }
 
 impl<'a, T> _RenderContext<'a, T> {
-    pub(crate) fn new(any: &'a mut AnyRenderContext) -> Self {
+    pub(crate) fn new(any: &'a AnyRenderContext) -> Self {
         Self {
             ctx: any,
             _p: PhantomData,
@@ -51,7 +51,7 @@ impl<'a, T> _RenderContext<'a, T> {
     }
 
     /// Render state mutably.
-    pub fn rstate_mut(&mut self) -> RefMut<T::State>
+    pub fn rstate_mut(&self) -> RefMut<T::State>
     where
         T: RenderState,
     {
@@ -94,11 +94,11 @@ impl<'a, T> _RenderContext<'a, T> {
         });
     }
 
-    pub fn child(&mut self, index: usize) -> ChildContext {
+    pub fn child(&self, index: usize) -> ChildContext {
         self.ctx.child(index)
     }
 
-    pub fn children(&mut self) -> ChildrenIter {
+    pub fn children(&self) -> ChildrenIter {
         self.ctx.children()
     }
 
@@ -120,11 +120,11 @@ impl<'a> ChildContext<'a> {
         }
     }
 
-    pub fn layout(&mut self, constraints: Constraints) -> Size {
+    pub fn layout(&self, constraints: Constraints) -> Size {
         self.ctx.layout(constraints.clone())
     }
 
-    pub fn paint(&mut self, canvas: &mut PaintContext, offset: &Offset) {
+    pub fn paint(&self, canvas: &mut PaintContext, offset: &Offset) {
         self.ctx.paint(canvas, offset)
     }
 
@@ -146,7 +146,7 @@ impl<'a> ChildContext<'a> {
         }))
     }
 
-    pub fn try_parent_data_mut<T: 'static>(&mut self) -> Option<RefMut<T>> {
+    pub fn try_parent_data_mut<T: 'static>(&self) -> Option<RefMut<T>> {
         // Check parent data type early.
         self.ctx
             .node
@@ -160,33 +160,29 @@ impl<'a> ChildContext<'a> {
         }))
     }
 
-    pub fn set_parent_data<T: 'static>(&mut self, data: T) {
-        self.ctx
-            .node
-            .borrow_mut()
-            .render_data
-            .parent_data = Box::new(data);
+    pub fn set_parent_data<T: 'static>(&self, data: T) {
+        self.ctx.node.borrow_mut().render_data.parent_data = Box::new(data);
     }
 }
 
 pub struct AnyRenderContext {
     node: WidgetNodeRef,
     /// (global)
-    offset: Offset,
+    offset: Cell<Offset>,
     /// (global)
-    parent_offset: Offset,
+    parent_offset: Cell<Offset>,
 }
 
 impl AnyRenderContext {
     pub(crate) fn new(node: WidgetNodeRef) -> Self {
         Self {
             node,
-            offset: Offset::default(),
-            parent_offset: Offset::default(),
+            offset: Cell::default(),
+            parent_offset: Cell::default(),
         }
     }
 
-    pub fn layout(&mut self, constraints: Constraints) -> Size {
+    pub fn layout(&self, constraints: Constraints) -> Size {
         let widget = self.node.widget().clone();
         let size = widget.raw().layout(self, constraints);
 
@@ -207,17 +203,17 @@ impl AnyRenderContext {
         size
     }
 
-    pub fn paint(&mut self, piet: &mut PaintContext, offset: &Offset) {
+    pub fn paint(&self, piet: &mut PaintContext, offset: &Offset) {
         assert!(
             self.node.borrow().render_data.laid_out,
             "child was not laid out before paint"
         );
 
         // Used to calculate local offset of self (see Drop impl).
-        self.offset = offset.clone();
+        self.offset.set(offset.clone());
 
         // Update local offset of this node.
-        let local_offset = self.offset - self.parent_offset;
+        let local_offset = *offset - self.parent_offset.get();
         self.node.borrow_mut().render_data.local_offset = local_offset;
 
         self.node.widget().clone().raw().paint(self, piet, offset);
@@ -228,7 +224,7 @@ impl AnyRenderContext {
             .expect("specified node didn't have any children")
     }
 
-    pub fn children(&mut self) -> ChildrenIter {
+    pub fn children(&self) -> ChildrenIter {
         ChildrenIter {
             child_idx: 0,
             parent_ctx: self,
@@ -238,10 +234,10 @@ impl AnyRenderContext {
     fn try_child(&self, index: usize) -> Option<ChildContext> {
         let child = self.node.children().get(index)?;
 
-        let mut ctx = AnyRenderContext::new(WidgetNode::node_ref(child));
+        let ctx = AnyRenderContext::new(WidgetNode::node_ref(child));
 
         // Used to calculate local offset of self (see Drop impl).
-        ctx.parent_offset = self.offset;
+        ctx.parent_offset.set(self.offset.get());
 
         Some(ChildContext::new(ctx))
     }
@@ -259,6 +255,16 @@ pub struct ChildrenIter<'a> {
 impl<'a> ChildrenIter<'a> {
     pub fn len(&self) -> usize {
         self.parent_ctx.node.children().len()
+    }
+}
+
+impl Clone for ChildrenIter<'_> {
+    fn clone(&self) -> Self {
+        Self {
+            // Reset iterator.
+            child_idx: 0,
+            parent_ctx: self.parent_ctx,
+        }
     }
 }
 
