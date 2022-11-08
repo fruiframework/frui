@@ -23,26 +23,25 @@ impl WidgetState for CrabCounter {
 impl ViewWidget for CrabCounter {
     fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
         Column::builder()
-            // .space_between(60.0)
+            .space_between(60.0)
             .main_axis_size(MainAxisSize::Max)
-            // .cross_axis_size(CrossAxisSize::Max)
+            .cross_axis_size(CrossAxisSize::Max)
             .main_axis_alignment(MainAxisAlignment::Center)
             .cross_axis_alignment(CrossAxisAlignment::Center)
             .children((
                 Text::new(format!("{} 🦀", *ctx.state()))
                     .size(100.0)
                     .weight(FontWeight::BOLD),
+                // Todo: Make better construction methods:
+                //
                 // SizedBox::from_size((), Size::new(0.0, 60.0)),
                 Row::builder()
-                    // .space_between(10.0) //
-                    .main_axis_size(MainAxisSize::Max)
-                    .main_axis_alignment(MainAxisAlignment::Center)
+                    .space_between(10.0) //
                     .children((
                         Button {
                             label: Text::new("+").size(30.),
                             on_click: || *ctx.state_mut() += 1,
                         },
-                        // SizedBox::from_size((), Size::new(10.0, 0.0)),
                         Button {
                             label: Text::new("-").size(30.),
                             on_click: || *ctx.state_mut() -= 1,
