@@ -112,7 +112,14 @@ impl<WL: WidgetList> Flex<WL> {
         let child_count = children.len();
         let can_flex = max_main_size <= f64::INFINITY;
         let mut cross_size: f64 = 0.0;
-        let mut allocated_size: f64 = 0.0;
+        let mut allocated_size: f64 = match self.main_axis_alignment {
+            MainAxisAlignment::SpaceAround => self.space_between / 2.0,
+            MainAxisAlignment::SpaceEvenly => self.space_between,
+            _ => 0.0,
+        };
+        let mut allocated_space_size = allocated_size;
+
+        // compute total flex and layout un-flexiable children
         for child in children.iter_mut() {
             let flex: usize = Flex::<WL>::get_flex(&child).unwrap_or(0usize);
             if flex > 0 {
@@ -139,7 +146,9 @@ impl<WL: WidgetList> Flex<WL> {
                 cross_size = cross_size.max(self.get_cross_size(&child_size));
             }
         }
-        allocated_size += self.space_between * (child_count - 1) as f64;
+        let allocated_between_size = self.space_between * (child_count - 1) as f64;
+        allocated_size += allocated_between_size;
+        allocated_space_size += allocated_between_size;
         let free_space: f64 = 0f64.max(if can_flex { max_main_size } else { 0.0 } - allocated_size);
         let mut allocated_flex_space = 0.0;
         if total_flex > 0 {
@@ -222,7 +231,7 @@ impl<WL: WidgetList> Flex<WL> {
         FlexLayoutSizes {
             main_size: ideal_size,
             cross_size: cross_size,
-            allocated_size: allocated_size,
+            allocated_size: allocated_size - allocated_space_size,
         }
     }
 }
@@ -248,16 +257,17 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         let cross_size = sizes.cross_size;
         // let mut max_baseline_distance: f64 = 0.0;
         if self.cross_axis_alignment == CrossAxisAlignment::Baseline {
+            log::warn!("Baseline alignment not yet implemented");
             // TODO: support baseline alignment
         }
 
         let (size, actual_size, cross_size) = match self.direction {
             Axis::Horizontal => {
-                let size = constraints.constrain(Size::new(actual_size, cross_size));
+                let size = Size::new(actual_size, cross_size);
                 (size, size.width, size.height)
             }
             Axis::Vertical => {
-                let size = constraints.constrain(Size::new(cross_size, actual_size));
+                let size = Size::new(cross_size, actual_size);
                 (size, size.height, size.width)
             }
         };
