@@ -18,6 +18,8 @@ impl WidgetState for App {
 impl ViewWidget for App {
     fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
         Stack::builder().children((
+            // Stats:
+            ctx.state().clone(),
             Center::child(
                 PointerListener::builder()
                     .on_pointer_down(|_| ctx.state_mut().down_count += 1)
@@ -37,8 +39,6 @@ impl ViewWidget for App {
                             ),
                     ),
             ),
-            // Stats:
-            ctx.state().clone(),
         ))
     }
 }

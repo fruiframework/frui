@@ -1,9 +1,4 @@
-use std::{
-    cell::{RefCell, UnsafeCell},
-    collections::HashMap,
-    marker::PhantomData,
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::HashMap, marker::PhantomData, rc::Rc};
 
 use druid_shell::kurbo::{Affine, Point};
 
@@ -66,12 +61,12 @@ impl HitTestCtxOS {
         }
     }
 
-    pub fn children(&mut self) -> HitTestCtxIter {
-        HitTestCtxIter {
-            children: self.node.children(),
-            parent: self.clone(),
-            idx: 0,
-        }
+    pub fn children<'a>(&'a mut self) -> ChildrenIter<'a> {
+        self.node.children().iter().map(|child| {
+            let mut r = self.clone();
+            r.node = WidgetNode::node_ref(child);
+            r
+        })
     }
 
     /// Add comment.
@@ -107,29 +102,8 @@ impl HitTestCtxOS {
     }
 }
 
-pub struct HitTestCtxIter<'a> {
-    children: &'a [UnsafeCell<Box<WidgetNode>>],
-    parent: HitTestCtxOS,
-    idx: usize,
-}
-
-impl<'a> HitTestCtxIter<'a> {
-    pub fn len(&self) -> usize {
-        self.children.len()
-    }
-}
-
-impl<'a> Iterator for HitTestCtxIter<'a> {
-    type Item = HitTestCtxOS;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let mut r = self.parent.clone();
-        r.node = WidgetNode::node_ref(self.children.get(self.idx)?);
-        self.idx += 1;
-
-        Some(r)
-    }
-}
+type ChildrenIter<'a> =
+    impl Iterator<Item = HitTestCtxOS> + 'a + DoubleEndedIterator + ExactSizeIterator;
 
 impl<W> std::ops::Deref for HitTestCtx<W> {
     type Target = HitTestCtxOS;
