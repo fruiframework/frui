@@ -189,6 +189,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
                 Stack::layout_positioned_child(&mut child, size, &alignment);
             }
         }
+
         size
     }
 
@@ -201,7 +202,25 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
     }
 }
 
-#[derive(RenderWidget, Default)]
+impl<WL: WidgetList, A: AlignmentGeometry> HitTest for Stack<WL, A> {
+    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
+        if ctx.layout_box().contains(point) {
+            for mut child in ctx.children().rev() {
+                if child.hit_test_with_paint_offset(point) {
+                    // If widget on top handled an event, it won't be passed to
+                    // other children, so we can return early.
+                    return true;
+                }
+            }
+
+            return true;
+        }
+
+        false
+    }
+}
+
+#[derive(RenderWidget, Builder)]
 pub struct Positioned<T: Widget> {
     pub child: T,
     pub left: Option<f64>,
@@ -242,5 +261,19 @@ where
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
+    }
+}
+
+impl Positioned<()> {
+    pub fn builder() -> Positioned<()> {
+        Positioned {
+            child: (),
+            left: None,
+            right: None,
+            top: None,
+            bottom: None,
+            width: None,
+            height: None,
+        }
     }
 }
