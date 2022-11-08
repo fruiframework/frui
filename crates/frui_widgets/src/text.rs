@@ -27,7 +27,11 @@ impl<S: AsRef<str>> Text<S> {
             size: 16.,
             color: Color::WHITE,
             weight: FontWeight::default(),
-            family: FontFamily::default(),
+            // Layout of `FontFamily::SYSTEM_UI` is incredibly slow. Other fonts
+            // seem to render just fine. This issue is related to Piet.
+            //
+            // For now, the default will be `FontFamily::MONOSPACE`.
+            family: FontFamily::MONOSPACE,
         }
     }
 }
@@ -63,10 +67,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
 
         let text_size = ctx.rstate().size();
 
-        let size = constraints.constrain_dimensions(
-            text_size.width,
-            text_size.height,
-        );
+        let size = constraints.constrain_dimensions(text_size.width, text_size.height);
         size
     }
 
