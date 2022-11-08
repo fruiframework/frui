@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use druid_shell::kurbo::Point;
 
@@ -6,6 +6,17 @@ use druid_shell::kurbo::Point;
 pub struct Offset {
     pub x: f64,
     pub y: f64,
+}
+
+impl Add for Offset {
+    type Output = Offset;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
 }
 
 impl Sub for Offset {
