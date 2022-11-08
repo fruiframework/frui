@@ -5,18 +5,18 @@ use std::{
     sync::atomic::Ordering,
 };
 
-use druid_shell::{kurbo::Point, IdleToken};
+use druid_shell::IdleToken;
 
 use super::build_ctx::STATE_UPDATE_SUPRESSED;
 use crate::{
-    api::events::Event,
     app::{
-        runner::{handler::APP_HANDLE, PaintContext},
-        tree::WidgetNodeRef,
+        runner::{window_handler::APP_HANDLE, PaintContext},
+        tree::{WidgetNode, WidgetNodeRef},
     },
     prelude::WidgetState,
 };
 
+pub mod ext;
 mod parent_data;
 mod render_state;
 mod types;
@@ -94,8 +94,6 @@ impl<'a, T> _RenderContext<'a, T> {
         });
     }
 
-    //
-
     pub fn child(&mut self, index: usize) -> ChildContext {
         self.ctx.child(index)
     }
@@ -104,29 +102,8 @@ impl<'a, T> _RenderContext<'a, T> {
         self.ctx.children()
     }
 
-    //
-
-    #[track_caller]
     pub fn size(&self) -> Size {
-        self.ctx.node.borrow().render_data.size
-    }
-
-    #[track_caller]
-    pub fn offset(&self) -> Offset {
-        self.ctx.node.borrow().render_data.offset
-    }
-
-    pub fn point_in_layout_bounds(&self, point: Point) -> bool {
-        let Offset { x: o_x, y: o_y } = self.offset();
-        let Point { x, y } = point;
-
-        // Make point position local to the tested widget origin.
-        let (x, y) = (x - o_x, y - o_y);
-
-        let Size { width, height } = self.size();
-
-        // Check if that point is in the widget bounds computed during layout.
-        x >= 0.0 && x <= width && y >= 0.0 && y <= height
+        self.ctx.size()
     }
 }
 
@@ -136,8 +113,23 @@ pub struct ChildContext<'a> {
 }
 
 impl<'a> ChildContext<'a> {
+    pub fn new(ctx: AnyRenderContext) -> Self {
+        Self {
+            ctx,
+            _p: PhantomData,
+        }
+    }
+
+    pub fn layout(&mut self, constraints: Constraints) -> Size {
+        self.ctx.layout(constraints.clone())
+    }
+
+    pub fn paint(&mut self, canvas: &mut PaintContext, offset: &Offset) {
+        self.ctx.paint(canvas, offset)
+    }
+
     pub fn size(&self) -> Size {
-        self.ctx.node.borrow().render_data.size
+        self.ctx.size()
     }
 
     pub fn try_parent_data<T: 'static>(&self) -> Option<Ref<T>> {
@@ -175,53 +167,26 @@ impl<'a> ChildContext<'a> {
             .render_data
             .parent_data = Box::new(data);
     }
-
-    pub fn layout(&mut self, constraints: Constraints) -> Size {
-        self.ctx.layout(constraints.clone())
-    }
-
-    #[track_caller]
-    pub fn paint(&mut self, canvas: &mut PaintContext, offset: &Offset) {
-        self.ctx.paint(canvas, offset)
-    }
-
-    #[track_caller]
-    pub fn handle_event(&mut self, event: &Event) {
-        self.ctx.handle_event(event)
-    }
 }
 
 pub struct AnyRenderContext {
     node: WidgetNodeRef,
+    /// (global)
+    offset: Offset,
+    /// (global)
+    parent_offset: Offset,
 }
 
 impl AnyRenderContext {
     pub(crate) fn new(node: WidgetNodeRef) -> Self {
-        Self { node }
-    }
-
-    #[track_caller]
-    pub fn child(&self, index: usize) -> ChildContext {
-        let child = self
-            .node
-            .children()
-            .get(index)
-            .expect("specified node didn't have any children");
-
-        ChildContext {
-            ctx: AnyRenderContext::new(crate::app::tree::WidgetNode::node_ref(child)),
-            _p: PhantomData,
+        Self {
+            node,
+            offset: Offset::default(),
+            parent_offset: Offset::default(),
         }
     }
 
-    pub fn children(&mut self) -> ChildrenIter {
-        ChildrenIter {
-            child_idx: 0,
-            parent: &self.node,
-        }
-    }
-
-    pub(crate) fn layout(&mut self, constraints: Constraints) -> Size {
+    pub fn layout(&mut self, constraints: Constraints) -> Size {
         let widget = self.node.widget().clone();
         let size = widget.raw().layout(self, constraints);
 
@@ -242,31 +207,58 @@ impl AnyRenderContext {
         size
     }
 
-    pub(crate) fn paint(&mut self, piet: &mut PaintContext, offset: &Offset) {
+    pub fn paint(&mut self, piet: &mut PaintContext, offset: &Offset) {
         assert!(
             self.node.borrow().render_data.laid_out,
             "child was not laid out before paint"
         );
 
-        // This should probably be calculated during layout probably.
-        self.node.borrow_mut().render_data.offset = offset.clone();
+        // Used to calculate local offset of self (see Drop impl).
+        self.offset = offset.clone();
+
+        // Update local offset of this node.
+        let local_offset = self.offset - self.parent_offset;
+        self.node.borrow_mut().render_data.local_offset = local_offset;
 
         self.node.widget().clone().raw().paint(self, piet, offset);
     }
 
-    pub(crate) fn handle_event(&mut self, event: &Event) {
-        self.node.widget().clone().raw().handle_event(self, event);
+    pub fn child(&self, index: usize) -> ChildContext {
+        self.try_child(index)
+            .expect("specified node didn't have any children")
+    }
+
+    pub fn children(&mut self) -> ChildrenIter {
+        ChildrenIter {
+            child_idx: 0,
+            parent_ctx: self,
+        }
+    }
+
+    fn try_child(&self, index: usize) -> Option<ChildContext> {
+        let child = self.node.children().get(index)?;
+
+        let mut ctx = AnyRenderContext::new(WidgetNode::node_ref(child));
+
+        // Used to calculate local offset of self (see Drop impl).
+        ctx.parent_offset = self.offset;
+
+        Some(ChildContext::new(ctx))
+    }
+
+    fn size(&self) -> Size {
+        self.node.borrow().render_data.size
     }
 }
 
 pub struct ChildrenIter<'a> {
     child_idx: usize,
-    parent: &'a WidgetNodeRef,
+    parent_ctx: &'a AnyRenderContext,
 }
 
 impl<'a> ChildrenIter<'a> {
     pub fn len(&self) -> usize {
-        self.parent.children().len()
+        self.parent_ctx.node.children().len()
     }
 }
 
@@ -274,16 +266,8 @@ impl<'a> Iterator for ChildrenIter<'a> {
     type Item = ChildContext<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let next_child = match self.parent.children().get(self.child_idx) {
-            Some(c) => c,
-            None => return None,
-        };
-
+        let r = self.parent_ctx.try_child(self.child_idx);
         self.child_idx += 1;
-
-        Some(ChildContext {
-            ctx: AnyRenderContext::new(crate::app::tree::WidgetNode::node_ref(next_child)),
-            _p: PhantomData,
-        })
+        r
     }
 }

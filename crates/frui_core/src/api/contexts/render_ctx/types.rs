@@ -2,7 +2,7 @@ use std::ops::{AddAssign, Sub, SubAssign, Add, Deref};
 
 use druid_shell::kurbo::Point;
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Offset {
     pub x: f64,
     pub y: f64,
@@ -15,6 +15,17 @@ impl<T: Deref<Target=Offset>> Add<T> for Offset {
         Self {
             x: self.x + rhs.deref().x,
             y: self.y + rhs.deref().y,
+        }
+    }
+}
+
+impl Sub for Offset {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
         }
     }
 }
@@ -62,6 +73,10 @@ impl Size {
     }
 
     pub const ZERO: Size = Size { width: 0.0, height: 0.0 };
+
+    pub fn contains(&self, point: Point) -> bool {
+        point.x >= 0. && point.y >= 0. && point.x <= self.width && point.y <= self.height
+    }
 }
 
 impl From<druid_shell::kurbo::Size> for Size {
@@ -166,6 +181,13 @@ impl Constraints {
             max_width,
             min_height,
             max_height,
+        }
+    }
+
+    pub fn min(&self) -> Size {
+        Size {
+            width: self.min_width,
+            height: self.min_height,
         }
     }
 
