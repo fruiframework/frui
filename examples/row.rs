@@ -19,7 +19,9 @@ impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
         DebugContainer::child(
             Row::builder()
+                .space_between(20.0)
                 .main_axis_size(MainAxisSize::Max)
+                .cross_axis_size(CrossAxisSize::Max)
                 .main_axis_alignment(MainAxisAlignment::Center)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
