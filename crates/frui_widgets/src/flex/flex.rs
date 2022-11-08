@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 use frui::prelude::*;
 
 use crate::*;
@@ -46,7 +44,7 @@ fn start_is_top_left(
 pub struct Flex<WL: WidgetList> {
     pub children: WL,
     pub direction: Axis,
-    pub spece_between: f64,
+    pub space_between: f64,
     pub main_axis_size: MainAxisSize,
     pub main_axis_alignment: MainAxisAlignment,
     pub cross_axis_alignment: CrossAxisAlignment,
@@ -71,7 +69,7 @@ impl Flex<()> {
             cross_axis_alignment: CrossAxisAlignment::Center,
             text_direction: TextDirection::Ltr,
             vertical_direction: VerticalDirection::Down,
-            spece_between: 0f64,
+            space_between: 0f64,
             cross_axis_size: Default::default(),
         }
     }
@@ -100,6 +98,7 @@ impl<WL: WidgetList> Flex<WL> {
         }
     }
 
+    /// compute flex and layout un-flexiable children and return sizes of flexiable children
     fn compute_sizes(
         &self,
         children: &mut Vec<ChildContext>,
@@ -140,6 +139,7 @@ impl<WL: WidgetList> Flex<WL> {
                 cross_size = cross_size.max(self.get_cross_size(&child_size));
             }
         }
+        allocated_size += self.space_between * (child_count - 1) as f64;
         let free_space: f64 = 0f64.max(if can_flex { max_main_size } else { 0.0 } - allocated_size);
         let mut allocated_flex_space = 0.0;
         if total_flex > 0 {
@@ -271,21 +271,22 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             &self.vertical_direction,
         );
 
+        let multi_child_space = if child_count > 1 { self.space_between } else { 0.0 };
         let (leading_space, between_space) = match self.main_axis_alignment {
-            MainAxisAlignment::Start => (0.0, 0.0),
-            MainAxisAlignment::Center => (remaining_space / 2.0, 0.0),
-            MainAxisAlignment::End => (remaining_space, 0.0),
+            MainAxisAlignment::Start => (0.0, multi_child_space),
+            MainAxisAlignment::Center => (remaining_space / 2.0, multi_child_space),
+            MainAxisAlignment::End => (remaining_space, multi_child_space),
             MainAxisAlignment::SpaceBetween => (
                 0.0,
                 if child_count > 1 {
-                    remaining_space / (child_count - 1) as f64
+                    multi_child_space.max(remaining_space / (child_count - 1) as f64)
                 } else {
                     0.0
                 },
             ),
             MainAxisAlignment::SpaceAround => {
                 let space = remaining_space / child_count as f64;
-                (space / 2.0, space)
+                (space / 2.0, multi_child_space.max(space))
             }
             MainAxisAlignment::SpaceEvenly => {
                 let space = if child_count > 0 {
@@ -293,7 +294,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
                 } else {
                     0.0
                 };
-                (space, space)
+                (space, multi_child_space.max(space))
             }
         };
 

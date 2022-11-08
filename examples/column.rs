@@ -20,9 +20,11 @@ impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
         DebugContainer::child(
             Column::builder()
+                .cross_axis_size(CrossAxisSize::Max)
                 .main_axis_size(MainAxisSize::Max)
                 .main_axis_alignment(MainAxisAlignment::SpaceEvenly)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
+                .space_between(20.0)
                 .children((
                     Big(Color::rgb8(13, 245, 152)),
                     Big(Color::rgb8(255, 0, 110)),
