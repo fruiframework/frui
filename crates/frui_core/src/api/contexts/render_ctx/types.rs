@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, Sub, SubAssign, Add, Deref};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use druid_shell::kurbo::Point;
 
@@ -8,13 +8,13 @@ pub struct Offset {
     pub y: f64,
 }
 
-impl<T: Deref<Target=Offset>> Add<T> for Offset {
+impl Add for Offset {
     type Output = Self;
 
-    fn add(self, rhs: T) -> Self::Output {
+    fn add(self, rhs: Self) -> Self::Output {
         Self {
-            x: self.x + rhs.deref().x,
-            y: self.y + rhs.deref().y,
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
         }
     }
 }
@@ -72,7 +72,10 @@ impl Size {
         self.width / self.height
     }
 
-    pub const ZERO: Size = Size { width: 0.0, height: 0.0 };
+    pub const ZERO: Size = Size {
+        width: 0.0,
+        height: 0.0,
+    };
 
     pub fn contains(&self, point: Point) -> bool {
         point.x >= 0. && point.y >= 0. && point.x <= self.width && point.y <= self.height
@@ -209,10 +212,18 @@ impl Constraints {
 
     pub fn enforce(&self, constraints: Constraints) -> Self {
         Self {
-            min_width: self.min_width.clamp(constraints.min_width, constraints.max_width),
-            max_width: self.max_width.clamp(constraints.min_width, constraints.max_width),
-            min_height: self.min_height.clamp(constraints.min_height, constraints.max_height),
-            max_height: self.max_height.clamp(constraints.min_height, constraints.max_height),
+            min_width: self
+                .min_width
+                .clamp(constraints.min_width, constraints.max_width),
+            max_width: self
+                .max_width
+                .clamp(constraints.min_width, constraints.max_width),
+            min_height: self
+                .min_height
+                .clamp(constraints.min_height, constraints.max_height),
+            max_height: self
+                .max_height
+                .clamp(constraints.min_height, constraints.max_height),
         }
     }
 
