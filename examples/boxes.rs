@@ -33,9 +33,11 @@ impl ViewWidget for App {
                 }),
             ),
             direction: Axis::Horizontal,
+            space_between: 10.,
             main_axis_size: MainAxisSize::Max,
             main_axis_alignment: MainAxisAlignment::Start,
             cross_axis_alignment: CrossAxisAlignment::Stretch,
+            cross_axis_size: CrossAxisSize::Min,
             text_direction: TextDirection::Ltr,
             vertical_direction: VerticalDirection::Down,
         }
