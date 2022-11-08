@@ -64,6 +64,15 @@ impl<'a, T> _BuildContext<'a, T> {
             .node
             .depend_on_inherited_widget_of_key::<W::UniqueTypeId>()?;
 
+        // Todo:
+        //
+        // 1. Get node above.
+        // 2. Increase rc/borrow count.
+        // 3. Get reference to the widget's state (can be done at once in step
+        //    above).
+        // 4. Return InheritedGuard<'a> with that `node`, `refcell` guard, and
+        //    extracted reference. Possibly transmute.
+
         Some(InheritedState {
             node,
             _p: PhantomData,
@@ -72,8 +81,8 @@ impl<'a, T> _BuildContext<'a, T> {
 }
 
 pub struct StateGuard<'a, T: 'static> {
-    guard: Ref<'a, dyn Any>,
-    _p: PhantomData<&'a T>,
+    pub(crate) guard: Ref<'a, dyn Any>,
+    pub(crate) _p: PhantomData<&'a T>,
 }
 
 impl<'a, T: 'static> Deref for StateGuard<'a, T> {
@@ -85,8 +94,8 @@ impl<'a, T: 'static> Deref for StateGuard<'a, T> {
 }
 
 pub struct StateGuardMut<'a, T: 'static> {
-    guard: RefMut<'a, dyn Any>,
-    _p: PhantomData<&'a T>,
+    pub(crate) guard: RefMut<'a, dyn Any>,
+    pub(crate) _p: PhantomData<&'a T>,
 }
 
 impl<'a, T: 'static> Deref for StateGuardMut<'a, T> {

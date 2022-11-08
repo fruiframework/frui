@@ -3,7 +3,9 @@ use std::any::TypeId;
 use crate::macro_exports::{Context, RawWidget};
 
 use super::{
-    any_ext::AnyExt, contexts::build_ctx::STATE_UPDATE_SUPRESSED, structural_eq::StructuralEqOS,
+    any_ext::AnyExt,
+    contexts::build_ctx::STATE_UPDATE_SUPRESSED,
+    structural_eq::StructuralEqOS,
     Widget,
 };
 

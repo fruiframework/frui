@@ -12,34 +12,34 @@ impl ViewWidget for App {
         Stack::builder()
             .alignment(AlignmentDirectional::CENTER_END)
             .children((
-                Text::new("🦀").size(100.0).weight(FontWeight::BOLD),
-                Positioned {
-                    child: Container::builder()
-                        .color(Color::GREEN)
-                        .width(50.0)
-                        .height(50.0),
-                    right: Some(10.0),
-                    bottom: Some(10.0),
-                    left: None,
-                    top: None,
-                    width: None,
-                    height: None,
-                },
-                Positioned {
-                    child: Container::builder()
-                        .color(Color::AQUA)
-                        .width(50.0)
-                        .height(50.0),
-                    right: Some(10.0),
-                    bottom: Some(10.0),
-                    left: Some(10.0),
-                    top: Some(50.0),
-                    width: None,
-                    height: None,
-                },
-                Center {
-                    child: Text::new("🦀").size(100.0).weight(FontWeight::BOLD),
-                },
+                Text::new("🦀") //
+                    .size(100.0)
+                    .weight(FontWeight::BOLD),
+                Positioned::builder() //
+                    .right(10.0)
+                    .bottom(10.0)
+                    .child(
+                        Container::builder()
+                            .color(Color::GREEN)
+                            .width(50.0)
+                            .height(50.0),
+                    ),
+                Positioned::builder()
+                    .right(10.0)
+                    .bottom(10.0)
+                    .left(10.0)
+                    .top(50.0)
+                    .child(
+                        Container::builder()
+                            .color(Color::AQUA)
+                            .width(50.0)
+                            .height(50.0),
+                    ),
+                Center::child(
+                    Text::new("🦀") //
+                        .size(100.0)
+                        .weight(FontWeight::BOLD),
+                ),
             ))
     }
 }
