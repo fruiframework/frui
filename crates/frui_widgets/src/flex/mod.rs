@@ -192,13 +192,6 @@ fn compute_main_axis_offset(
     )
 }
 
-fn get_flex(child: &ChildContext) -> usize {
-    match child.try_parent_data::<FlexData>() {
-        Some(data) => data.flex_factor,
-        None => 0,
-    }
-}
-
 //
 // Todo:
 #[derive(Debug, Clone, Copy)]
