@@ -12,8 +12,9 @@ pub enum StackFit {
 #[derive(RenderWidget, Builder)]
 pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
     pub children: WL,
-    pub fit: StackFit,
+    pub clip: bool,
     pub alignment: A,
+    pub fit: StackFit,
     pub text_direction: TextDirection,
 }
 
@@ -52,6 +53,7 @@ impl StackLayoutData {
 impl Stack<(), AlignmentDirectional> {
     pub fn builder() -> Self {
         Stack {
+            clip: true,
             children: (),
             fit: StackFit::Loose,
             alignment: AlignmentDirectional::TOP_START,
@@ -153,17 +155,32 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             StackFit::Expand => Constraints::tight(constraints.biggest()),
             StackFit::Passthrough => constraints,
         };
-        let mut has_non_positioned_child = false;
+
+        let mut non_positioned_children_count = 0;
+
         for mut child in ctx.children() {
             if !Stack::is_positioned(&child) {
-                has_non_positioned_child = true;
+                non_positioned_children_count += 1;
                 let child_size = child.layout(non_positioned_constraints);
                 width = width.max(child_size.width);
                 height = height.max(child_size.height);
             }
         }
 
+        let has_non_positioned_child = non_positioned_children_count > 0;
+
         let size = if has_non_positioned_child {
+            if cfg!(debug_assertions) {
+                if width == 0. || height == 0. {
+                    if non_positioned_children_count != ctx.children().len() {
+                        log::warn!(concat!(
+                            "not positioned children in Stack have height or width 0. This is most likely a bug. ",
+                            "Consider setting `fit` option of `Stack` to StackFit::Expand."
+                        ))
+                    }
+                }
+            }
+
             Size::new(width, height)
         } else {
             constraints.biggest()
@@ -183,11 +200,32 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, _: &Offset) {
-        let alignment = self.alignment.resolve(&self.text_direction);
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
         let size = ctx.size();
-        for mut child in ctx.children() {
-            child.paint(canvas, &self.get_layout_offset(&child, &alignment, size));
+        let alignment = self.alignment.resolve(&self.text_direction);
+
+        if self.clip {
+            let r = canvas.with_save(|cv| {
+                cv.clip(Rect::new(
+                    offset.x,
+                    offset.y,
+                    offset.x + size.width,
+                    offset.y + size.height,
+                ));
+
+                for mut child in ctx.children() {
+                    let offset = *offset + self.get_layout_offset(&child, &alignment, size);
+                    child.paint(cv, &offset);
+                }
+
+                Ok(())
+            });
+            r.unwrap();
+        } else {
+            for mut child in ctx.children() {
+                let offset = *offset + self.get_layout_offset(&child, &alignment, size);
+                child.paint(canvas, &offset);
+            }
         }
     }
 }

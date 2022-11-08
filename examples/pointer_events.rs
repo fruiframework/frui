@@ -19,7 +19,10 @@ impl ViewWidget for App {
     fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
         Stack::builder().children((
             // Stats:
-            ctx.state().clone(),
+            Positioned::builder()
+                .left(30.)
+                .top(30.)
+                .child(ctx.state().clone()),
             Center::child(
                 PointerListener::builder()
                     .on_pointer_down(|_| ctx.state_mut().down_count += 1)
