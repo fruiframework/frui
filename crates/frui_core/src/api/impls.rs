@@ -108,7 +108,7 @@ impl RawWidget for () {
 
     fn layout<'w>(
         &self,
-        ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+        ctx: &'w super::contexts::render_ctx::AnyRenderContext,
         constraints: Constraints,
     ) -> Size {
         <Self as RenderWidgetOS>::layout(self, ctx, constraints)
@@ -116,7 +116,7 @@ impl RawWidget for () {
 
     fn paint<'w>(
         &'w self,
-        ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+        ctx: &'w super::contexts::render_ctx::AnyRenderContext,
         canvas: &mut PaintContext,
         offset: &Offset,
     ) {
@@ -137,7 +137,7 @@ macro_rules! impl_widget_os_deref_ {
 
             fn layout<'w>(
                 &self,
-                ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+                ctx: &'w super::contexts::render_ctx::AnyRenderContext,
                 constraints: Constraints,
             ) -> Size {
                 self.deref().layout(ctx, constraints)
@@ -145,7 +145,7 @@ macro_rules! impl_widget_os_deref_ {
 
             fn paint<'w>(
                 &'w self,
-                ctx: &'w mut super::contexts::render_ctx::AnyRenderContext,
+                ctx: &'w super::contexts::render_ctx::AnyRenderContext,
                 canvas: &mut PaintContext,
                 offset: &Offset,
             ) {

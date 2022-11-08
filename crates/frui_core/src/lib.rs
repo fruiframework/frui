@@ -15,20 +15,12 @@ pub mod prelude {
         api::{
             contexts::{
                 build_ctx::{
-                    BuildContext,
-                    InheritedState,
-                    InheritedStateRef,
-                    InheritedStateRefMut,
+                    BuildContext, InheritedState, InheritedStateRef, InheritedStateRefMut,
                     WidgetState,
                 },
                 render_ctx::{
-                    ChildContext,
-                    Constraints,
-                    Offset,
-                    ParentData,
-                    RenderContext,
-                    RenderState,
-                    Size,
+                    ChildContext, ChildrenIter, Constraints, Offset, ParentData, RenderContext,
+                    RenderState, Size,
                 },
             },
             implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
@@ -42,15 +34,9 @@ pub mod prelude {
     pub use druid_shell::{
         kurbo::*,
         piet::{
-            Brush,
-            Color,
-            FontFamily,
-            FontStyle,
-            FontWeight,
-            RenderContext as PietRenderContext,
+            Brush, Color, FontFamily, FontStyle, FontWeight, RenderContext as PietRenderContext,
         },
-        KeyEvent,
-        MouseButton,
+        KeyEvent, MouseButton,
     };
 
     pub use frui_macros::Builder;
@@ -64,11 +50,7 @@ pub mod macro_exports {
         api::{
             contexts::{render_ctx::AnyRenderContext, Context},
             implementers::{
-                InheritedWidgetOS,
-                RawWidget,
-                RenderWidgetOS,
-                ViewWidgetOS,
-                WidgetDerive,
+                InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,
             },
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,

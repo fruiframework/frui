@@ -14,9 +14,7 @@ use super::{
     local_key::WidgetLocalKey,
     pointer_events::HitTestOS,
     structural_eq::StructuralEqOS,
-    WidgetDebug,
-    WidgetPtr,
-    WidgetUniqueType,
+    WidgetDebug, WidgetPtr, WidgetUniqueType,
 };
 
 pub(crate) mod inherited;
@@ -64,14 +62,9 @@ pub trait OS:
 {
     fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>>;
 
-    fn layout<'w>(&self, ctx: &'w mut AnyRenderContext, constraints: Constraints) -> Size;
+    fn layout<'w>(&self, ctx: &'w AnyRenderContext, constraints: Constraints) -> Size;
 
-    fn paint<'w>(
-        &'w self,
-        ctx: &'w mut AnyRenderContext,
-        canvas: &mut PaintContext,
-        offset: &Offset,
-    );
+    fn paint<'w>(&'w self, ctx: &'w AnyRenderContext, canvas: &mut PaintContext, offset: &Offset);
 
     fn inherited_key(&self) -> Option<TypeId> {
         None

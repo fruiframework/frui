@@ -96,11 +96,7 @@ impl<WL: WidgetList> Flex<WL> {
     }
 
     /// compute flex and layout un-flexiable children and return sizes of flexiable children
-    fn compute_sizes(
-        &self,
-        children: &mut Vec<ChildContext>,
-        constraints: Constraints,
-    ) -> FlexLayoutSizes {
+    fn compute_sizes(&self, children: ChildrenIter, constraints: Constraints) -> FlexLayoutSizes {
         let mut total_flex = 0;
         let max_main_size = match self.direction {
             Axis::Horizontal => constraints.max_width,
@@ -117,7 +113,7 @@ impl<WL: WidgetList> Flex<WL> {
         let mut allocated_space_size = allocated_size;
 
         // compute total flex and layout un-flexiable children
-        for child in children.iter_mut() {
+        for child in children.clone() {
             let flex: usize = Flex::<WL>::get_flex(&child).unwrap_or(0usize);
             if flex > 0 {
                 total_flex += flex;
@@ -154,7 +150,7 @@ impl<WL: WidgetList> Flex<WL> {
             } else {
                 f64::NAN
             };
-            for (idx, child) in children.iter_mut().enumerate() {
+            for (idx, child) in children.enumerate() {
                 let flex = Flex::<WL>::get_flex(&child).unwrap_or(0usize);
                 if flex > 0 {
                     let max_child_extent = if can_flex {
@@ -239,15 +235,14 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let mut children: Vec<ChildContext> = ctx.children().collect();
-        let child_count = children.len();
-        for child in children.iter_mut() {
+        let child_count = ctx.children().len();
+        for child in ctx.children() {
             if child.try_parent_data::<FlexData>().is_none() {
                 child.set_parent_data(FlexData::default());
             }
         }
 
-        let sizes = self.compute_sizes(&mut children, constraints);
+        let sizes = self.compute_sizes(ctx.children(), constraints);
 
         let allocated_size = sizes.allocated_size;
         let actual_size = sizes.main_size;
@@ -317,7 +312,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             leading_space
         };
 
-        for child in children.iter_mut() {
+        for child in ctx.children() {
             let child_size = { child.size() };
             let mut child_parent_data = child.try_parent_data_mut::<FlexData>().unwrap();
             let child_cross_position = match self.cross_axis_alignment {
@@ -356,7 +351,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        for mut child in ctx.children() {
+        for child in ctx.children() {
             let child_offset: Offset = child
                 .try_parent_data::<FlexData>()
                 .map_or(*offset, |d| (*offset + d.offset));

@@ -24,13 +24,13 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
                 <Self as #WidgetKindOS>::build(self, ctx)
             }
 
-            fn layout<'w>(&self, ctx: &'w mut #AnyRenderContext, constraints: #Constraints) -> #Size {
+            fn layout<'w>(&self, ctx: &'w #AnyRenderContext, constraints: #Constraints) -> #Size {
                 <Self as #WidgetKindOS>::layout(self, ctx, constraints)
             }
 
             fn paint<'w>(
                 &'w self,
-                ctx: &'w mut #AnyRenderContext,
+                ctx: &'w #AnyRenderContext,
                 canvas: &mut #PaintContext,
                 offset: &#Offset
             ) {
