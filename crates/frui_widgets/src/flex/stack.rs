@@ -165,7 +165,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         let mut height = constraints.min_height;
         let non_positioned_constraints = match self.fit {
             StackFit::Loose => constraints.loosen(),
-            StackFit::Expand => Constraints::tight(constraints.biggest()),
+            StackFit::Expand => Constraints::new_tight(constraints.biggest()),
             StackFit::Passthrough => constraints,
         };
         let mut has_non_positioned_child = false;
