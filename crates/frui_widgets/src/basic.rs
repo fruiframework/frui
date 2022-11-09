@@ -1,19 +1,9 @@
 use frui::prelude::*;
 
-use crate::ChildWidget;
-
 #[derive(RenderWidget, Builder)]
 pub struct ColoredBox<T: RenderWidget + Widget> {
     pub child: T,
     pub color: Color,
-}
-
-impl<T: RenderWidget + Widget> ChildWidget for ColoredBox<T> {
-    type ChildType<'a> = T where Self: 'a;
-
-    fn child<'w>(&'w self) -> &Self::ChildType<'w> {
-        &self.child
-    }
 }
 
 impl<T: RenderWidget + Widget> RenderWidget for ColoredBox<T> {
@@ -35,8 +25,5 @@ impl<T: RenderWidget + Widget> RenderWidget for ColoredBox<T> {
         let brush = &canvas.solid_brush(self.color.clone());
         canvas.fill(rect, brush);
         ctx.child(0).paint(canvas, offset)
-    }
-    fn get_constraints(&self) -> Constraints {
-        Constraints::default()
     }
 }

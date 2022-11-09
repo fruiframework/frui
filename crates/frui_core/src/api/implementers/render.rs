@@ -18,40 +18,6 @@ pub trait RenderWidget: WidgetDerive + Sized {
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size;
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset);
-
-    fn get_constraints(&self) -> Constraints {
-        Constraints::default()
-    }
-
-    fn get_min_intrinsic_width(&self, height: f64) -> f64 {
-        // wrap compute result with cache, maybe `memorize`?
-        self.compute_min_intrinsic_width(height)
-    }
-
-    fn get_min_intrinsic_height(&self, width: f64) -> f64 {
-        self.compute_min_intrinsic_height(width)
-    }
-
-    fn get_max_intrinsic_width(&self, height: f64) -> f64 {
-        self.compute_max_intrinsic_width(height)
-    }
-
-    fn get_max_intrinsic_height(&self, width: f64) -> f64 {
-        self.compute_max_intrinsic_height(width)
-    }
-
-    fn compute_max_intrinsic_width(&self, _height: f64) -> f64 {
-        0.0
-    }
-    fn compute_max_intrinsic_height(&self, _width: f64) -> f64 {
-        0.0
-    }
-    fn compute_min_intrinsic_width(&self, _height: f64) -> f64 {
-        0.0
-    }
-    fn compute_min_intrinsic_height(&self, _width: f64) -> f64 {
-        0.0
-    }
 }
 
 impl<T: RenderWidget> RenderWidgetOS for T {
