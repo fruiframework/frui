@@ -100,14 +100,14 @@ impl Constraints {
         }
     }
 
-    /// The biggest size that satisfies the constraints.
-    pub fn biggest(&self) -> Size {
-        Size::new(self.max_width, self.max_height)
-    }
-
     /// The smallest size that satisfies the constraints.
     pub fn smallest(&self) -> Size {
         Size::new(self.min_width, self.min_height)
+    }
+
+    /// The biggest size that satisfies the constraints.
+    pub fn biggest(&self) -> Size {
+        Size::new(self.max_width, self.max_height)
     }
 
     /// Returns the size that both satisfies the constraints and is as close as
@@ -129,42 +129,6 @@ impl Constraints {
     /// possible to the given height.
     pub fn constrain_height(&self, height: f64) -> f64 {
         height.clamp(self.min_height, self.max_height)
-    }
-
-    //
-    //
-
-    pub fn has_tight_width(&self) -> bool {
-        self.min_width >= self.max_width
-    }
-
-    pub fn has_tight_height(&self) -> bool {
-        self.min_height >= self.max_height
-    }
-
-    pub fn is_tight(&self) -> bool {
-        self.has_tight_width() && self.has_tight_height()
-    }
-
-    pub fn has_bounded_width(&self) -> bool {
-        self.max_width < f64::INFINITY
-    }
-
-    pub fn has_bounded_height(&self) -> bool {
-        self.max_height < f64::INFINITY
-    }
-
-    pub fn has_infinite_width(&self) -> bool {
-        self.min_width >= f64::INFINITY
-    }
-
-    pub fn has_infinite_height(&self) -> bool {
-        self.min_height >= f64::INFINITY
-    }
-
-    pub fn is_satisfied_by(&self, size: Size) -> bool {
-        (self.min_width..=self.max_width).contains(&size.width)
-            && (self.min_height..=self.max_height).contains(&size.height)
     }
 }
 
