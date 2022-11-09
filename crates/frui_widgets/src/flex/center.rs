@@ -19,7 +19,7 @@ impl<W: Widget> RenderWidget for Center<W> {
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints.loosen());
 
-        let mut size = constraints.max();
+        let mut size = constraints.biggest();
 
         if constraints.max_height == f64::INFINITY {
             size.height = child_size.height;

@@ -3,10 +3,7 @@ use std::{cell::RefCell, sync::Mutex};
 use druid_shell::{
     kurbo::Rect,
     piet::{Color, RenderContext},
-    Cursor,
-    IdleToken,
-    KeyEvent,
-    MouseEvent,
+    Cursor, IdleToken, KeyEvent, MouseEvent,
 };
 
 use crate::{
@@ -135,12 +132,8 @@ impl FruiWindowHandler for WindowHandler {
         // Layout & Paint
 
         // Todo: Optimize layout.
-        self.widget_tree.layout(Constraints {
-            min_width: 0.,
-            max_width: self.window_size.width,
-            min_height: 0.,
-            max_height: self.window_size.height,
-        });
+        self.widget_tree
+            .layout(Constraints::new_tight(self.window_size));
 
         // Todo: Optimize paint.
         self.widget_tree.paint(piet);

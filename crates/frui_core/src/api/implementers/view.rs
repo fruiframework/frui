@@ -23,16 +23,11 @@ impl<T: ViewWidget> ViewWidgetOS for T {
         vec![T::build(&self, ctx).into_widget_ptr()]
     }
 
-    fn layout<'w>(&self, ctx: &'w mut AnyRenderContext, constraints: Constraints) -> Size {
+    fn layout<'w>(&self, ctx: &'w AnyRenderContext, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 
-    fn paint<'w>(
-        &'w self,
-        ctx: &'w mut AnyRenderContext,
-        canvas: &mut PaintContext,
-        offset: &Offset,
-    ) {
+    fn paint<'w>(&'w self, ctx: &'w AnyRenderContext, canvas: &mut PaintContext, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

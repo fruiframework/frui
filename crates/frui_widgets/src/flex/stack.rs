@@ -22,7 +22,7 @@ pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
 /// will be located at top-left with it's own size.
 #[derive(Copy, Clone, Default, Debug)]
 pub struct StackLayoutData {
-    pub base: BoxLayoutData,
+    base: BoxLayoutData,
     pub top: Option<f64>,
     pub right: Option<f64>,
     pub bottom: Option<f64>,
@@ -152,13 +152,13 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         let mut height = constraints.min_height;
         let non_positioned_constraints = match self.fit {
             StackFit::Loose => constraints.loosen(),
-            StackFit::Expand => Constraints::tight(constraints.biggest()),
+            StackFit::Expand => Constraints::new_tight(constraints.biggest()),
             StackFit::Passthrough => constraints,
         };
 
         let mut non_positioned_children_count = 0;
 
-        for mut child in ctx.children() {
+        for child in ctx.children() {
             if !Stack::is_positioned(&child) {
                 non_positioned_children_count += 1;
                 let child_size = child.layout(non_positioned_constraints);
@@ -213,7 +213,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
                     offset.y + size.height,
                 ));
 
-                for mut child in ctx.children() {
+                for child in ctx.children() {
                     let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                     child.paint(cv, &offset);
                 }
@@ -222,7 +222,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             });
             r.unwrap();
         } else {
-            for mut child in ctx.children() {
+            for child in ctx.children() {
                 let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                 child.paint(canvas, &offset);
             }

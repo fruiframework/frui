@@ -30,14 +30,14 @@ impl<T: RenderWidget> RenderWidgetOS for T {
             .collect()
     }
 
-    fn layout(&self, ctx: &mut AnyRenderContext, constraints: Constraints) -> Size {
-        let ctx = &mut <_RenderContext<T>>::new(ctx);
+    fn layout(&self, ctx: &AnyRenderContext, constraints: Constraints) -> Size {
+        let ctx = &<_RenderContext<T>>::new(ctx);
 
         T::layout(&self, ctx, constraints)
     }
 
-    fn paint(&self, ctx: &mut AnyRenderContext, canvas: &mut PaintContext, offset: &Offset) {
-        let ctx = &mut <_RenderContext<T>>::new(ctx);
+    fn paint(&self, ctx: &AnyRenderContext, canvas: &mut PaintContext, offset: &Offset) {
+        let ctx = &<_RenderContext<T>>::new(ctx);
 
         T::paint(&self, ctx, canvas, offset);
     }
