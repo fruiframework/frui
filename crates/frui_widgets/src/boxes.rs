@@ -3,12 +3,12 @@ use frui::prelude::*;
 use crate::BoxLayoutData;
 
 #[derive(RenderWidget, Default, Builder)]
-pub struct ConstrainedBox<T: RenderWidget + Widget> {
+pub struct ConstrainedBox<T: Widget> {
     pub child: T,
     pub constraints: Constraints,
 }
 
-impl<'a, T: RenderWidget + Widget> ParentData for ConstrainedBox<T> {
+impl<T: Widget> ParentData for ConstrainedBox<T> {
     type Data = BoxLayoutData;
 
     fn create_data(&self) -> Self::Data {
@@ -16,7 +16,7 @@ impl<'a, T: RenderWidget + Widget> ParentData for ConstrainedBox<T> {
     }
 }
 
-impl<T: RenderWidget + Widget> RenderWidget for ConstrainedBox<T> {
+impl<T: Widget> RenderWidget for ConstrainedBox<T> {
     fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
@@ -38,11 +38,11 @@ impl<T: RenderWidget + Widget> RenderWidget for ConstrainedBox<T> {
 }
 
 #[derive(RenderWidget, Builder)]
-pub struct UnconstrainedBox<T: RenderWidget + Widget> {
+pub struct UnconstrainedBox<T: Widget> {
     pub child: T,
 }
 
-impl<'a, T: RenderWidget + Widget> ParentData for UnconstrainedBox<T> {
+impl<T: Widget> ParentData for UnconstrainedBox<T> {
     type Data = BoxLayoutData;
 
     fn create_data(&self) -> Self::Data {
@@ -50,7 +50,7 @@ impl<'a, T: RenderWidget + Widget> ParentData for UnconstrainedBox<T> {
     }
 }
 
-impl<T: RenderWidget + Widget> RenderWidget for UnconstrainedBox<T> {
+impl<T: Widget> RenderWidget for UnconstrainedBox<T> {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
@@ -71,29 +71,25 @@ impl<T: RenderWidget + Widget> RenderWidget for UnconstrainedBox<T> {
 pub struct SizedBox;
 
 impl SizedBox {
-    pub fn from_size<T: RenderWidget + Widget>(child: T, size: Size) -> impl RenderWidget + Widget {
+    pub fn from_size<T: Widget>(child: T, size: Size) -> impl Widget {
         ConstrainedBox {
             child,
             constraints: Constraints::new_tight_for(Some(size.width), Some(size.height)),
         }
     }
 
-    pub fn new<T: RenderWidget + Widget>(
-        child: T,
-        width: Option<f64>,
-        height: Option<f64>,
-    ) -> impl RenderWidget + Widget {
+    pub fn new<T: Widget>(child: T, width: Option<f64>, height: Option<f64>) -> impl Widget {
         ConstrainedBox {
             child,
             constraints: Constraints::new_tight_for(width, height),
         }
     }
 
-    pub fn square<T: RenderWidget + Widget>(child: T, size: f64) -> impl RenderWidget + Widget {
+    pub fn square<T: Widget>(child: T, size: f64) -> impl Widget {
         Self::from_size(child, Size::new(size, size))
     }
 
-    pub fn shrink<T: RenderWidget + Widget>(child: T) -> impl RenderWidget + Widget {
+    pub fn shrink<T: Widget>(child: T) -> impl Widget {
         ConstrainedBox {
             child,
             constraints: Constraints::new_tight_for(None, None),
