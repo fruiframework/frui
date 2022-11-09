@@ -1,12 +1,12 @@
 use frui::prelude::*;
 
 #[derive(RenderWidget, Builder)]
-pub struct ColoredBox<T: RenderWidget + Widget> {
+pub struct ColoredBox<T: Widget> {
     pub child: T,
     pub color: Color,
 }
 
-impl<T: RenderWidget + Widget> RenderWidget for ColoredBox<T> {
+impl<T: Widget> RenderWidget for ColoredBox<T> {
     fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
