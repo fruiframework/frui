@@ -52,14 +52,6 @@ pub trait RenderWidget: WidgetDerive + Sized {
     fn compute_min_intrinsic_height(&self, _width: f64) -> f64 {
         0.0
     }
-
-    fn compute_size_for_no_child(&self, constraints: Constraints) -> Size {
-        constraints.smallest()
-    }
-
-    fn perform_layout(&self, constraints: Constraints) -> Size {
-        self.compute_size_for_no_child(constraints)
-    }
 }
 
 impl<T: RenderWidget> RenderWidgetOS for T {
