@@ -32,6 +32,9 @@ impl ViewWidget for CrabCounter {
                 Text::new(format!("{} 🦀", *ctx.state()))
                     .size(100.0)
                     .weight(FontWeight::BOLD),
+                // Todo: Make better construction methods:
+                //
+                // SizedBox::from_size((), Size::new(0.0, 60.0)),
                 Row::builder()
                     .space_between(10.0) //
                     .children((

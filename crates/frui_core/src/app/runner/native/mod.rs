@@ -1,14 +1,6 @@
 use druid_shell::{
-    kurbo::Size,
-    piet::Piet,
-    Application,
-    IdleToken,
-    KeyEvent,
-    MouseEvent,
-    Region,
-    WinHandler,
-    WindowBuilder,
-    WindowHandle,
+    kurbo::Size, piet::Piet, Application, IdleToken, KeyEvent, MouseEvent, Region, WinHandler,
+    WindowBuilder, WindowHandle,
 };
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};

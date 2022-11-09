@@ -27,7 +27,11 @@ impl<S: AsRef<str>> Text<S> {
             size: 16.,
             color: Color::WHITE,
             weight: FontWeight::default(),
-            family: FontFamily::default(),
+            // Layout of `FontFamily::SYSTEM_UI` is incredibly slow. Other fonts
+            // seem to render just fine. This issue is related to Piet.
+            //
+            // For now, the default will be `FontFamily::MONOSPACE`.
+            family: FontFamily::MONOSPACE,
         }
     }
 }
@@ -48,7 +52,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let max_width = constraints.max().width;
+        let max_width = constraints.biggest().width;
 
         *ctx.rstate_mut() = TEXT_FACTORY.with(|f| {
             f.get()
@@ -61,12 +65,9 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
                 .unwrap()
         });
 
-        let text_size = ctx.rstate().size();
+        let text_size = ctx.rstate().size().into();
 
-        Size {
-            width: text_size.width,
-            height: text_size.height,
-        }
+        constraints.constrain(text_size)
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
