@@ -16,9 +16,9 @@ pub fn impl_widget_derive(input: &ItemStruct, target: &Ident) -> TokenStream2 {
 
     let Generated {
         Alias,
-        AssocParams,
-        AliasParam: AliasGenerics,
         AliasWhere,
+        AliasParams,
+        AssocParams,
     } = generate(target, &input.generics);
 
     let UniqueTypeId = unique_type_id(target);
@@ -30,11 +30,8 @@ pub fn impl_widget_derive(input: &ItemStruct, target: &Ident) -> TokenStream2 {
         // As a workaround we use a secondary type alias that is outside of `WidgetDerive`
         // definition, which helps the compiler to correctly infer type from `build` method.
         //
-        // This however requires that used type parameters must be explicitly defined
-        // in the type alias. Those are `AliasImplBounds` and `AliasTypeBounds` here.
-        //
         #[doc(hidden)]
-        type #Alias #AliasGenerics #AliasWhere = impl #Widget + #LT;
+        type #Alias #AliasParams #AliasWhere = impl #Widget + #LT;
 
         impl #impl_generics #WidgetDerive for #target #ty_generics #where_clause {
             type Widget<#LT> = #Alias #AssocParams where Self: #LT;
@@ -45,47 +42,37 @@ pub fn impl_widget_derive(input: &ItemStruct, target: &Ident) -> TokenStream2 {
 }
 
 struct Generated {
-    /// Identifier of the type alias which contains TAIT for widget type
-    /// inference.
     Alias: Ident,
-    AliasParam: Generics,
     AliasWhere: TokenStream2,
-    /// Associated type defining type of a given widget child.
+    AliasParams: Generics,
     AssocParams: TokenStream2,
 }
 
 fn generate(name: &Ident, generics: &Generics) -> Generated {
-    // Those parameters are the same as in the definition, except that they
-    // contain an additional 'frui lifetime.
-    //
-    // Used inside of `type Alias<*here*> where *here* = impl ...;`
-    let mut AliasGenerics = generics.clone();
+    let mut AliasParams = generics.clone();
 
-    for param in AliasGenerics.type_params_mut() {
-        // Add 'frui for each lifetime bound.
+    for param in AliasParams.type_params_mut() {
+        // Add 'frui for each generic bound.
         //
         // E.g.: <BoundA + 'frui, BoundB + 'static + 'frui>
         param.bounds.push(frui_lt_t());
     }
 
-    // Insert 'frui before above bounds: <'frui, ...>
-    AliasGenerics.params.insert(0, frui_lt_g());
+    AliasParams.params.insert(0, frui_lt_g());
 
-    // This was originally used as input type paramteres inside of associated
-    // type, used to pass parameters to tyoe alias (TAIT).
-    //
-    // Used in: `type ChildWidget<'frui>: Alias<here> ...;`
-    let mut AssocParams = generics.clone();
-    AssocParams.params.insert(0, frui_lt_g());
-    let AssocParams = AssocParams.split_for_impl().1.to_token_stream();
+    let AssocParams = {
+        let mut generics = generics.clone();
+        generics.params.insert(0, frui_lt_g());
+        generics.split_for_impl().1.to_token_stream()
+    };
 
     let Alias = format_ident!("FruiInferWidgetFor{}", name);
 
     Generated {
         Alias,
+        AliasWhere: AliasParams.split_for_impl().2.to_token_stream(),
+        AliasParams,
         AssocParams,
-        AliasWhere: AliasGenerics.split_for_impl().2.to_token_stream(),
-        AliasParam: AliasGenerics,
     }
 }
 
