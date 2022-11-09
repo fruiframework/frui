@@ -4,13 +4,13 @@ use frui::prelude::*;
 
 pub use alignment::*;
 pub use center::*;
-pub use stack::*;
 pub use flex::*;
+pub use stack::*;
 
 pub mod alignment;
 pub mod center;
-pub mod stack;
 pub mod flex;
+pub mod stack;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct BoxLayoutData {
@@ -64,7 +64,7 @@ pub enum CrossAxisAlignment {
     Center,
     End,
     Stretch,
-    Baseline
+    Baseline,
 }
 
 impl Default for CrossAxisAlignment {

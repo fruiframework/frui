@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 use crate::alignment::{Alignment, AlignmentDirectional};
 use crate::{AlignmentGeometry, BoxLayoutData, TextDirection, WidgetList};
 
@@ -14,8 +12,9 @@ pub enum StackFit {
 #[derive(RenderWidget, Builder)]
 pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
     pub children: WL,
-    pub fit: StackFit,
+    pub clip: bool,
     pub alignment: A,
+    pub fit: StackFit,
     pub text_direction: TextDirection,
 }
 
@@ -51,23 +50,10 @@ impl StackLayoutData {
     }
 }
 
-impl Deref for StackLayoutData {
-    type Target = BoxLayoutData;
-
-    fn deref(&self) -> &Self::Target {
-        &self.base
-    }
-}
-
-impl DerefMut for StackLayoutData {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.base
-    }
-}
-
 impl Stack<(), AlignmentDirectional> {
     pub fn builder() -> Self {
         Stack {
+            clip: true,
             children: (),
             fit: StackFit::Loose,
             alignment: AlignmentDirectional::TOP_START,
@@ -139,7 +125,7 @@ impl Stack<(), AlignmentDirectional> {
                 || y < 0.0
                 || y + child_size.height > size.height;
 
-            child_layout_data.offset = Offset { x, y };
+            child_layout_data.base.offset = Offset { x, y };
         }
         has_visual_overflow
     }
@@ -148,9 +134,10 @@ impl Stack<(), AlignmentDirectional> {
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
     fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
-        child
-            .try_parent_data::<StackLayoutData>()
-            .map_or_else(|| alignment.along(size - child_size), |data| data.offset)
+        child.try_parent_data::<StackLayoutData>().map_or_else(
+            || alignment.along(size - child_size),
+            |data| data.base.offset,
+        )
     }
 }
 
@@ -168,17 +155,32 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             StackFit::Expand => Constraints::new_tight(constraints.biggest()),
             StackFit::Passthrough => constraints,
         };
-        let mut has_non_positioned_child = false;
+
+        let mut non_positioned_children_count = 0;
+
         for child in ctx.children() {
             if !Stack::is_positioned(&child) {
-                has_non_positioned_child = true;
+                non_positioned_children_count += 1;
                 let child_size = child.layout(non_positioned_constraints);
                 width = width.max(child_size.width);
                 height = height.max(child_size.height);
             }
         }
 
+        let has_non_positioned_child = non_positioned_children_count > 0;
+
         let size = if has_non_positioned_child {
+            if cfg!(debug_assertions) {
+                if width == 0. || height == 0. {
+                    if non_positioned_children_count != ctx.children().len() {
+                        log::warn!(concat!(
+                            "not positioned children in Stack have height or width 0. This is most likely a bug. ",
+                            "Consider setting `fit` option of `Stack` to StackFit::Expand."
+                        ))
+                    }
+                }
+            }
+
             Size::new(width, height)
         } else {
             constraints.biggest()
@@ -188,7 +190,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             let child_size = child.size();
             if !Stack::is_positioned(&child) {
                 if let Some(mut layout_data) = child.try_parent_data_mut::<StackLayoutData>() {
-                    layout_data.offset = alignment.along(size - child_size);
+                    layout_data.base.offset = alignment.along(size - child_size);
                 }
             } else {
                 Stack::layout_positioned_child(&mut child, size, &alignment);
@@ -198,11 +200,32 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, _: &Offset) {
-        let alignment = self.alignment.resolve(&self.text_direction);
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
         let size = ctx.size();
-        for child in ctx.children() {
-            child.paint(canvas, &self.get_layout_offset(&child, &alignment, size));
+        let alignment = self.alignment.resolve(&self.text_direction);
+
+        if self.clip {
+            let r = canvas.with_save(|cv| {
+                cv.clip(Rect::new(
+                    offset.x,
+                    offset.y,
+                    offset.x + size.width,
+                    offset.y + size.height,
+                ));
+
+                for child in ctx.children() {
+                    let offset = *offset + self.get_layout_offset(&child, &alignment, size);
+                    child.paint(cv, &offset);
+                }
+
+                Ok(())
+            });
+            r.unwrap();
+        } else {
+            for child in ctx.children() {
+                let offset = *offset + self.get_layout_offset(&child, &alignment, size);
+                child.paint(canvas, &offset);
+            }
         }
     }
 }
