@@ -52,7 +52,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let max_width = constraints.max().width;
+        let max_width = constraints.biggest().width;
 
         *ctx.rstate_mut() = TEXT_FACTORY.with(|f| {
             f.get()
@@ -65,10 +65,9 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
                 .unwrap()
         });
 
-        let text_size = ctx.rstate().size();
+        let text_size = ctx.rstate().size().into();
 
-        let size = constraints.constrain_dimensions(text_size.width, text_size.height);
-        size
+        constraints.constrain(text_size)
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {

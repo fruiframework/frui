@@ -16,14 +16,14 @@ use crate::{
     prelude::WidgetState,
 };
 
+mod common;
 pub mod ext;
 mod parent_data;
 mod render_state;
-mod types;
 
+pub use common::*;
 pub use parent_data::*;
 pub use render_state::*;
-pub use types::*;
 
 pub type RenderContext<'a, T> = &'a _RenderContext<'a, T>;
 
@@ -187,7 +187,7 @@ impl AnyRenderContext {
         let size = widget.raw().layout(self, constraints);
 
         if cfg!(debug_assertions) {
-            if size > constraints.max() {
+            if size > constraints.biggest() {
                 if widget.raw().debug_name_short() != "DebugContainer" {
                     log::warn!("`{}` overflowed", widget.raw().debug_name_short());
                 }

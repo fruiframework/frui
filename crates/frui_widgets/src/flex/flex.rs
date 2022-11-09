@@ -95,8 +95,14 @@ impl<WL: WidgetList> Flex<WL> {
         }
     }
 
-    /// compute flex and layout un-flexiable children and return sizes of flexiable children
+    /// Compute flex and layout of non-flexible children and return sizes of
+    /// flexible children.
     fn compute_sizes(&self, children: ChildrenIter, constraints: Constraints) -> FlexLayoutSizes {
+        //
+        // Todo: Rewrite the algorithm so that it correctly takes into account
+        // `space_between`.
+        //
+
         let mut total_flex = 0;
         let max_main_size = match self.direction {
             Axis::Horizontal => constraints.max_width,
@@ -105,14 +111,14 @@ impl<WL: WidgetList> Flex<WL> {
         let child_count = children.len();
         let can_flex = max_main_size <= f64::INFINITY;
         let mut cross_size: f64 = 0.0;
+
         let mut allocated_size: f64 = match self.main_axis_alignment {
             MainAxisAlignment::SpaceAround => self.space_between / 2.0,
             MainAxisAlignment::SpaceEvenly => self.space_between,
             _ => 0.0,
         };
-        let mut allocated_space_size = allocated_size;
 
-        // compute total flex and layout un-flexiable children
+        // Compute total flex and layout non-flexible children
         for child in children.clone() {
             let flex: usize = Flex::<WL>::get_flex(&child).unwrap_or(0usize);
             if flex > 0 {
@@ -121,9 +127,11 @@ impl<WL: WidgetList> Flex<WL> {
                 let child_constraints = match self.cross_axis_alignment {
                     CrossAxisAlignment::Stretch => match self.direction {
                         Axis::Horizontal => {
-                            Constraints::tight_for(None, Some(constraints.max_height))
+                            Constraints::new_tight_for(None, Some(constraints.max_height))
                         }
-                        Axis::Vertical => Constraints::tight_for(Some(constraints.max_width), None),
+                        Axis::Vertical => {
+                            Constraints::new_tight_for(Some(constraints.max_width), None)
+                        }
                     },
                     _ => match self.direction {
                         Axis::Horizontal => {
@@ -139,17 +147,20 @@ impl<WL: WidgetList> Flex<WL> {
                 cross_size = cross_size.max(self.get_cross_size(&child_size));
             }
         }
+
         let allocated_between_size = self.space_between * (child_count - 1) as f64;
         allocated_size += allocated_between_size;
-        allocated_space_size += allocated_between_size;
-        let free_space: f64 = 0f64.max(if can_flex { max_main_size } else { 0.0 } - allocated_size);
+
+        let free_space = 0f64.max(if can_flex { max_main_size } else { 0.0 } - allocated_size);
         let mut allocated_flex_space = 0.0;
+
         if total_flex > 0 {
             let space_per_flex = if can_flex {
                 free_space / (total_flex as f64)
             } else {
                 f64::NAN
             };
+
             for (idx, child) in children.enumerate() {
                 let flex = Flex::<WL>::get_flex(&child).unwrap_or(0usize);
                 if flex > 0 {
@@ -206,25 +217,27 @@ impl<WL: WidgetList> Flex<WL> {
             }
         }
 
-        let ideal_size = if can_flex && self.main_axis_size == MainAxisSize::Max {
+        let main_size = if can_flex && self.main_axis_size == MainAxisSize::Max {
             max_main_size
         } else {
             allocated_size
         };
+
         cross_size = match self.direction {
             Axis::Horizontal => match self.cross_axis_size {
                 CrossAxisSize::Max => constraints.max_height,
-                CrossAxisSize::Min => constraints.constrain_height(Some(cross_size)),
+                CrossAxisSize::Min => constraints.constrain_height(cross_size),
             },
             Axis::Vertical => match self.cross_axis_size {
                 CrossAxisSize::Max => constraints.max_width,
-                CrossAxisSize::Min => constraints.constrain_width(Some(cross_size)),
+                CrossAxisSize::Min => constraints.constrain_width(cross_size),
             },
         };
+
         FlexLayoutSizes {
-            main_size: ideal_size,
-            cross_size: cross_size,
-            allocated_size: allocated_size - allocated_space_size,
+            main_size,
+            cross_size,
+            allocated_size,
         }
     }
 }
@@ -236,38 +249,33 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
         let child_count = ctx.children().len();
+
         for child in ctx.children() {
             if child.try_parent_data::<FlexData>().is_none() {
                 child.set_parent_data(FlexData::default());
             }
         }
 
-        let sizes = self.compute_sizes(ctx.children(), constraints);
-
-        let allocated_size = sizes.allocated_size;
-        let actual_size = sizes.main_size;
-        let cross_size = sizes.cross_size;
         // let mut max_baseline_distance: f64 = 0.0;
+
         if self.cross_axis_alignment == CrossAxisAlignment::Baseline {
             log::warn!("Baseline alignment not yet implemented");
             // TODO: support baseline alignment
         }
 
-        let (size, actual_size, cross_size) = match self.direction {
-            Axis::Horizontal => {
-                let size = Size::new(actual_size, cross_size);
-                (size, size.width, size.height)
-            }
-            Axis::Vertical => {
-                let size = Size::new(cross_size, actual_size);
-                (size, size.height, size.width)
-            }
+        let FlexLayoutSizes {
+            main_size,
+            cross_size,
+            allocated_size,
+        } = self.compute_sizes(ctx.children(), constraints);
+
+        let size = match self.direction {
+            Axis::Horizontal => Size::new(main_size, cross_size),
+            Axis::Vertical => Size::new(cross_size, main_size),
         };
 
-        let actual_size_delta = actual_size - allocated_size;
-        // let overflow = (-actual_size_delta).max(0.0);
+        let remaining_space = (main_size - allocated_size).max(0.0);
 
-        let remaining_space = actual_size_delta.max(0.0);
         let flip_main_axis = !start_is_top_left(
             &self.direction,
             &self.text_direction,
@@ -307,7 +315,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         };
 
         let mut child_main_position = if flip_main_axis {
-            actual_size - leading_space
+            main_size - leading_space
         } else {
             leading_space
         };
@@ -362,8 +370,11 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
 #[derive(Debug)]
 struct FlexLayoutSizes {
+    /// Total size of a widget on the main axis. It includes whitespace.
     main_size: f64,
+    /// Total size of a widget on the cross axis.
     cross_size: f64,
+    /// Sum of the sizes of the non-flexible children.
     allocated_size: f64,
 }
 

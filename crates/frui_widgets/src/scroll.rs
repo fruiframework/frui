@@ -61,7 +61,7 @@ impl<W: Widget> RenderWidget for Scroll<W> {
 
         ctx.child(0).layout(child_constraints);
 
-        constraints.max()
+        constraints.biggest()
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
