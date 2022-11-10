@@ -46,10 +46,6 @@ pub struct Flex<WL: WidgetList> {
     pub text_direction: TextDirection,
     pub vertical_direction: VerticalDirection,
     pub space_between: f64,
-    // The default (MainAxisSize::Min) differs from Flutter, but the reasoning
-    // is to allow Column in Column or Row in Row without the need to specify
-    // MainAxisSize::Min everytime or without wrapping such widget in
-    // constraints.
     pub main_axis_size: MainAxisSize,
     pub cross_axis_size: CrossAxisSize,
     pub main_axis_alignment: MainAxisAlignment,
@@ -63,7 +59,10 @@ impl Flex<()> {
             direction: Axis::Horizontal,
             text_direction: TextDirection::Ltr,
             vertical_direction: VerticalDirection::Down,
-            space_between: 0f64,
+            space_between: 0.0,
+            // The default differs from Flutter, but the reasoning is to allow
+            // "Column in Column" or "Row in Row" without the need to specify
+            // `MainAxisSize::Min` everytime.
             main_axis_size: MainAxisSize::Min,
             cross_axis_size: CrossAxisSize::Min,
             main_axis_alignment: MainAxisAlignment::Start,
