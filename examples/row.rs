@@ -21,13 +21,13 @@ impl ViewWidget for App {
             Row::builder()
                 .space_between(20.0)
                 .main_axis_size(MainAxisSize::Max)
-                .cross_axis_size(CrossAxisSize::Max)
-                .main_axis_alignment(MainAxisAlignment::Center)
-                .cross_axis_alignment(CrossAxisAlignment::Center)
+                // .cross_axis_size(CrossAxisSize::Max)
+                .main_axis_alignment(MainAxisAlignment::Start)
+                // .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
-                    Big(Color::rgb8(13, 245, 152)),
-                    Big(Color::rgb8(255, 0, 110)),
-                    Big(Color::rgb8(0, 186, 255)),
+                    Big(100., 100., Color::rgb8(13, 245, 152)),
+                    Big(100., 100., Color::rgb8(255, 0, 110)),
+                    Big(100., 100., Color::rgb8(0, 186, 255)),
                 )),
         )
     }

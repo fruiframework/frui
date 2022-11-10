@@ -26,9 +26,9 @@ impl ViewWidget for App {
                 .main_axis_alignment(MainAxisAlignment::SpaceBetween)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
-                    Big(Color::rgb8(13, 245, 152)),
-                    Big(Color::rgb8(255, 0, 110)),
-                    Big(Color::rgb8(0, 186, 255)),
+                    Big::new(Color::rgb8(13, 245, 152)),
+                    Big::new(Color::rgb8(255, 0, 110)),
+                    Big::new(Color::rgb8(0, 186, 255)),
                 )),
         )
     }
