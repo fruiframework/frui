@@ -22,9 +22,15 @@ impl ViewWidget for App {
                 .space_between(20.0)
                 .main_axis_size(MainAxisSize::Max)
                 // .cross_axis_size(CrossAxisSize::Max)
-                .main_axis_alignment(MainAxisAlignment::Start)
+                .main_axis_alignment(MainAxisAlignment::SpaceEvenly)
                 // .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
+                    Expanded::new(
+                        Container::builder()
+                            .height(100.)
+                            .color(Color::RED)
+                            .child(Text::new("Hi")),
+                    ),
                     Big(100., 100., Color::rgb8(13, 245, 152)),
                     Big(100., 100., Color::rgb8(255, 0, 110)),
                     Big(100., 100., Color::rgb8(0, 186, 255)),

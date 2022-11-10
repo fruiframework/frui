@@ -9,6 +9,13 @@ pub enum Axis {
 }
 
 impl Axis {
+    fn max(&self, constraints: Constraints) -> f64 {
+        match self {
+            Axis::Horizontal => constraints.max_width,
+            Axis::Vertical => constraints.max_height,
+        }
+    }
+
     fn flip(&self) -> Self {
         match self {
             Axis::Horizontal => Axis::Vertical,
@@ -79,6 +86,8 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+        let main_size_max = self.direction.max(constraints);
+        let can_flex = main_size_max < f64::INFINITY;
         let child_count = ctx.children().len();
 
         for child in ctx.children() {
@@ -87,7 +96,6 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             }
         }
 
-        // Perform `layout_inflexible` so that we get following:
         let InflexResult {
             flex_count,
             allocated_space,
@@ -96,23 +104,26 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         let flexible = flex_count > 0;
 
         let MainAxisSizes {
-            free_space,
+            total_min,
             padding_top,
             space_between,
         } = self.compute_main_sizes(flexible, child_count, constraints, allocated_space);
 
-        // let flex_constraints = Constraints {
-        //     min_width: todo!(),
-        //     max_width: todo!(),
-        //     min_height: todo!(),
-        //     max_height: todo!(),
-        // };
+        let free_space = (main_size_max - total_min).max(0.);
+
+        if flexible {
+            assert!(can_flex, "flex received unbounded constraints");
+            self.layout_flexible(ctx.children(), constraints, free_space, flex_count);
+        }
+
+        //
+        // Position chlidren:
 
         let mut offset = Offset::default();
 
         offset.x = padding_top;
 
-        for child in ctx.children().filter(|c| !is_flex(c)) {
+        for child in ctx.children() {
             let child_size = child.size();
             let child_offset = &mut child
                 .try_parent_data_mut::<FlexData>()
@@ -123,7 +134,12 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             offset.x += child_size.width + space_between;
         }
 
-        constraints.biggest()
+        let mut size = constraints.biggest();
+
+        // Ensure overflow error appears when there is no space to lay out
+        // flexible children of size of at least 0.
+        size.width = size.width.max(total_min);
+        size
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
@@ -207,8 +223,6 @@ impl<WL: WidgetList> Flex<WL> {
         constraints: Constraints,
         allocated_space: f64,
     ) -> MainAxisSizes {
-        dbg!(flexible, child_count, constraints, allocated_space);
-
         use MainAxisAlignment::*;
 
         // Caller should enforce following requirements.
@@ -273,28 +287,78 @@ impl<WL: WidgetList> Flex<WL> {
         let padding_top = padding_top.max(0.);
 
         // Total space if each of flex widgets had 0 size.
-        // let total_space_min = {
-        //     let padding = match self.main_axis_alignment {
-        //         Start => allocated_space + ,
-        //         Center => todo!(),
-        //         End => todo!(),
-        //         SpaceBetween => todo!(),
-        //         SpaceAround => todo!(),
-        //         SpaceEvenly => todo!(),
-        //     };
-        //
-        //     back_to_back + padding
-        // };
-
-        let r = MainAxisSizes {
-            free_space: 0.0,
-            padding_top,
-            space_between,
+        let total_min = {
+            match self.main_axis_alignment {
+                Start | Center | End | SpaceBetween => back_to_back,
+                SpaceAround => padding_top + back_to_back + padding_top,
+                SpaceEvenly => padding_top + back_to_back + padding_top,
+            }
         };
 
-        dbg!(&r);
+        MainAxisSizes {
+            total_min,
+            padding_top,
+            space_between,
+        }
+    }
 
-        r
+    fn layout_flexible(
+        &self,
+        children: ChildIter,
+        constraints: Constraints,
+        free_space: f64,
+        flex_count: usize,
+    ) {
+        let space_per_flex = free_space / (flex_count as f64);
+
+        for child in children.filter(is_flex) {
+            let flex = child.try_parent_data::<FlexData>().unwrap().flex_factor;
+
+            let max_child_extent = space_per_flex * flex as f64;
+
+            let min_child_extent = match get_fit(&child).unwrap() {
+                FlexFit::Loose => 0.0,
+                FlexFit::Tight => max_child_extent,
+            };
+
+            // FitFlex::Tight forces tight constraints on its child.
+            // FitFlex::Loose forces loose constraints on its child.
+            //
+            // Can we implement this differently?
+
+            let flex_constraints = match self.cross_axis_alignment {
+                CrossAxisAlignment::Stretch => match self.direction {
+                    Axis::Horizontal => Constraints {
+                        min_width: min_child_extent,
+                        max_width: max_child_extent,
+                        min_height: constraints.max_height,
+                        max_height: constraints.max_height,
+                    },
+                    Axis::Vertical => Constraints {
+                        min_width: constraints.max_width,
+                        max_width: constraints.max_width,
+                        min_height: min_child_extent,
+                        max_height: max_child_extent,
+                    },
+                },
+                _ => match self.direction {
+                    Axis::Horizontal => Constraints {
+                        min_width: min_child_extent,
+                        max_width: max_child_extent,
+                        min_height: 0.0,
+                        max_height: constraints.max_height,
+                    },
+                    Axis::Vertical => Constraints {
+                        min_width: 0.0,
+                        max_width: constraints.max_width,
+                        min_height: min_child_extent,
+                        max_height: max_child_extent,
+                    },
+                },
+            };
+
+            child.layout(flex_constraints);
+        }
     }
 }
 
@@ -315,8 +379,13 @@ fn get_fit(child: &ChildContext) -> Option<FlexFit> {
 
 #[derive(Debug)]
 struct MainAxisSizes {
-    /// Remaining unallocated space.
-    free_space: f64,
+    // 1. Here return `total_min: f64` which is how big column is on the main
+    //    axis if every flexible widget had size 0.
+    // 2. In the caller do `total_flex_space = (constraints.max_size - total_min).max(0.)`.
+    // 3. Then do `space_per_flex= total_flex_space / flex_count`.
+    // 4. The rest is easy.
+    /// Total size of [`Flex`] if every flexible had size 0.
+    total_min: f64,
     /// Padding before first child.
     padding_top: f64,
     /// Space between children.
