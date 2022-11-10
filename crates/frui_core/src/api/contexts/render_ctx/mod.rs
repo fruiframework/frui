@@ -98,7 +98,7 @@ impl<'a, T> _RenderContext<'a, T> {
         self.ctx.child(index)
     }
 
-    pub fn children(&self) -> ChildrenIter {
+    pub fn children(&self) -> ChildIter {
         self.ctx.children()
     }
 
@@ -224,8 +224,8 @@ impl AnyRenderContext {
             .expect("specified node didn't have any children")
     }
 
-    pub fn children(&self) -> ChildrenIter {
-        ChildrenIter {
+    pub fn children(&self) -> ChildIter {
+        ChildIter {
             child_idx: 0,
             parent_ctx: self,
         }
@@ -247,18 +247,18 @@ impl AnyRenderContext {
     }
 }
 
-pub struct ChildrenIter<'a> {
+pub struct ChildIter<'a> {
     child_idx: usize,
     parent_ctx: &'a AnyRenderContext,
 }
 
-impl<'a> ChildrenIter<'a> {
+impl<'a> ChildIter<'a> {
     pub fn len(&self) -> usize {
         self.parent_ctx.node.children().len()
     }
 }
 
-impl Clone for ChildrenIter<'_> {
+impl Clone for ChildIter<'_> {
     fn clone(&self) -> Self {
         Self {
             // Reset iterator.
@@ -268,7 +268,7 @@ impl Clone for ChildrenIter<'_> {
     }
 }
 
-impl<'a> Iterator for ChildrenIter<'a> {
+impl<'a> Iterator for ChildIter<'a> {
     type Item = ChildContext<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {

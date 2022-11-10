@@ -204,8 +204,8 @@ pub enum FlexFit {
 /// Used by flexible widgets to determine the flex factor of a child.
 #[derive(Debug, Clone, Copy)]
 pub struct FlexData {
-    flex_factor: usize,
     fit: FlexFit,
+    flex_factor: usize,
     box_data: BoxLayoutData,
 }
 
