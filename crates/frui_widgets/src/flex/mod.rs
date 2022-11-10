@@ -233,11 +233,25 @@ impl DerefMut for FlexData {
     }
 }
 
-#[derive(RenderWidget)]
+#[derive(RenderWidget, Builder)]
 pub struct Flexible<W: Widget> {
     pub fit: FlexFit,
     pub flex: usize,
     pub child: W,
+}
+
+impl Flexible<()> {
+    pub fn new(child: impl Widget) -> Flexible<impl Widget> {
+        Flexible::builder().child(child)
+    }
+
+    pub fn builder() -> Self {
+        Self {
+            fit: FlexFit::Loose,
+            flex: 1,
+            child: (),
+        }
+    }
 }
 
 impl<W: Widget> ParentData for Flexible<W> {
