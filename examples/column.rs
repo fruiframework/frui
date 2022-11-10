@@ -20,12 +20,20 @@ impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
         DebugContainer::child(
             Column::builder()
-                .space_between(10.0)
+                .space_between(20.0)
                 .main_axis_size(MainAxisSize::Max)
-                .cross_axis_size(CrossAxisSize::Max)
                 .main_axis_alignment(MainAxisAlignment::SpaceBetween)
-                .cross_axis_alignment(CrossAxisAlignment::Center)
+                // .cross_axis_size(CrossAxisSize::Max)
+                // .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
+                    Expanded::new(
+                        Container::builder()
+                            // I know this is incorrect, but for some reason this crashes??
+                            // Maybe try seeing the default behaviour in Flutter and correct it?
+                            .height(100.)
+                            .color(Color::RED)
+                            .child(Text::new("Hi")),
+                    ),
                     Big::new(Color::rgb8(13, 245, 152)),
                     Big::new(Color::rgb8(255, 0, 110)),
                     Big::new(Color::rgb8(0, 186, 255)),

@@ -2,7 +2,7 @@ use frui::prelude::*;
 
 use crate::*;
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Axis {
     Horizontal,
     Vertical,
@@ -119,27 +119,28 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         //
         // Position chlidren:
 
-        let mut offset = Offset::default();
-
-        offset.x = padding_top;
+        let mut main_offset = padding_top;
 
         for child in ctx.children() {
-            let child_size = child.size();
+            let child_main = *child.size().main(self.direction);
             let child_offset = &mut child
                 .try_parent_data_mut::<FlexData>()
                 .unwrap()
                 .box_data
                 .offset;
-            child_offset.x = offset.x;
-            offset.x += child_size.width + space_between;
+            *child_offset.main(self.direction) = main_offset;
+            main_offset += child_main + space_between;
         }
 
         let mut size = constraints.biggest();
 
         // Ensure overflow error appears when there is no space to lay out
         // flexible children of size of at least 0.
-        size.width = size.width.max(total_min);
+        let main_size = size.main(self.direction);
+        *main_size = main_size.max(total_min);
         size
+
+        // For some reason Row renders correctly, and Column not!
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
@@ -416,5 +417,27 @@ fn start_is_top_left(
             VerticalDirection::Up => false,
             VerticalDirection::Down => true,
         },
+    }
+}
+
+trait AxisExt {
+    fn main(&mut self, axis: Axis) -> &mut f64;
+}
+
+impl AxisExt for Offset {
+    fn main(&mut self, axis: Axis) -> &mut f64 {
+        match axis {
+            Axis::Horizontal => &mut self.x,
+            Axis::Vertical => &mut self.y,
+        }
+    }
+}
+
+impl AxisExt for Size {
+    fn main(&mut self, axis: Axis) -> &mut f64 {
+        match axis {
+            Axis::Horizontal => &mut self.width,
+            Axis::Vertical => &mut self.height,
+        }
     }
 }
