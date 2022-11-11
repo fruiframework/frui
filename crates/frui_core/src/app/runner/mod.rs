@@ -22,7 +22,7 @@ pub type WindowHandle = miri::WindowHandle;
 pub type WindowHandle = druid_shell::WindowHandle;
 
 #[cfg(feature = "miri")]
-pub type PaintCtx<'a> = miri::PaintCtx<'a>;
+pub type Canvas<'a> = miri::Canvas<'a>;
 #[cfg(not(feature = "miri"))]
 pub type Canvas<'a> = druid_shell::piet::Piet<'a>;
 

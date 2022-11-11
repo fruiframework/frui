@@ -101,8 +101,10 @@ impl WindowHandler {
 impl FruiWindowHandler for WindowHandler {
     fn connect(&mut self, handle: &WindowHandle) {
         APP_HANDLE.with(|r| *r.borrow_mut() = Some(handle.get_idle_handle().unwrap()));
-        #[cfg(not(feature = "miri"))]
-        TEXT_FACTORY.with(|f| f.set(self.window_handle.text()));
+
+        if !cfg!(feature = "miri") {
+            TEXT_FACTORY.with(|f| f.set(self.window_handle.text()));
+        }
 
         let root_widget = std::mem::take(&mut self.root_temp);
         self.widget_tree = WidgetTree::new(root_widget.unwrap());
