@@ -3,7 +3,7 @@ use crate::{
         contexts::{
             build_ctx::_BuildContext,
             render_ctx::{
-                paint_ctx::{PaintContext, PaintContextOS},
+                paint_ctx::{PaintCtx, PaintCtxOS},
                 LayoutCtxOS,
             },
             Context,
@@ -20,7 +20,7 @@ pub trait RenderWidget: WidgetDerive + Sized {
 
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size;
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset);
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset);
 }
 
 impl<T: RenderWidget> RenderWidgetOS for T {
@@ -39,8 +39,8 @@ impl<T: RenderWidget> RenderWidgetOS for T {
         T::layout(&self, ctx, constraints)
     }
 
-    fn paint(&self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset) {
-        let ctx = &mut <PaintContext<T>>::new(ctx);
+    fn paint(&self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
+        let ctx = &mut <PaintCtx<T>>::new(ctx);
 
         T::paint(self, ctx, canvas, offset);
     }

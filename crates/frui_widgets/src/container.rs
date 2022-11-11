@@ -69,7 +69,7 @@ impl<W: Widget> RenderWidget for Container<W> {
         }
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Some(color) = &self.color {
             let brush = &canvas.solid_brush(color.clone());
 

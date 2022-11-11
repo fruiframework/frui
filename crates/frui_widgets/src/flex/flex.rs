@@ -358,7 +358,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         size
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         for mut child in ctx.children() {
             let child_offset: Offset = child
                 .try_parent_data::<FlexData>()

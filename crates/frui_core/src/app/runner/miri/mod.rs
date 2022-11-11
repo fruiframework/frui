@@ -1,8 +1,6 @@
 use druid_shell::{
     kurbo::{Rect, Size},
-    KeyEvent,
-    MouseEvent,
-    Region,
+    KeyEvent, MouseEvent, Region,
 };
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
@@ -36,7 +34,7 @@ impl MiriRunner {
         window_handler.size(Size::new(500., 400.));
         window_handler.prepare_paint();
         window_handler.paint(
-            &mut PaintContext::default(),
+            &mut Canvas::default(),
             &default_region(Size::new(500., 400.)),
         );
 
@@ -58,10 +56,8 @@ impl MiriRunner {
 
         if *REQUEST_ANIM_FRAME.lock().unwrap() || force_repaint {
             self.handler.prepare_paint();
-            self.handler.paint(
-                &mut PaintContext::default(),
-                &default_region(self.last_size),
-            );
+            self.handler
+                .paint(&mut Canvas::default(), &default_region(self.last_size));
 
             *REQUEST_ANIM_FRAME.lock().unwrap() = false;
         }

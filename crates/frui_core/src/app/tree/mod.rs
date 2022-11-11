@@ -17,7 +17,7 @@ use crate::{
         IntoWidgetPtr, WidgetPtr,
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
-    macro_exports::PaintContextOS,
+    macro_exports::PaintCtxOS,
     prelude::{Canvas, Constraints, Offset, Size},
 };
 
@@ -54,7 +54,7 @@ impl WidgetTree {
     }
 
     pub fn paint(&mut self, piet: &mut Canvas) {
-        PaintContextOS::new(self.root()).paint(piet, &Offset::default());
+        PaintCtxOS::new(self.root()).paint(piet, &Offset::default());
     }
 
     pub fn handle_pointer_event(&mut self, event: PointerEvent) {

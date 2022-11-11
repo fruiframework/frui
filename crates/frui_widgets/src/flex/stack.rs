@@ -128,12 +128,7 @@ impl Stack<(), AlignmentDirectional> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
-    fn get_layout_offset(
-        &self,
-        child: &PaintContextOS,
-        alignment: &Alignment,
-        size: Size,
-    ) -> Offset {
+    fn get_layout_offset(&self, child: &PaintCtxOS, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(
             || alignment.along(size - child_size),
@@ -201,7 +196,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         size
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let size = ctx.size();
         let alignment = self.alignment.resolve(&self.text_direction);
 
@@ -288,7 +283,7 @@ where
         ctx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

@@ -3,7 +3,7 @@ use std::ops::Deref;
 use crate::{api::Widget, macro_exports::RenderWidgetOS, prelude::*};
 
 use super::{
-    contexts::render_ctx::paint_ctx::{PaintContext, PaintContextOS},
+    contexts::render_ctx::paint_ctx::{PaintCtx, PaintCtxOS},
     implementers::{RawWidget, WidgetDerive},
 };
 
@@ -101,7 +101,7 @@ impl RenderWidget for () {
         Size::ZERO
     }
 
-    fn paint(&self, _: &mut PaintContext<Self>, _: &mut Canvas, _: &Offset) {}
+    fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}
 }
 
 impl RawWidget for () {
@@ -113,7 +113,7 @@ impl RawWidget for () {
         <Self as RenderWidgetOS>::layout(self, ctx, constraints)
     }
 
-    fn paint<'w>(&'w self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset) {
+    fn paint<'w>(&'w self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
         <Self as RenderWidgetOS>::paint(self, ctx, canvas, offset)
     }
 
@@ -139,7 +139,7 @@ macro_rules! impl_widget_os_deref_ {
 
             fn paint<'w>(
                 &'w self,
-                ctx: PaintContextOS,
+                ctx: PaintCtxOS,
                 canvas: &mut Canvas,
                 offset: &Offset,
             ) {

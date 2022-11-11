@@ -10,13 +10,13 @@ use crate::{
 
 use super::{ext::RenderExt, Offset, Size};
 
-pub struct PaintContext<T> {
-    ctx: PaintContextOS,
+pub struct PaintCtx<T> {
+    ctx: PaintCtxOS,
     _p: PhantomData<T>,
 }
 
-impl<T> PaintContext<T> {
-    pub fn new(ctx: PaintContextOS) -> Self {
+impl<T> PaintCtx<T> {
+    pub fn new(ctx: PaintCtxOS) -> Self {
         Self {
             ctx,
             _p: PhantomData,
@@ -24,28 +24,28 @@ impl<T> PaintContext<T> {
     }
 }
 
-impl<W: Widget> RenderExt<W> for PaintContext<W> {
+impl<W: Widget> RenderExt<W> for PaintCtx<W> {
     fn node(&self) -> &WidgetNodeRef {
         &self.node
     }
 }
 
-impl<T> std::ops::Deref for PaintContext<T> {
-    type Target = PaintContextOS;
+impl<T> std::ops::Deref for PaintCtx<T> {
+    type Target = PaintCtxOS;
 
     fn deref(&self) -> &Self::Target {
         &self.ctx
     }
 }
 
-impl<T> std::ops::DerefMut for PaintContext<T> {
+impl<T> std::ops::DerefMut for PaintCtx<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.ctx
     }
 }
 
 #[derive(Clone)]
-pub struct PaintContextOS {
+pub struct PaintCtxOS {
     node: WidgetNodeRef,
     // Todo:
     //
@@ -56,7 +56,7 @@ pub struct PaintContextOS {
     parent_offset: Cell<Offset>,
 }
 
-impl PaintContextOS {
+impl PaintCtxOS {
     pub(crate) fn new(node: WidgetNodeRef) -> Self {
         Self {
             node,
@@ -86,13 +86,13 @@ impl PaintContextOS {
     }
 
     #[track_caller]
-    pub fn child(&mut self, index: usize) -> PaintContextOS {
+    pub fn child(&mut self, index: usize) -> PaintCtxOS {
         self.try_child(index)
             .expect("specified node didn't have any children")
     }
 
-    pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintContextOS> + 'a {
-        self.node.children().iter().map(|c| PaintContextOS {
+    pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
+        self.node.children().iter().map(|c| PaintCtxOS {
             node: WidgetNode::node_ref(c),
             offset: Cell::default(),
             parent_offset: self.offset.clone(),
@@ -100,10 +100,10 @@ impl PaintContextOS {
     }
 
     // Todo: Maybe inline.
-    fn try_child(&self, index: usize) -> Option<PaintContextOS> {
+    fn try_child(&self, index: usize) -> Option<PaintCtxOS> {
         let child = self.node.children().get(index)?;
 
-        Some(PaintContextOS {
+        Some(PaintCtxOS {
             node: WidgetNode::node_ref(child),
             offset: Cell::default(),
             parent_offset: self.offset.clone(),
@@ -147,10 +147,3 @@ impl PaintContextOS {
         self.node.borrow_mut().render_data.parent_data = Box::new(data);
     }
 }
-
-// Knowing that those contextes will be shared, what's the next action?
-
-// LayoutContext < RenderContext >
-// PaintContext < RenderContext >
-
-// Or simply ignore that and reuse fields.
