@@ -2,7 +2,7 @@ use crate::{
     api::{
         contexts::{
             build_ctx::{BuildContext, _BuildContext},
-            render_ctx::{paint_ctx::PaintContextOS, RenderContextOS},
+            render_ctx::{paint_ctx::PaintContextOS, LayoutCtxOS},
             Context,
         },
         IntoWidgetPtr, WidgetPtr,
@@ -23,7 +23,7 @@ impl<T: ViewWidget> ViewWidgetOS for T {
         vec![T::build(&self, ctx).into_widget_ptr()]
     }
 
-    fn layout<'w>(&self, ctx: RenderContextOS, constraints: Constraints) -> Size {
+    fn layout<'w>(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 

@@ -8,7 +8,7 @@ impl<W: Widget> RenderWidget for Transform<W> {
         vec![&self.1]
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 

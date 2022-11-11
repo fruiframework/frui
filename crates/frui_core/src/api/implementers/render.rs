@@ -4,13 +4,13 @@ use crate::{
             build_ctx::_BuildContext,
             render_ctx::{
                 paint_ctx::{PaintContext, PaintContextOS},
-                RenderContextOS,
+                LayoutCtxOS,
             },
             Context,
         },
         IntoWidgetPtr, WidgetPtr,
     },
-    prelude::{BuildContext, Canvas, Constraints, Offset, RenderContext, Size},
+    prelude::{BuildContext, Canvas, Constraints, LayoutCtx, Offset, Size},
 };
 
 use super::{RenderWidgetOS, WidgetDerive};
@@ -18,7 +18,7 @@ use super::{RenderWidgetOS, WidgetDerive};
 pub trait RenderWidget: WidgetDerive + Sized {
     fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>>;
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size;
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size;
 
     fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset);
 }
@@ -33,8 +33,8 @@ impl<T: RenderWidget> RenderWidgetOS for T {
             .collect()
     }
 
-    fn layout(&self, ctx: RenderContextOS, constraints: Constraints) -> Size {
-        let ctx = &<RenderContext<T>>::new(ctx);
+    fn layout(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
+        let ctx = &<LayoutCtx<T>>::new(ctx);
 
         T::layout(&self, ctx, constraints)
     }

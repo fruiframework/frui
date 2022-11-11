@@ -8,7 +8,7 @@ use super::{
     any_ext::AnyExt,
     contexts::{
         build_ctx::widget_state::WidgetStateOS,
-        render_ctx::{paint_ctx::PaintContextOS, ParentDataOS, RenderContextOS, RenderStateOS},
+        render_ctx::{paint_ctx::PaintContextOS, LayoutCtxOS, ParentDataOS, RenderStateOS},
         Context,
     },
     local_key::WidgetLocalKey,
@@ -62,7 +62,7 @@ pub trait OS:
 {
     fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>>;
 
-    fn layout(&self, ctx: RenderContextOS, constraints: Constraints) -> Size;
+    fn layout(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size;
 
     fn paint(&self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset);
 

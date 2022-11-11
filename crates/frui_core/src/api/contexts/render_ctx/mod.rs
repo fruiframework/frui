@@ -25,13 +25,13 @@ pub use common::*;
 pub use parent_data::*;
 pub use render_state::*;
 
-pub struct RenderContext<T> {
-    ctx: RenderContextOS,
+pub struct LayoutCtx<T> {
+    ctx: LayoutCtxOS,
     _p: PhantomData<T>,
 }
 
-impl<T> RenderContext<T> {
-    pub(crate) fn new(any: RenderContextOS) -> Self {
+impl<T> LayoutCtx<T> {
+    pub(crate) fn new(any: LayoutCtxOS) -> Self {
         Self {
             ctx: any,
             _p: PhantomData,
@@ -39,32 +39,32 @@ impl<T> RenderContext<T> {
     }
 }
 
-impl<W: Widget> RenderExt<W> for RenderContext<W> {
+impl<W: Widget> RenderExt<W> for LayoutCtx<W> {
     fn node(&self) -> &WidgetNodeRef {
         &self.ctx.node
     }
 }
 
-impl<T> std::ops::Deref for RenderContext<T> {
-    type Target = RenderContextOS;
+impl<T> std::ops::Deref for LayoutCtx<T> {
+    type Target = LayoutCtxOS;
 
     fn deref(&self) -> &Self::Target {
         &self.ctx
     }
 }
 
-impl<T> std::ops::DerefMut for RenderContext<T> {
+impl<T> std::ops::DerefMut for LayoutCtx<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.ctx
     }
 }
 
 #[derive(Clone)]
-pub struct RenderContextOS {
+pub struct LayoutCtxOS {
     node: WidgetNodeRef,
 }
 
-impl RenderContextOS {
+impl LayoutCtxOS {
     pub(crate) fn new(node: WidgetNodeRef) -> Self {
         Self { node }
     }
@@ -90,24 +90,24 @@ impl RenderContextOS {
         size
     }
 
-    pub fn child(&self, index: usize) -> RenderContextOS {
+    pub fn child(&self, index: usize) -> LayoutCtxOS {
         self.try_child(index)
             .expect("specified node didn't have any children")
     }
 
-    pub fn children(&self) -> LayoutCtxChildIter {
-        LayoutCtxChildIter {
+    pub fn children(&self) -> LayoutCtxIter {
+        LayoutCtxIter {
             child_idx: 0,
             parent_ctx: self,
         }
     }
 
-    fn try_child(&self, index: usize) -> Option<RenderContextOS> {
+    fn try_child(&self, index: usize) -> Option<LayoutCtxOS> {
         let child = self.node.children().get(index)?;
 
         let node = WidgetNode::node_ref(child);
 
-        Some(RenderContextOS::new(node))
+        Some(LayoutCtxOS::new(node))
     }
 
     pub fn try_parent_data<T: 'static>(&self) -> Option<Ref<T>> {
@@ -155,18 +155,18 @@ impl RenderContextOS {
     }
 }
 
-pub struct LayoutCtxChildIter<'a> {
+pub struct LayoutCtxIter<'a> {
     child_idx: usize,
-    parent_ctx: &'a RenderContextOS,
+    parent_ctx: &'a LayoutCtxOS,
 }
 
-impl<'a> LayoutCtxChildIter<'a> {
+impl<'a> LayoutCtxIter<'a> {
     pub fn len(&self) -> usize {
         self.parent_ctx.node.children().len()
     }
 }
 
-impl Clone for LayoutCtxChildIter<'_> {
+impl Clone for LayoutCtxIter<'_> {
     fn clone(&self) -> Self {
         Self {
             // Reset iterator.
@@ -176,8 +176,8 @@ impl Clone for LayoutCtxChildIter<'_> {
     }
 }
 
-impl<'a> Iterator for LayoutCtxChildIter<'a> {
-    type Item = RenderContextOS;
+impl<'a> Iterator for LayoutCtxIter<'a> {
+    type Item = LayoutCtxOS;
 
     fn next(&mut self) -> Option<Self::Item> {
         let r = self.parent_ctx.try_child(self.child_idx);

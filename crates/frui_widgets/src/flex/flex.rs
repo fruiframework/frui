@@ -73,11 +73,11 @@ impl Flex<()> {
 }
 
 impl<WL: WidgetList> Flex<WL> {
-    fn get_flex(child: &RenderContextOS) -> Option<usize> {
+    fn get_flex(child: &LayoutCtxOS) -> Option<usize> {
         child.try_parent_data::<FlexData>().map(|d| d.flex_factor)
     }
 
-    fn get_fit(child: &RenderContextOS) -> Option<FlexFit> {
+    fn get_fit(child: &LayoutCtxOS) -> Option<FlexFit> {
         child.try_parent_data::<FlexData>().map(|d| d.fit)
     }
 
@@ -97,11 +97,7 @@ impl<WL: WidgetList> Flex<WL> {
 
     /// Compute flex and layout of non-flexible children and return sizes of
     /// flexible children.
-    fn compute_sizes(
-        &self,
-        children: LayoutCtxChildIter,
-        constraints: Constraints,
-    ) -> FlexLayoutSizes {
+    fn compute_sizes(&self, children: LayoutCtxIter, constraints: Constraints) -> FlexLayoutSizes {
         //
         // Todo: Rewrite the algorithm so that it correctly takes into account
         // `space_between`.
@@ -251,7 +247,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         self.children.get()
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_count = ctx.children().len();
 
         for child in ctx.children() {

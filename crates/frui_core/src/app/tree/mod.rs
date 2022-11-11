@@ -11,7 +11,7 @@ use druid_shell::IdleToken;
 
 use crate::{
     api::{
-        contexts::{render_ctx::RenderContextOS, Context},
+        contexts::{render_ctx::LayoutCtxOS, Context},
         local_key::LocalKeyAny,
         pointer_events::events::PointerEvent,
         IntoWidgetPtr, WidgetPtr,
@@ -50,7 +50,7 @@ impl WidgetTree {
     }
 
     pub fn layout(&mut self, constraints: Constraints) {
-        RenderContextOS::new(self.root()).layout(constraints);
+        LayoutCtxOS::new(self.root()).layout(constraints);
     }
 
     pub fn paint(&mut self, piet: &mut Canvas) {
