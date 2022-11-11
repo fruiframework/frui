@@ -20,7 +20,7 @@ impl<T: Widget> RenderWidget for ColoredBox<T> {
         }
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let rect = Rect::from_origin_size(*offset, ctx.size());
         let brush = &canvas.solid_brush(self.color.clone());
         canvas.fill(rect, brush);

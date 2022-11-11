@@ -8,7 +8,7 @@ use super::{
     any_ext::AnyExt,
     contexts::{
         build_ctx::widget_state::WidgetStateOS,
-        render_ctx::{paint_ctx::PaintContextOS, LayoutCtxOS, ParentDataOS, RenderStateOS},
+        render_ctx::{paint_ctx::PaintCtxOS, LayoutCtxOS, ParentDataOS, RenderStateOS},
         Context,
     },
     local_key::WidgetLocalKey,
@@ -64,7 +64,7 @@ pub trait OS:
 
     fn layout(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size;
 
-    fn paint(&self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset);
+    fn paint(&self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset);
 
     fn inherited_key(&self) -> Option<TypeId> {
         None

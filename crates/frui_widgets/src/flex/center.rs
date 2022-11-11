@@ -30,7 +30,7 @@ impl<W: Widget> RenderWidget for Center<W> {
         size
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let self_size = ctx.size();
         let child_size = ctx.child(0).size();
 

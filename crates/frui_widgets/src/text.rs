@@ -70,7 +70,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         constraints.constrain(text_size)
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         PietRenderContext::draw_text(
             canvas,
             &ctx.render_state(),

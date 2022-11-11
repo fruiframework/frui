@@ -15,7 +15,7 @@ use super::RenderState;
 
 /// Extension trait for all rendering contexts.
 ///
-/// Todo: Implement for `LayoutCtx`, `PaintContext`, ...
+/// Todo: Implement for `LayoutCtx`, `PaintCtx`, ...
 pub trait RenderExt<W: Widget> {
     #[doc(hidden)]
     fn node(&self) -> &WidgetNodeRef;

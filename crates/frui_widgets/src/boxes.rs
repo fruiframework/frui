@@ -32,7 +32,7 @@ impl<T: Widget> RenderWidget for ConstrainedBox<T> {
         }
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }
@@ -64,7 +64,7 @@ impl<T: Widget> RenderWidget for UnconstrainedBox<T> {
         }
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

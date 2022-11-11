@@ -208,7 +208,7 @@ impl<T: WidgetList> RenderWidget for Row<T> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintCtx, offset: &Offset) {
         let self_height = ctx.size().height;
         let space_between_x = ctx.rstate().space_between_x;
 

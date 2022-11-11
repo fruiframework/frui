@@ -139,7 +139,7 @@ impl<W: Widget> RenderWidget for Flexible<W> {
         constraints.constrain(ctx.child(0).layout(constraints))
     }
 
-    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

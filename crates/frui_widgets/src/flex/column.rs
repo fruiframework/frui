@@ -208,7 +208,7 @@ impl<WL: WidgetList> RenderWidget for Column<WL> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintCtx, offset: &Offset) {
         let self_width = ctx.size().width;
         let space_between_y = ctx.rstate().space_between_y;
 
