@@ -1,7 +1,7 @@
 use crate::{
     api::{
         contexts::{
-            build_ctx::{BuildContext, _BuildContext},
+            build_ctx::{BuildCtx, _BuildCtx},
             render_ctx::{paint_ctx::PaintCtxOS, LayoutCtxOS},
             Context,
         },
@@ -13,12 +13,12 @@ use crate::{
 use super::{ViewWidgetOS, WidgetDerive};
 
 pub trait ViewWidget: WidgetDerive + Sized {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w>;
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w>;
 }
 
 impl<T: ViewWidget> ViewWidgetOS for T {
     fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>> {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
+        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
 
         vec![T::build(&self, ctx).into_widget_ptr()]
     }

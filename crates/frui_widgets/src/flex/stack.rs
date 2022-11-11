@@ -138,7 +138,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
@@ -275,7 +275,7 @@ impl<T> RenderWidget for Positioned<T>
 where
     T: Widget,
 {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 

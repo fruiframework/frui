@@ -93,7 +93,7 @@ impl WidgetDerive for () {
 }
 
 impl RenderWidget for () {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![]
     }
 

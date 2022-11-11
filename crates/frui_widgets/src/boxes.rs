@@ -17,7 +17,7 @@ impl<T: Widget> ParentData for ConstrainedBox<T> {
 }
 
 impl<T: Widget> RenderWidget for ConstrainedBox<T> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
@@ -51,7 +51,7 @@ impl<T: Widget> ParentData for UnconstrainedBox<T> {
 }
 
 impl<T: Widget> RenderWidget for UnconstrainedBox<T> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 

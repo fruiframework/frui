@@ -16,7 +16,7 @@ impl<W: Widget> DebugContainer<W> {
 }
 
 impl<W: Widget> RenderWidget for DebugContainer<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 

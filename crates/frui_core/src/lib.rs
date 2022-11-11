@@ -15,8 +15,7 @@ pub mod prelude {
         api::{
             contexts::{
                 build_ctx::{
-                    BuildContext, InheritedState, InheritedStateRef, InheritedStateRefMut,
-                    WidgetState,
+                    BuildCtx, InheritedState, InheritedStateRef, InheritedStateRefMut, WidgetState,
                 },
                 render_ctx::{
                     ext::RenderExt,

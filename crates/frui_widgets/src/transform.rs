@@ -4,7 +4,7 @@ use frui::prelude::*;
 pub struct Transform<W: Widget>(pub Affine, pub W);
 
 impl<W: Widget> RenderWidget for Transform<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.1]
     }
 

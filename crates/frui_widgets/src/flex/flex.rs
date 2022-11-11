@@ -243,7 +243,7 @@ impl<WL: WidgetList> Flex<WL> {
 }
 
 impl<WL: WidgetList> RenderWidget for Flex<WL> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 

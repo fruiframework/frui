@@ -4,7 +4,7 @@ use frui_macros::sealed;
 
 use crate::macro_exports::Context;
 
-use super::{BuildContext, _BuildContext};
+use super::{BuildCtx, _BuildCtx};
 
 pub trait WidgetState: Sized {
     type State: 'static;
@@ -13,18 +13,16 @@ pub trait WidgetState: Sized {
 
     /// Called when the widget is mounted into the tree (before build).
     ///
-    /// Accessing `state_mut` of the provided `BuildContext` will not cause a
-    /// rebuild of this widget to be scheduled.
-    fn mount<'a>(&'a self, ctx: BuildContext<'a, Self>) {
+    /// Accessing `state_mut` of this [`BuildCtx`] will not schedule rebuild.
+    fn mount<'a>(&'a self, ctx: BuildCtx<'a, Self>) {
         let _ = ctx;
     }
 
     /// Called when the widget is unmounted from the tree. At this point given
     /// widget may be dropped or mounted again with its configuration updated.
     ///
-    /// Accessing `state_mut` of the provided `BuildContext` will not cause a
-    /// rebuild of this widget to be scheduled.
-    fn unmount<'a>(&'a self, ctx: BuildContext<'a, Self>) {
+    /// Accessing `state_mut` of this [`BuildCtx`] will not schedule rebuild.
+    fn unmount<'a>(&'a self, ctx: BuildCtx<'a, Self>) {
         let _ = ctx;
     }
 }
@@ -63,13 +61,13 @@ impl<T: WidgetState> WidgetStateOS for T {
     }
 
     fn mount(&self, ctx: &Context) {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
+        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
 
         T::mount(&self, ctx)
     }
 
     fn unmount(&self, ctx: &Context) {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
+        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
 
         T::unmount(&self, ctx)
     }
