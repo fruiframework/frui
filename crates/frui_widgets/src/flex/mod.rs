@@ -135,7 +135,7 @@ impl<W: Widget> RenderWidget for Flexible<W> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
         constraints.constrain(ctx.child(0).layout(constraints))
     }
 

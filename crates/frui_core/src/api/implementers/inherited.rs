@@ -2,7 +2,7 @@ use std::any::TypeId;
 
 use crate::{
     api::{
-        contexts::render_ctx::{paint_ctx::PaintContextOS, AnyRenderContext},
+        contexts::render_ctx::{paint_ctx::PaintContextOS, RenderContextOS},
         IntoWidgetPtr, WidgetPtr,
     },
     prelude::{Canvas, Constraints, Offset, Size},
@@ -19,7 +19,7 @@ impl<T: InheritedWidget> InheritedWidgetOS for T {
         vec![T::build(self).into_widget_ptr()]
     }
 
-    fn layout<'w>(&'w self, ctx: &'w AnyRenderContext, constraints: Constraints) -> Size {
+    fn layout<'w>(&'w self, ctx: RenderContextOS, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 

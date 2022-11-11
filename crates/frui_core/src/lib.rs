@@ -21,8 +21,8 @@ pub mod prelude {
                 render_ctx::{
                     ext::RenderExt,
                     paint_ctx::{PaintContext, PaintContextOS},
-                    ChildContext, ChildrenIter, Constraints, Offset, ParentData, RenderContext,
-                    RenderState, Size,
+                    Constraints, LayoutCtxChildIter, Offset, ParentData, RenderContext,
+                    RenderContextOS, RenderState, Size,
                 },
             },
             implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
@@ -52,7 +52,7 @@ pub mod macro_exports {
     pub use crate::{
         api::{
             contexts::render_ctx::paint_ctx::PaintContextOS,
-            contexts::{render_ctx::AnyRenderContext, Context},
+            contexts::{render_ctx::RenderContextOS, Context},
             implementers::{
                 InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,
             },

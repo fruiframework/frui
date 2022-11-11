@@ -56,7 +56,7 @@ impl<W: Widget> RenderWidget for Container<W> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
         let size = ctx.child(0).layout(Constraints {
             max_width: self.width.unwrap_or(constraints.max_width),
             max_height: self.height.unwrap_or(constraints.max_height),
