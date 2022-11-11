@@ -2,7 +2,7 @@ use std::any::{Any, TypeId};
 
 use frui_macros::sealed;
 
-use crate::macro_exports::Context;
+use crate::macro_exports::RawBuildCtx;
 
 use super::{BuildCtx, _BuildCtx};
 
@@ -32,8 +32,8 @@ pub trait WidgetStateOS {
     fn state_type_id(&self) -> TypeId;
     fn create_state(&self) -> Box<dyn Any>;
 
-    fn mount(&self, build_ctx: &Context);
-    fn unmount(&self, build_ctx: &Context);
+    fn mount(&self, build_ctx: &RawBuildCtx);
+    fn unmount(&self, build_ctx: &RawBuildCtx);
 }
 
 impl<T> WidgetStateOS for T {
@@ -46,9 +46,9 @@ impl<T> WidgetStateOS for T {
         Box::new(())
     }
 
-    default fn mount(&self, _: &Context) {}
+    default fn mount(&self, _: &RawBuildCtx) {}
 
-    default fn unmount(&self, _: &Context) {}
+    default fn unmount(&self, _: &RawBuildCtx) {}
 }
 
 impl<T: WidgetState> WidgetStateOS for T {
@@ -60,14 +60,14 @@ impl<T: WidgetState> WidgetStateOS for T {
         Box::new(T::create_state(&self))
     }
 
-    fn mount(&self, ctx: &Context) {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
+    fn mount(&self, ctx: &RawBuildCtx) {
+        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
 
         T::mount(&self, ctx)
     }
 
-    fn unmount(&self, ctx: &Context) {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
+    fn unmount(&self, ctx: &RawBuildCtx) {
+        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
 
         T::unmount(&self, ctx)
     }

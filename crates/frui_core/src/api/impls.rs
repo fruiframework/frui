@@ -103,7 +103,7 @@ impl RenderWidget for () {
 }
 
 impl RawWidget for () {
-    fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
+    fn build<'w>(&'w self, ctx: &'w super::contexts::RawBuildCtx) -> Vec<super::WidgetPtr<'w>> {
         <Self as RenderWidgetOS>::build(self, ctx)
     }
 
@@ -123,7 +123,7 @@ impl RawWidget for () {
 macro_rules! impl_widget_os_deref_ {
     ($($impl:tt)*) => {
         $($impl)* {
-            fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
+            fn build<'w>(&'w self, ctx: &'w super::contexts::RawBuildCtx) -> Vec<super::WidgetPtr<'w>> {
                 self.deref().build(ctx)
             }
 

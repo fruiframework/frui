@@ -9,7 +9,7 @@ use super::{
     contexts::{
         build_ctx::widget_state::WidgetStateOS,
         render::{ParentDataOS, RenderStateOS},
-        Context,
+        RawBuildCtx,
     },
     local_key::WidgetLocalKey,
     pointer_events::HitTestOS,
@@ -60,7 +60,7 @@ pub trait OS:
     + StructuralEqOS
     + AnyExt
 {
-    fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>>;
+    fn build<'w>(&'w self, ctx: &'w RawBuildCtx) -> Vec<WidgetPtr<'w>>;
 
     fn layout(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size;
 
