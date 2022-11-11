@@ -132,7 +132,12 @@ impl Stack<(), AlignmentDirectional> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
-    fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
+    fn get_layout_offset(
+        &self,
+        child: &PaintContextOS,
+        alignment: &Alignment,
+        size: Size,
+    ) -> Offset {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(
             || alignment.along(size - child_size),
@@ -200,7 +205,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
         let size = ctx.size();
         let alignment = self.alignment.resolve(&self.text_direction);
 
@@ -213,7 +218,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
                     offset.y + size.height,
                 ));
 
-                for child in ctx.children() {
+                for mut child in ctx.children() {
                     let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                     child.paint(cv, &offset);
                 }
@@ -222,7 +227,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             });
             r.unwrap();
         } else {
-            for child in ctx.children() {
+            for mut child in ctx.children() {
                 let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                 child.paint(canvas, &offset);
             }
@@ -287,7 +292,7 @@ where
         ctx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

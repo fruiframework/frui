@@ -11,7 +11,7 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
     let Imports {
         Vec, TypeId,
         RawWidget, WidgetPtr,
-        Context, PaintContext, AnyRenderContext,
+        Context, AnyRenderContext, PaintContextOS, Canvas, 
         Size, Offset, Constraints, 
     } = imports_impl_widget_os();
 
@@ -30,8 +30,8 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
 
             fn paint<'w>(
                 &'w self,
-                ctx: &'w #AnyRenderContext,
-                canvas: &mut #PaintContext,
+                ctx: #PaintContextOS,
+                canvas: &mut #Canvas,
                 offset: &#Offset
             ) {
                 <Self as #WidgetKindOS>::paint(self, ctx, canvas, offset)
@@ -63,8 +63,9 @@ struct Imports {
     WidgetPtr: TokenStream,
     // Contextes
     Context: TokenStream,
-    PaintContext: TokenStream,
     AnyRenderContext: TokenStream,
+    Canvas: TokenStream,
+    PaintContextOS: TokenStream,
     // Types
     Size: TokenStream,
     Offset: TokenStream,
@@ -80,8 +81,9 @@ fn imports_impl_widget_os() -> Imports {
         RawWidget: quote!(#exports::RawWidget),
         WidgetPtr: quote!(#exports::WidgetPtr),
         Context: quote!(#exports::Context),
-        PaintContext: quote!(#exports::PaintContext),
         AnyRenderContext: quote!(#exports::AnyRenderContext),
+        Canvas: quote!(#exports::Canvas),
+        PaintContextOS: quote!(#exports::PaintContextOS),
         Size: quote!(#exports::Size),
         Offset: quote!(#exports::Offset),
         Constraints: quote!(#exports::Constraints),

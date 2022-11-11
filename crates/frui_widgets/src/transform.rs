@@ -12,7 +12,7 @@ impl<W: Widget> RenderWidget for Transform<W> {
         ctx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
         let r = canvas.with_save(|cv| {
             cv.transform(self.0);
             ctx.child(0).paint(cv, offset);

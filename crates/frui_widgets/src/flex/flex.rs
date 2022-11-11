@@ -358,8 +358,8 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        for child in ctx.children() {
+    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
+        for mut child in ctx.children() {
             let child_offset: Offset = child
                 .try_parent_data::<FlexData>()
                 .map_or(*offset, |d| (*offset + d.offset));

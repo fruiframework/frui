@@ -10,7 +10,7 @@ use druid_shell::IdleToken;
 use super::build_ctx::STATE_UPDATE_SUPRESSED;
 use crate::{
     app::{
-        runner::{window_handler::APP_HANDLE, PaintContext},
+        runner::window_handler::APP_HANDLE,
         tree::{WidgetNode, WidgetNodeRef},
     },
     prelude::WidgetState,
@@ -18,6 +18,7 @@ use crate::{
 
 mod common;
 pub mod ext;
+pub mod paint_ctx;
 mod parent_data;
 mod render_state;
 
@@ -124,10 +125,6 @@ impl<'a> ChildContext<'a> {
         self.ctx.layout(constraints.clone())
     }
 
-    pub fn paint(&self, canvas: &mut PaintContext, offset: &Offset) {
-        self.ctx.paint(canvas, offset)
-    }
-
     pub fn size(&self) -> Size {
         self.ctx.size()
     }
@@ -201,22 +198,6 @@ impl AnyRenderContext {
         render_data.constraints = constraints;
 
         size
-    }
-
-    pub fn paint(&self, piet: &mut PaintContext, offset: &Offset) {
-        assert!(
-            self.node.borrow().render_data.laid_out,
-            "child was not laid out before paint"
-        );
-
-        // Used to calculate local offset of self (see Drop impl).
-        self.offset.set(offset.clone());
-
-        // Update local offset of this node.
-        let local_offset = *offset - self.parent_offset.get();
-        self.node.borrow_mut().render_data.local_offset = local_offset;
-
-        self.node.widget().clone().raw().paint(self, piet, offset);
     }
 
     pub fn child(&self, index: usize) -> ChildContext {

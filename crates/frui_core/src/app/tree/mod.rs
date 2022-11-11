@@ -17,7 +17,8 @@ use crate::{
         IntoWidgetPtr, WidgetPtr,
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
-    prelude::{Constraints, Offset, PaintContext, Size},
+    macro_exports::PaintContextOS,
+    prelude::{Canvas, Constraints, Offset, Size},
 };
 
 use self::pointer_handler::PointerHandler;
@@ -52,8 +53,8 @@ impl WidgetTree {
         AnyRenderContext::new(self.root()).layout(constraints);
     }
 
-    pub fn paint(&mut self, piet: &mut PaintContext) {
-        AnyRenderContext::new(self.root()).paint(piet, &Offset::default());
+    pub fn paint(&mut self, piet: &mut Canvas) {
+        PaintContextOS::new(self.root()).paint(piet, &Offset::default());
     }
 
     pub fn handle_pointer_event(&mut self, event: PointerEvent) {
