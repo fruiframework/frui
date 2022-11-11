@@ -18,7 +18,7 @@ pub mod prelude {
                     BuildCtx, InheritedState, InheritedStateRef, InheritedStateRefMut, WidgetState,
                 },
                 render_ctx::{
-                    ext::RenderExt,
+                    ext::{RenderExt, RenderOSExt},
                     paint_ctx::{PaintCtx, PaintCtxOS},
                     Constraints, LayoutCtx, LayoutCtxIter, LayoutCtxOS, Offset, ParentData,
                     RenderState, Size,

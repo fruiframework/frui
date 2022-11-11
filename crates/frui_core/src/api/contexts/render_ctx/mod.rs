@@ -1,11 +1,8 @@
-use std::{
-    cell::{Ref, RefMut},
-    marker::PhantomData,
-};
+use std::marker::PhantomData;
 
 use druid_shell::IdleToken;
 
-use self::ext::RenderExt;
+use self::ext::{RenderExt, RenderOSExt};
 
 use crate::{
     app::{
@@ -64,6 +61,12 @@ pub struct LayoutCtxOS {
     node: WidgetNodeRef,
 }
 
+impl RenderOSExt for LayoutCtxOS {
+    fn node(&self) -> &WidgetNodeRef {
+        &self.node
+    }
+}
+
 impl LayoutCtxOS {
     pub(crate) fn new(node: WidgetNodeRef) -> Self {
         Self { node }
@@ -110,36 +113,6 @@ impl LayoutCtxOS {
         Some(LayoutCtxOS::new(node))
     }
 
-    pub fn try_parent_data<T: 'static>(&self) -> Option<Ref<T>> {
-        // Check parent data type early.
-        self.node
-            .borrow()
-            .render_data
-            .parent_data
-            .downcast_ref::<T>()?;
-
-        Some(Ref::map(self.node.borrow(), |node| {
-            node.render_data.parent_data.downcast_ref().unwrap()
-        }))
-    }
-
-    pub fn try_parent_data_mut<T: 'static>(&self) -> Option<RefMut<T>> {
-        // Check parent data type early.
-        self.node
-            .borrow_mut()
-            .render_data
-            .parent_data
-            .downcast_mut::<T>()?;
-
-        Some(RefMut::map(self.node.borrow_mut(), |node| {
-            node.render_data.parent_data.downcast_mut().unwrap()
-        }))
-    }
-
-    pub fn set_parent_data<T: 'static>(&self, data: T) {
-        self.node.borrow_mut().render_data.parent_data = Box::new(data);
-    }
-
     pub fn schedule_layout(&mut self) {
         APP_HANDLE.with(|handle| {
             handle
@@ -148,10 +121,6 @@ impl LayoutCtxOS {
                 .expect("APP_HANDLE wasn't set")
                 .schedule_idle(IdleToken::new(0));
         });
-    }
-
-    pub fn size(&self) -> Size {
-        self.node.borrow().render_data.size
     }
 }
 

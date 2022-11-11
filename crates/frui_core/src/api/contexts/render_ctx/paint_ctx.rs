@@ -1,14 +1,11 @@
-use std::{
-    cell::{Cell, Ref, RefMut},
-    marker::PhantomData,
-};
+use std::marker::PhantomData;
 
 use crate::{
     app::tree::{WidgetNode, WidgetNodeRef},
-    prelude::Widget,
+    prelude::{RenderOSExt, Widget},
 };
 
-use super::{ext::RenderExt, Offset, Size};
+use super::{ext::RenderExt, Offset};
 
 pub struct PaintCtx<T> {
     ctx: PaintCtxOS,
@@ -47,21 +44,26 @@ impl<T> std::ops::DerefMut for PaintCtx<T> {
 #[derive(Clone)]
 pub struct PaintCtxOS {
     node: WidgetNodeRef,
-    // Todo:
-    //
-    // Remove the Cells!
+    // Following are used to correctly register local transformation of the
+    // offset. It is used to automatically transform point during hit testing.
     /// (global)
-    offset: Cell<Offset>,
+    offset: Offset,
     /// (global)
-    parent_offset: Cell<Offset>,
+    parent_offset: Offset,
+}
+
+impl RenderOSExt for PaintCtxOS {
+    fn node(&self) -> &WidgetNodeRef {
+        &self.node
+    }
 }
 
 impl PaintCtxOS {
     pub(crate) fn new(node: WidgetNodeRef) -> Self {
         Self {
             node,
-            offset: Cell::default(),
-            parent_offset: Cell::default(),
+            offset: Offset::default(),
+            parent_offset: Offset::default(),
         }
     }
 
@@ -72,10 +74,10 @@ impl PaintCtxOS {
         );
 
         // Used to calculate local offset of self (see Drop impl).
-        self.offset.set(offset.clone());
+        self.offset = offset.clone();
 
         // Update local offset of this node.
-        let local_offset = *offset - self.parent_offset.get();
+        let local_offset = *offset - self.parent_offset;
         self.node.borrow_mut().render_data.local_offset = local_offset;
 
         self.node
@@ -87,63 +89,24 @@ impl PaintCtxOS {
 
     #[track_caller]
     pub fn child(&mut self, index: usize) -> PaintCtxOS {
-        self.try_child(index)
-            .expect("specified node didn't have any children")
+        let child = self
+            .node
+            .children()
+            .get(index)
+            .expect("specified node didn't have child at that index");
+
+        PaintCtxOS {
+            node: WidgetNode::node_ref(child),
+            offset: Offset::default(),
+            parent_offset: self.offset.clone(),
+        }
     }
 
     pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
         self.node.children().iter().map(|c| PaintCtxOS {
             node: WidgetNode::node_ref(c),
-            offset: Cell::default(),
+            offset: Offset::default(),
             parent_offset: self.offset.clone(),
         })
-    }
-
-    // Todo: Maybe inline.
-    fn try_child(&self, index: usize) -> Option<PaintCtxOS> {
-        let child = self.node.children().get(index)?;
-
-        Some(PaintCtxOS {
-            node: WidgetNode::node_ref(child),
-            offset: Cell::default(),
-            parent_offset: self.offset.clone(),
-        })
-    }
-
-    //
-    //
-
-    pub fn size(&self) -> Size {
-        self.node.borrow().render_data.size
-    }
-
-    pub fn try_parent_data<T: 'static>(&self) -> Option<Ref<T>> {
-        // Check parent data type early.
-        self.node
-            .borrow()
-            .render_data
-            .parent_data
-            .downcast_ref::<T>()?;
-
-        Some(Ref::map(self.node.borrow(), |node| {
-            node.render_data.parent_data.downcast_ref().unwrap()
-        }))
-    }
-
-    pub fn try_parent_data_mut<T: 'static>(&self) -> Option<RefMut<T>> {
-        // Check parent data type early.
-        self.node
-            .borrow_mut()
-            .render_data
-            .parent_data
-            .downcast_mut::<T>()?;
-
-        Some(RefMut::map(self.node.borrow_mut(), |node| {
-            node.render_data.parent_data.downcast_mut().unwrap()
-        }))
-    }
-
-    pub fn set_parent_data<T: 'static>(&self, data: T) {
-        self.node.borrow_mut().render_data.parent_data = Box::new(data);
     }
 }

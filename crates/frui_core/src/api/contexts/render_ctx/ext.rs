@@ -11,11 +11,8 @@ use crate::{
     prelude::{Widget, WidgetState},
 };
 
-use super::RenderState;
+use super::{RenderState, Size};
 
-/// Extension trait for all rendering contexts.
-///
-/// Todo: Implement for `LayoutCtx`, `PaintCtx`, ...
 pub trait RenderExt<W: Widget> {
     #[doc(hidden)]
     fn node(&self) -> &WidgetNodeRef;
@@ -60,5 +57,44 @@ pub trait RenderExt<W: Widget> {
         RefMut::map(self.node().borrow_mut(), |node| {
             node.render_data.state.deref_mut().downcast_mut().unwrap()
         })
+    }
+}
+
+pub trait RenderOSExt {
+    #[doc(hidden)]
+    fn node(&self) -> &WidgetNodeRef;
+
+    fn size(&self) -> Size {
+        self.node().borrow().render_data.size
+    }
+
+    fn set_parent_data<T: 'static>(&self, data: T) {
+        self.node().borrow_mut().render_data.parent_data = Box::new(data);
+    }
+
+    fn try_parent_data<T: 'static>(&self) -> Option<Ref<T>> {
+        // Check parent data type early.
+        self.node()
+            .borrow()
+            .render_data
+            .parent_data
+            .downcast_ref::<T>()?;
+
+        Some(Ref::map(self.node().borrow(), |node| {
+            node.render_data.parent_data.downcast_ref().unwrap()
+        }))
+    }
+
+    fn try_parent_data_mut<T: 'static>(&self) -> Option<RefMut<T>> {
+        // Check parent data type early.
+        self.node()
+            .borrow_mut()
+            .render_data
+            .parent_data
+            .downcast_mut::<T>()?;
+
+        Some(RefMut::map(self.node().borrow_mut(), |node| {
+            node.render_data.parent_data.downcast_mut().unwrap()
+        }))
     }
 }
