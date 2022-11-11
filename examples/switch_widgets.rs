@@ -31,7 +31,7 @@ impl WidgetState for App {
 }
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         KeyboardEventDetector {
             on_event: |_| ctx.state_mut().switch(),
             child: match ctx.state().value() {

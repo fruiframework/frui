@@ -17,14 +17,14 @@ impl<W: Widget, F: Fn(KeyEvent)> WidgetState for KeyboardEventDetector<W, F> {
         None
     }
 
-    fn mount(&self, ctx: BuildContext<Self>) {
+    fn mount(&self, ctx: BuildCtx<Self>) {
         *ctx.state_mut() = Some(
             KEYBOARD_EVENT_LISTENERS
                 .with(|listeners| unsafe { listeners.borrow_mut().register(&self.on_event) }),
         );
     }
 
-    fn unmount(&self, ctx: BuildContext<Self>) {
+    fn unmount(&self, ctx: BuildCtx<Self>) {
         let mut key = ctx.state_mut();
         KEYBOARD_EVENT_LISTENERS.with(|listeners| listeners.borrow_mut().unregister(&key.unwrap()));
         *key = None;
@@ -32,7 +32,7 @@ impl<W: Widget, F: Fn(KeyEvent)> WidgetState for KeyboardEventDetector<W, F> {
 }
 
 impl<W: Widget, F: Fn(KeyEvent)> ViewWidget for KeyboardEventDetector<W, F> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         &self.child
     }
 }

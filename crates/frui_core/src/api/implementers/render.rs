@@ -1,7 +1,7 @@
 use crate::{
     api::{
         contexts::{
-            build_ctx::_BuildContext,
+            build_ctx::_BuildCtx,
             render_ctx::{
                 paint_ctx::{PaintCtx, PaintCtxOS},
                 LayoutCtxOS,
@@ -10,13 +10,13 @@ use crate::{
         },
         IntoWidgetPtr, WidgetPtr,
     },
-    prelude::{BuildContext, Canvas, Constraints, LayoutCtx, Offset, Size},
+    prelude::{BuildCtx, Canvas, Constraints, LayoutCtx, Offset, Size},
 };
 
 use super::{RenderWidgetOS, WidgetDerive};
 
 pub trait RenderWidget: WidgetDerive + Sized {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>>;
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>>;
 
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size;
 
@@ -25,7 +25,7 @@ pub trait RenderWidget: WidgetDerive + Sized {
 
 impl<T: RenderWidget> RenderWidgetOS for T {
     fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>> {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildContext<T>>(ctx) };
+        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
 
         T::build(&self, ctx)
             .into_iter()

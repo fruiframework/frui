@@ -33,7 +33,7 @@ impl<L: Widget, F: Fn()> WidgetState for Button<L, F> {
 }
 
 impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         let (is_hovered, is_pressed) = (ctx.state().is_hovered, ctx.state().is_pressed);
 
         let color = if is_pressed {
@@ -118,7 +118,7 @@ mod test {
     }
 
     impl ViewWidget for OnlyButtons {
-        fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+        fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
             *COUNT.lock().unwrap() = *ctx.state();
 
             Row::builder().space_between(10.0).children((

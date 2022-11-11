@@ -8,7 +8,7 @@ mod misc;
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Stack::builder()
             .alignment(AlignmentDirectional::CENTER_END)
             .children((

@@ -16,7 +16,7 @@ impl WidgetState for App {
 }
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Stack::builder().children((
             // Stats:
             Positioned::builder()
@@ -57,7 +57,7 @@ struct Stats {
 }
 
 impl ViewWidget for Stats {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Text::new(format!("{:#?}", self))
     }
 }

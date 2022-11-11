@@ -14,7 +14,7 @@ pub fn big_big_big() -> impl WidgetList {
 pub struct Big(pub Color);
 
 impl ViewWidget for Big {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Container::builder()
             .color(self.0.clone())
             .width(100.0)

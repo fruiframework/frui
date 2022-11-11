@@ -47,7 +47,7 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 
 #[cfg(not(feature = "miri"))]
 impl<S: AsRef<str>> RenderWidget for Text<S> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![] as Vec<()>
     }
 
@@ -96,7 +96,7 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 
 #[cfg(feature = "miri")]
 impl<S: AsRef<str>> RenderWidget for Text<S> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![] as Vec<()>
     }
 

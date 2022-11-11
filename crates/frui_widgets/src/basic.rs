@@ -7,7 +7,7 @@ pub struct ColoredBox<T: Widget> {
 }
 
 impl<T: Widget> RenderWidget for ColoredBox<T> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 

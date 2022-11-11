@@ -16,7 +16,7 @@ use misc::children_combinations::Big;
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         DebugContainer::child(
             Row::builder()
                 .space_between(20.0)
