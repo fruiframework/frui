@@ -15,18 +15,18 @@ pub use widget_state::WidgetState;
 /// state updates (e.g. in unmount/mount methods).
 pub(crate) static STATE_UPDATE_SUPRESSED: AtomicBool = AtomicBool::new(false);
 
-// `BuildContext` is borrowed to make it so that closures don't take ownership
+// `BuildCtx` is borrowed to make it so that closures don't take ownership
 // of it, which would be inconvenient - user would have to clone `BuildContext`
 // before every closure, since otherwise the context would move.
-pub type BuildContext<'a, T> = &'a _BuildContext<'a, T>;
+pub type BuildCtx<'a, T> = &'a _BuildCtx<'a, T>;
 
 #[repr(transparent)]
-pub struct _BuildContext<'a, T> {
+pub struct _BuildCtx<'a, T> {
     node: WidgetNodeRef,
     _p: PhantomData<&'a T>,
 }
 
-impl<'a, T> _BuildContext<'a, T> {
+impl<'a, T> _BuildCtx<'a, T> {
     pub fn state(&self) -> StateGuard<T::State>
     where
         T: WidgetState,

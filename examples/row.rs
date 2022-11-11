@@ -16,7 +16,7 @@ use misc::children_combinations::Big;
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         DebugContainer::child(
             Row::builder()
                 .space_between(20.0)
@@ -42,7 +42,7 @@ mod test {
     use super::*;
     use frui::{
         app::runner::miri::MiriRunner,
-        druid_shell::{keyboard_types::Key, Modifiers},
+        druid_shell::{keyboard_types::Key, KeyEvent, Modifiers},
     };
 
     #[test]

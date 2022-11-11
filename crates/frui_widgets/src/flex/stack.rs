@@ -2,6 +2,7 @@ use crate::alignment::{Alignment, AlignmentDirectional};
 use crate::{AlignmentGeometry, BoxLayoutData, TextDirection, WidgetList};
 
 use frui::prelude::*;
+use frui::render::*;
 
 pub enum StackFit {
     Loose,
@@ -61,17 +62,13 @@ impl Stack<(), AlignmentDirectional> {
         }
     }
 
-    fn is_positioned(child: &ChildContext) -> bool {
+    fn is_positioned(child: &LayoutCtxOS) -> bool {
         child
             .try_parent_data::<StackLayoutData>()
             .map_or(false, |d| d.is_positioned())
     }
 
-    fn layout_positioned_child(
-        child: &mut ChildContext,
-        size: Size,
-        alignment: &Alignment,
-    ) -> bool {
+    fn layout_positioned_child(child: &mut LayoutCtxOS, size: Size, alignment: &Alignment) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
         {
@@ -132,7 +129,7 @@ impl Stack<(), AlignmentDirectional> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
-    fn get_layout_offset(&self, child: &ChildContext, alignment: &Alignment, size: Size) -> Offset {
+    fn get_layout_offset(&self, child: &PaintCtxOS, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(
             || alignment.along(size - child_size),
@@ -142,11 +139,11 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
 }
 
 impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let alignment = self.alignment.resolve(&self.text_direction);
         let mut width = constraints.min_width;
         let mut height = constraints.min_height;
@@ -200,7 +197,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let size = ctx.size();
         let alignment = self.alignment.resolve(&self.text_direction);
 
@@ -213,7 +210,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
                     offset.y + size.height,
                 ));
 
-                for child in ctx.children() {
+                for mut child in ctx.children() {
                     let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                     child.paint(cv, &offset);
                 }
@@ -222,7 +219,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
             });
             r.unwrap();
         } else {
-            for child in ctx.children() {
+            for mut child in ctx.children() {
                 let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                 child.paint(canvas, &offset);
             }
@@ -279,15 +276,15 @@ impl<T> RenderWidget for Positioned<T>
 where
     T: Widget,
 {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

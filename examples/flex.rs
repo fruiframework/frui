@@ -1,6 +1,7 @@
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
+use frui::render::*;
 
 mod misc;
 
@@ -8,7 +9,7 @@ mod misc;
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         UnconstrainedBox {
             child: Flex::builder()
                 .space_between(10.0)
