@@ -1,11 +1,9 @@
 use std::ops::Deref;
 
+use crate::render::*;
 use crate::{api::Widget, macro_exports::RenderWidgetOS, prelude::*};
 
-use super::{
-    contexts::render_ctx::paint_ctx::{PaintCtx, PaintCtxOS},
-    implementers::{RawWidget, WidgetDerive},
-};
+use super::implementers::{RawWidget, WidgetDerive};
 
 pub trait BoxedWidget: Widget + Sized {
     /// Convenience method used to type erase and box a widget.

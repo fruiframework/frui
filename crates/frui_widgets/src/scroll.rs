@@ -1,6 +1,7 @@
 //! This is a bad prototype.
 
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ScrollDirection {

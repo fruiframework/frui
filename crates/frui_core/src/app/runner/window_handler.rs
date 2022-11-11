@@ -13,7 +13,8 @@ use crate::{
         tree::{WidgetNodeRef, WidgetTree},
         TEXT_FACTORY,
     },
-    prelude::{Constraints, Size, Widget},
+    prelude::Widget,
+    render::*,
 };
 
 use super::{Application, Canvas, FruiWindowHandler, IdleHandle, WindowHandle};

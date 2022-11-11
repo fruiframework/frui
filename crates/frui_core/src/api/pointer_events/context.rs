@@ -2,11 +2,9 @@ use std::{cell::RefCell, collections::HashMap, marker::PhantomData, rc::Rc};
 
 use druid_shell::kurbo::{Affine, Point};
 
-use crate::{
-    api::contexts::render_ctx::ext::RenderExt,
-    app::tree::{WidgetNode, WidgetNodeRef},
-    prelude::{Size, Widget},
-};
+use crate::app::tree::{WidgetNode, WidgetNodeRef};
+use crate::prelude::Widget;
+use crate::render::*;
 
 /// This context allows to access state of given widget during hit testing (see
 /// [`CtxStateExt`] implementation below). Additionally, some methods useful for

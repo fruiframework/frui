@@ -18,7 +18,7 @@ use crate::{
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
     macro_exports::PaintCtxOS,
-    prelude::{Canvas, Constraints, Offset, Size},
+    render::{Canvas, Constraints, Offset, Size},
 };
 
 use self::pointer_handler::PointerHandler;

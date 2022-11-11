@@ -1,4 +1,5 @@
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(RenderWidget)]
 pub struct Center<W: Widget> {

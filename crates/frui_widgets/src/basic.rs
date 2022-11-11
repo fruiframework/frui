@@ -1,4 +1,5 @@
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(RenderWidget, Builder)]
 pub struct ColoredBox<T: Widget> {

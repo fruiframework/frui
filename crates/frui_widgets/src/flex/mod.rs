@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use frui::prelude::*;
+use frui::render::*;
 
 pub use alignment::*;
 pub use center::*;

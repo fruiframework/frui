@@ -1,8 +1,7 @@
-use frui::prelude::{LayoutCtx, *};
+use frui::prelude::*;
+use frui::render::*;
 
-use druid_shell::piet::{
-    kurbo::Rect, Color, LineCap, RenderContext as PietRenderContext, StrokeStyle,
-};
+use druid_shell::piet::{kurbo::Rect, Color, LineCap, RenderContext, StrokeStyle};
 
 #[derive(RenderWidget)]
 pub struct DebugContainer<W: Widget> {
