@@ -21,7 +21,7 @@ impl<T: Widget> RenderWidget for ConstrainedBox<T> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let constraints = self.constraints.enforce(constraints);
         let child_size = ctx.child(0).layout(constraints);
 
@@ -55,7 +55,7 @@ impl<T: Widget> RenderWidget for UnconstrainedBox<T> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints.loosen());
         if child_size != Size::ZERO {
             child_size

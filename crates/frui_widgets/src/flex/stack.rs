@@ -61,17 +61,13 @@ impl Stack<(), AlignmentDirectional> {
         }
     }
 
-    fn is_positioned(child: &RenderContextOS) -> bool {
+    fn is_positioned(child: &LayoutCtxOS) -> bool {
         child
             .try_parent_data::<StackLayoutData>()
             .map_or(false, |d| d.is_positioned())
     }
 
-    fn layout_positioned_child(
-        child: &mut RenderContextOS,
-        size: Size,
-        alignment: &Alignment,
-    ) -> bool {
+    fn layout_positioned_child(child: &mut LayoutCtxOS, size: Size, alignment: &Alignment) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
         {
@@ -151,7 +147,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
         self.children.get()
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let alignment = self.alignment.resolve(&self.text_direction);
         let mut width = constraints.min_width;
         let mut height = constraints.min_height;
@@ -288,7 +284,7 @@ where
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 

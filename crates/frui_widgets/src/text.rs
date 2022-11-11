@@ -51,7 +51,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         vec![] as Vec<()>
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let max_width = constraints.biggest().width;
 
         *ctx.render_state_mut() = TEXT_FACTORY.with(|f| {
@@ -100,7 +100,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         vec![] as Vec<()>
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let _: &mut TextRenderState = &mut ctx.rstate_mut();
 
         Size {
@@ -109,5 +109,5 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         }
     }
 
-    fn paint(&self, _: RenderContext<Self>, _: &mut Canvas, _: &Offset) {}
+    fn paint(&self, _: LayoutCtx<Self>, _: &mut Canvas, _: &Offset) {}
 }

@@ -45,7 +45,7 @@ impl<W: Widget> RenderWidget for Scroll<W> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_constraints = match self.scroll_direction {
             ScrollDirection::Horizontal => Constraints {
                 min_width: 0.,

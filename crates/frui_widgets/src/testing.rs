@@ -1,4 +1,4 @@
-use frui::prelude::{RenderContext, *};
+use frui::prelude::{LayoutCtx, *};
 
 use druid_shell::piet::{
     kurbo::Rect, Color, LineCap, RenderContext as PietRenderContext, StrokeStyle,
@@ -20,7 +20,7 @@ impl<W: Widget> RenderWidget for DebugContainer<W> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 
