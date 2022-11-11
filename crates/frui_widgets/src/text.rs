@@ -1,4 +1,5 @@
-use frui::{app::TEXT_FACTORY, prelude::*};
+use frui::prelude::*;
+use frui::render::*;
 
 use druid_shell::piet::{
     kurbo::Point, Color, FontFamily, FontWeight, PietTextLayout, Text as TextExt, TextLayout,
@@ -71,7 +72,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
     }
 
     fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        PietRenderContext::draw_text(
+        RenderContext::draw_text(
             canvas,
             &ctx.render_state(),
             Point {

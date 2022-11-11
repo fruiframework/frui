@@ -1,6 +1,5 @@
-use druid_shell::kurbo::Rect;
-
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(RenderWidget)]
 pub struct Container<W: Widget> {
@@ -73,7 +72,7 @@ impl<W: Widget> RenderWidget for Container<W> {
         if let Some(color) = &self.color {
             let brush = &canvas.solid_brush(color.clone());
 
-            PietRenderContext::fill(canvas, Rect::from_origin_size(offset, ctx.size()), brush);
+            RenderContext::fill(canvas, Rect::from_origin_size(offset, ctx.size()), brush);
         }
 
         ctx.child(0).paint(canvas, offset)

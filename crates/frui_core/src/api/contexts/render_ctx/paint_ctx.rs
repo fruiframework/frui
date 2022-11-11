@@ -1,11 +1,14 @@
 use std::marker::PhantomData;
 
 use crate::{
-    app::tree::{WidgetNode, WidgetNodeRef},
-    prelude::{RenderOSExt, Widget},
+    app::{
+        runner::Canvas,
+        tree::{WidgetNode, WidgetNodeRef},
+    },
+    prelude::Widget,
 };
 
-use super::{ext::RenderExt, Offset};
+use super::{ext::RenderExt, Offset, RenderOSExt};
 
 pub struct PaintCtx<T> {
     ctx: PaintCtxOS,
@@ -67,7 +70,7 @@ impl PaintCtxOS {
         }
     }
 
-    pub fn paint(&mut self, piet: &mut crate::prelude::Canvas, offset: &Offset) {
+    pub fn paint(&mut self, piet: &mut Canvas, offset: &Offset) {
         assert!(
             self.node.borrow().render_data.laid_out,
             "child was not laid out before paint"
