@@ -19,6 +19,8 @@ pub mod prelude {
                     WidgetState,
                 },
                 render_ctx::{
+                    ext::RenderExt,
+                    paint_ctx::{PaintContext, PaintContextOS},
                     ChildContext, ChildrenIter, Constraints, Offset, ParentData, RenderContext,
                     RenderState, Size,
                 },
@@ -28,7 +30,7 @@ pub mod prelude {
             pointer_events::*,
             Widget,
         },
-        app::runner::{native::run_app, PaintContext},
+        app::runner::{native::run_app, Canvas},
     };
 
     pub use druid_shell::{
@@ -46,8 +48,10 @@ pub mod prelude {
 }
 #[doc(hidden)]
 pub mod macro_exports {
+
     pub use crate::{
         api::{
+            contexts::render_ctx::paint_ctx::PaintContextOS,
             contexts::{render_ctx::AnyRenderContext, Context},
             implementers::{
                 InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,
@@ -55,7 +59,7 @@ pub mod macro_exports {
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,
         },
-        prelude::{Constraints, Offset, PaintContext, Size, Widget},
+        prelude::{Canvas, Constraints, Offset, Size, Widget},
     };
 }
 

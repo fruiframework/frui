@@ -2,12 +2,12 @@ use crate::{
     api::{
         contexts::{
             build_ctx::{BuildContext, _BuildContext},
-            render_ctx::AnyRenderContext,
+            render_ctx::{paint_ctx::PaintContextOS, AnyRenderContext},
             Context,
         },
         IntoWidgetPtr, WidgetPtr,
     },
-    prelude::{Constraints, Offset, PaintContext, Size},
+    prelude::{Canvas, Constraints, Offset, Size},
 };
 
 use super::{ViewWidgetOS, WidgetDerive};
@@ -27,7 +27,7 @@ impl<T: ViewWidget> ViewWidgetOS for T {
         ctx.child(0).layout(constraints)
     }
 
-    fn paint<'w>(&'w self, ctx: &'w AnyRenderContext, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint<'w>(&'w self, mut ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

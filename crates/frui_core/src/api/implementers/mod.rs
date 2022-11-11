@@ -2,13 +2,13 @@ use std::any::TypeId;
 
 use frui_macros::copy_trait_as;
 
-use crate::prelude::{Constraints, Offset, PaintContext, Size};
+use crate::prelude::{Canvas, Constraints, Offset, Size};
 
 use super::{
     any_ext::AnyExt,
     contexts::{
         build_ctx::widget_state::WidgetStateOS,
-        render_ctx::{AnyRenderContext, ParentDataOS, RenderStateOS},
+        render_ctx::{paint_ctx::PaintContextOS, AnyRenderContext, ParentDataOS, RenderStateOS},
         Context,
     },
     local_key::WidgetLocalKey,
@@ -64,7 +64,7 @@ pub trait OS:
 
     fn layout<'w>(&self, ctx: &'w AnyRenderContext, constraints: Constraints) -> Size;
 
-    fn paint<'w>(&'w self, ctx: &'w AnyRenderContext, canvas: &mut PaintContext, offset: &Offset);
+    fn paint<'w>(&'w self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset);
 
     fn inherited_key(&self) -> Option<TypeId> {
         None

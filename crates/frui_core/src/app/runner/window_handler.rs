@@ -16,7 +16,7 @@ use crate::{
     prelude::{Constraints, Size, Widget},
 };
 
-use super::{Application, FruiWindowHandler, IdleHandle, PaintContext, WindowHandle};
+use super::{Application, Canvas, FruiWindowHandler, IdleHandle, WindowHandle};
 
 thread_local! {
     pub(crate) static APP_HANDLE: std::cell::RefCell<Option<IdleHandle>> = RefCell::new(None);
@@ -112,7 +112,7 @@ impl FruiWindowHandler for WindowHandler {
 
     fn prepare_paint(&mut self) {}
 
-    fn paint(&mut self, piet: &mut PaintContext, _invalid: &druid_shell::Region) {
+    fn paint(&mut self, piet: &mut Canvas, _invalid: &druid_shell::Region) {
         //
         // Fill screen with one color (temp).
 

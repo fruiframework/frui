@@ -64,7 +64,7 @@ impl<W: Widget> RenderWidget for Scroll<W> {
         constraints.biggest()
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Err(e) = canvas.save() {
             log::error!("saving render context failed: {:?}", e);
             return;
@@ -72,7 +72,7 @@ impl<W: Widget> RenderWidget for Scroll<W> {
 
         let viewport = Rect::from_origin_size(offset, ctx.size());
         canvas.clip(viewport);
-        canvas.transform(Affine::translate(-ctx.wstate().scroll_offset));
+        canvas.transform(Affine::translate(-ctx.widget_state().scroll_offset));
 
         ctx.child(0).paint(canvas, offset);
 

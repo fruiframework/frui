@@ -2,7 +2,10 @@ use std::ops::Deref;
 
 use crate::{api::Widget, macro_exports::RenderWidgetOS, prelude::*};
 
-use super::implementers::{RawWidget, WidgetDerive};
+use super::{
+    contexts::render_ctx::paint_ctx::{PaintContext, PaintContextOS},
+    implementers::{RawWidget, WidgetDerive},
+};
 
 pub trait BoxedWidget: Widget + Sized {
     /// Convenience method used to type erase and box a widget.
@@ -98,7 +101,7 @@ impl RenderWidget for () {
         Size::ZERO
     }
 
-    fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}
+    fn paint(&self, _: &mut PaintContext<Self>, _: &mut Canvas, _: &Offset) {}
 }
 
 impl RawWidget for () {
@@ -114,12 +117,7 @@ impl RawWidget for () {
         <Self as RenderWidgetOS>::layout(self, ctx, constraints)
     }
 
-    fn paint<'w>(
-        &'w self,
-        ctx: &'w super::contexts::render_ctx::AnyRenderContext,
-        canvas: &mut PaintContext,
-        offset: &Offset,
-    ) {
+    fn paint<'w>(&'w self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset) {
         <Self as RenderWidgetOS>::paint(self, ctx, canvas, offset)
     }
 
@@ -145,8 +143,8 @@ macro_rules! impl_widget_os_deref_ {
 
             fn paint<'w>(
                 &'w self,
-                ctx: &'w super::contexts::render_ctx::AnyRenderContext,
-                canvas: &mut PaintContext,
+                ctx: PaintContextOS,
+                canvas: &mut Canvas,
                 offset: &Offset,
             ) {
                 self.deref().paint(ctx, canvas, offset)

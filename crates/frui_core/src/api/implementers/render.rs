@@ -2,12 +2,15 @@ use crate::{
     api::{
         contexts::{
             build_ctx::_BuildContext,
-            render_ctx::{AnyRenderContext, _RenderContext},
+            render_ctx::{
+                AnyRenderContext, _RenderContext,
+                paint_ctx::{PaintContext, PaintContextOS},
+            },
             Context,
         },
         IntoWidgetPtr, WidgetPtr,
     },
-    prelude::{BuildContext, Constraints, Offset, PaintContext, RenderContext, Size},
+    prelude::{BuildContext, Canvas, Constraints, Offset, RenderContext, Size},
 };
 
 use super::{RenderWidgetOS, WidgetDerive};
@@ -17,7 +20,7 @@ pub trait RenderWidget: WidgetDerive + Sized {
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size;
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset);
+    fn paint(&self, ctx: &mut PaintContext<Self>, canvas: &mut Canvas, offset: &Offset);
 }
 
 impl<T: RenderWidget> RenderWidgetOS for T {
@@ -36,9 +39,9 @@ impl<T: RenderWidget> RenderWidgetOS for T {
         T::layout(&self, ctx, constraints)
     }
 
-    fn paint(&self, ctx: &AnyRenderContext, canvas: &mut PaintContext, offset: &Offset) {
-        let ctx = &<_RenderContext<T>>::new(ctx);
+    fn paint(&self, ctx: PaintContextOS, canvas: &mut Canvas, offset: &Offset) {
+        let ctx = &mut <PaintContext<T>>::new(ctx);
 
-        T::paint(&self, ctx, canvas, offset);
+        T::paint(self, ctx, canvas, offset);
     }
 }
