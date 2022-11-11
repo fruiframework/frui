@@ -1,4 +1,5 @@
 use frui::prelude::*;
+use frui::render::*;
 
 use crate::*;
 
@@ -73,11 +74,11 @@ impl Flex<()> {
 }
 
 impl<WL: WidgetList> Flex<WL> {
-    fn get_flex(child: &ChildContext) -> Option<usize> {
+    fn get_flex(child: &LayoutCtxOS) -> Option<usize> {
         child.try_parent_data::<FlexData>().map(|d| d.flex_factor)
     }
 
-    fn get_fit(child: &ChildContext) -> Option<FlexFit> {
+    fn get_fit(child: &LayoutCtxOS) -> Option<FlexFit> {
         child.try_parent_data::<FlexData>().map(|d| d.fit)
     }
 
@@ -97,7 +98,7 @@ impl<WL: WidgetList> Flex<WL> {
 
     /// Compute flex and layout of non-flexible children and return sizes of
     /// flexible children.
-    fn compute_sizes(&self, children: ChildrenIter, constraints: Constraints) -> FlexLayoutSizes {
+    fn compute_sizes(&self, children: LayoutCtxIter, constraints: Constraints) -> FlexLayoutSizes {
         //
         // Todo: Rewrite the algorithm so that it correctly takes into account
         // `space_between`.
@@ -243,11 +244,11 @@ impl<WL: WidgetList> Flex<WL> {
 }
 
 impl<WL: WidgetList> RenderWidget for Flex<WL> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_count = ctx.children().len();
 
         for child in ctx.children() {
@@ -358,8 +359,8 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        for child in ctx.children() {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        for mut child in ctx.children() {
             let child_offset: Offset = child
                 .try_parent_data::<FlexData>()
                 .map_or(*offset, |d| (*offset + d.offset));

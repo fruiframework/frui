@@ -1,6 +1,7 @@
 //! This is a bad prototype.
 
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ScrollDirection {
@@ -41,11 +42,11 @@ impl<W: Widget> WidgetState for Scroll<W> {
 }
 
 impl<W: Widget> RenderWidget for Scroll<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_constraints = match self.scroll_direction {
             ScrollDirection::Horizontal => Constraints {
                 min_width: 0.,
@@ -64,7 +65,7 @@ impl<W: Widget> RenderWidget for Scroll<W> {
         constraints.biggest()
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Err(e) = canvas.save() {
             log::error!("saving render context failed: {:?}", e);
             return;
@@ -72,7 +73,7 @@ impl<W: Widget> RenderWidget for Scroll<W> {
 
         let viewport = Rect::from_origin_size(offset, ctx.size());
         canvas.clip(viewport);
-        canvas.transform(Affine::translate(-ctx.wstate().scroll_offset));
+        canvas.transform(Affine::translate(-ctx.widget_state().scroll_offset));
 
         ctx.child(0).paint(canvas, offset);
 
