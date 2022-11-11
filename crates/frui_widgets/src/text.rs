@@ -51,10 +51,10 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         vec![] as Vec<()>
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
         let max_width = constraints.biggest().width;
 
-        *ctx.rstate_mut() = TEXT_FACTORY.with(|f| {
+        *ctx.render_state_mut() = TEXT_FACTORY.with(|f| {
             f.get()
                 .new_text_layout(self.text.as_ref().to_owned())
                 .font(self.family.clone(), self.size)
@@ -65,7 +65,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
                 .unwrap()
         });
 
-        let text_size = ctx.rstate().size().into();
+        let text_size = ctx.render_state().size().into();
 
         constraints.constrain(text_size)
     }
@@ -100,7 +100,7 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
         vec![] as Vec<()>
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
         let _: &mut TextRenderState = &mut ctx.rstate_mut();
 
         Size {

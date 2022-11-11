@@ -97,7 +97,7 @@ impl RenderWidget for () {
         vec![]
     }
 
-    fn layout(&self, _: RenderContext<Self>, _: Constraints) -> Size {
+    fn layout(&self, _: &RenderContext<Self>, _: Constraints) -> Size {
         Size::ZERO
     }
 
@@ -109,11 +109,7 @@ impl RawWidget for () {
         <Self as RenderWidgetOS>::build(self, ctx)
     }
 
-    fn layout<'w>(
-        &self,
-        ctx: &'w super::contexts::render_ctx::AnyRenderContext,
-        constraints: Constraints,
-    ) -> Size {
+    fn layout<'w>(&self, ctx: RenderContextOS, constraints: Constraints) -> Size {
         <Self as RenderWidgetOS>::layout(self, ctx, constraints)
     }
 
@@ -135,7 +131,7 @@ macro_rules! impl_widget_os_deref_ {
 
             fn layout<'w>(
                 &self,
-                ctx: &'w super::contexts::render_ctx::AnyRenderContext,
+                ctx: RenderContextOS,
                 constraints: Constraints,
             ) -> Size {
                 self.deref().layout(ctx, constraints)

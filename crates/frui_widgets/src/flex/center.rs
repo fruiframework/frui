@@ -16,7 +16,7 @@ impl<W: Widget> RenderWidget for Center<W> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints.loosen());
 
         let mut size = constraints.biggest();

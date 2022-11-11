@@ -11,7 +11,7 @@ impl<T: Widget> RenderWidget for ColoredBox<T> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &RenderContext<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints);
         if child_size != Size::ZERO {
             child_size
