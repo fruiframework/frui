@@ -6,7 +6,7 @@ use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 
 use super::{window_handler::WindowHandler, FruiWindowHandler};
-use crate::{app::listeners::keyboard::KEYBOARD_EVENT_LISTENERS, prelude::Widget};
+use crate::prelude::Widget;
 
 mod substitutes;
 pub use substitutes::*;

@@ -102,13 +102,13 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
     }
 
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        let _: &mut TextRenderState = &mut ctx.rstate_mut();
+        let _: &mut TextRenderState = &mut ctx.render_state_mut();
 
         Size {
-            width: constraints.min().width,
-            height: constraints.min().height,
+            width: constraints.smallest().width,
+            height: constraints.smallest().height,
         }
     }
 
-    fn paint(&self, _: LayoutCtx<Self>, _: &mut Canvas, _: &Offset) {}
+    fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}
 }

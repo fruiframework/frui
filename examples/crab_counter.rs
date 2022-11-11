@@ -58,9 +58,10 @@ fn main() {
 #[cfg(all(test, feature = "miri"))]
 mod test {
     use super::*;
+
     use frui::{
         app::runner::miri::MiriRunner,
-        druid_shell::{keyboard_types::Key, Modifiers},
+        druid_shell::{keyboard_types::Key, KeyEvent, Modifiers},
     };
 
     #[test]
