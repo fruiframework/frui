@@ -12,7 +12,7 @@ pub trait InheritedWidget: WidgetDerive + Sized {
 }
 
 impl<T: InheritedWidget> InheritedWidgetOS for T {
-    fn build<'w>(&'w self, _: &'w crate::api::contexts::Context) -> Vec<WidgetPtr<'w>> {
+    fn build<'w>(&'w self, _: &'w crate::api::contexts::RawBuildCtx) -> Vec<WidgetPtr<'w>> {
         vec![T::build(self).into_widget_ptr()]
     }
 

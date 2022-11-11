@@ -52,7 +52,7 @@ pub mod macro_exports {
         api::{
             contexts::{
                 render::{LayoutCtxOS, PaintCtxOS},
-                Context,
+                RawBuildCtx,
             },
             implementers::{
                 InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,

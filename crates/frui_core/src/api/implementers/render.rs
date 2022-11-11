@@ -1,6 +1,6 @@
 use crate::{
     api::{contexts::build_ctx::_BuildCtx, IntoWidgetPtr, WidgetPtr},
-    macro_exports::Context,
+    macro_exports::RawBuildCtx,
     prelude::BuildCtx,
     render::*,
 };
@@ -16,8 +16,8 @@ pub trait RenderWidget: WidgetDerive + Sized {
 }
 
 impl<T: RenderWidget> RenderWidgetOS for T {
-    fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>> {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
+    fn build<'w>(&'w self, ctx: &'w RawBuildCtx) -> Vec<WidgetPtr<'w>> {
+        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
 
         T::build(&self, ctx)
             .into_iter()

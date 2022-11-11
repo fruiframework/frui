@@ -2,7 +2,7 @@ use crate::{
     api::{
         contexts::{
             build_ctx::{BuildCtx, _BuildCtx},
-            Context,
+            RawBuildCtx,
         },
         IntoWidgetPtr, WidgetPtr,
     },
@@ -16,8 +16,8 @@ pub trait ViewWidget: WidgetDerive + Sized {
 }
 
 impl<T: ViewWidget> ViewWidgetOS for T {
-    fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>> {
-        let ctx = unsafe { std::mem::transmute::<&Context, &_BuildCtx<T>>(ctx) };
+    fn build<'w>(&'w self, ctx: &'w RawBuildCtx) -> Vec<WidgetPtr<'w>> {
+        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
 
         vec![T::build(&self, ctx).into_widget_ptr()]
     }
