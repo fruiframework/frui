@@ -6,14 +6,14 @@ use crate::prelude::{context::HitTestCtxOS, events::PointerExit, PointerEvent};
 
 use super::WidgetNodeRef;
 
-type HitTestResults = Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>;
+pub type HitTestEntries = Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>;
 
 #[derive(Default)]
 pub struct PointerHandler {
     /// Hit test results for last pointer down event.
-    pointer_down_results: HitTestResults,
+    pointer_down_results: HitTestEntries,
     /// Hit test results for the last hover event.
-    pointer_hover_results_last: HitTestResults,
+    pointer_hover_results_last: HitTestEntries,
 }
 
 impl PointerHandler {
@@ -33,7 +33,7 @@ impl PointerHandler {
                 }
             }
             PointerEvent::PointerScroll(_) => {
-                let results = HitTestResults::default();
+                let results = HitTestEntries::default();
 
                 self.hit_test(root, &results, &event);
 
@@ -42,7 +42,7 @@ impl PointerHandler {
                 }
             }
             PointerEvent::PointerMove(_) => {
-                let new_results = HitTestResults::default();
+                let new_results = HitTestEntries::default();
 
                 self.hit_test(root, &new_results, &event);
 
@@ -73,7 +73,7 @@ impl PointerHandler {
     fn hit_test(
         &self,
         node: WidgetNodeRef,
-        new_hit_entries: &Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>,
+        new_hit_entries: &HitTestEntries,
         event: &PointerEvent,
     ) {
         let ctx = HitTestCtxOS::new(&node, new_hit_entries.clone(), Affine::default());
