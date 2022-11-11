@@ -34,7 +34,7 @@ pub mod prelude {
 pub mod render {
     pub use crate::api::implementers::render::RenderWidget;
 
-    pub use crate::api::contexts::render_ctx::*;
+    pub use crate::api::contexts::render::*;
     pub use crate::app::runner::Canvas;
     pub use crate::app::TEXT_FACTORY;
 
@@ -51,7 +51,7 @@ pub mod macro_exports {
     pub use crate::{
         api::{
             contexts::{
-                render_ctx::{LayoutCtxOS, PaintCtxOS},
+                render::{LayoutCtxOS, PaintCtxOS},
                 Context,
             },
             implementers::{
