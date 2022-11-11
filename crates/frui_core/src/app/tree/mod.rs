@@ -23,7 +23,7 @@ use crate::{
 
 use self::pointer_handler::PointerHandler;
 
-mod pointer_handler;
+pub mod pointer_handler;
 
 pub(crate) struct WidgetTree {
     /// Root widget contains necessary configuration to support `InheritedWidget`s.
