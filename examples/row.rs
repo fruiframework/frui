@@ -21,7 +21,7 @@ impl ViewWidget for App {
             Row::builder()
                 .space_between(20.0)
                 .main_axis_size(MainAxisSize::Max)
-                .main_axis_alignment(MainAxisAlignment::SpaceEvenly)
+                .main_axis_alignment(MainAxisAlignment::End)
                 // .cross_axis_size(CrossAxisSize::Max)
                 // .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children((
@@ -29,21 +29,21 @@ impl ViewWidget for App {
                         Container::builder()
                             .height(100.)
                             .color(Color::RED)
-                            .child(Text::new("Hi")),
+                            .child(Text::new("Expanded.flex=1")),
                     ),
                     Big(100., 100., Color::rgb8(13, 245, 152)),
                     Flexible::new(
                         Container::builder()
                             .height(100.)
                             .color(Color::RED)
-                            .child(Text::new("Hi")),
+                            .child(Text::new("Flexible.flex=1")),
                     ),
                     Big(100., 100., Color::rgb8(255, 0, 110)),
                     Expanded::new(
                         Container::builder()
                             .height(100.)
                             .color(Color::RED)
-                            .child(Text::new("Hi")),
+                            .child(Text::new("Expanded.flex=2")),
                     )
                     .flex(2),
                     Big(100., 100., Color::rgb8(0, 186, 255)),
