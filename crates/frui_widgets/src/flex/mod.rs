@@ -193,9 +193,7 @@ fn compute_main_axis_offset(
     )
 }
 
-//
-// Todo:
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FlexFit {
     Loose,
     Tight,

@@ -153,10 +153,6 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
     }
 }
 
-fn is_flex(c: &ChildContext) -> bool {
-    get_flex(c).unwrap_or(0) > 0
-}
-
 impl<WL: WidgetList> Flex<WL> {
     fn get_main_size(&self, size: &Size) -> f64 {
         match self.direction {
@@ -307,13 +303,24 @@ impl<WL: WidgetList> Flex<WL> {
         &self,
         children: ChildIter,
         constraints: Constraints,
-        free_space: f64,
-        flex_count: usize,
+        mut free_space: f64,
+        mut flex_count: usize,
     ) {
-        let space_per_flex = free_space / (flex_count as f64);
+        let mut space_per_flex;
 
-        for child in children.filter(is_flex) {
+        // Layout `FlexFit::Loose` children first since they can take less than
+        // `space_per_flex * flex`, then layout `FlexFit::Tight` children which
+        // must have that exact size.
+        let flex_children = children.filter(is_flex);
+        let children_fit_ordered = flex_children
+            .clone()
+            .filter(fit_loose)
+            .chain(flex_children.filter(fit_tight));
+
+        for child in children_fit_ordered {
             let flex = child.try_parent_data::<FlexData>().unwrap().flex_factor;
+
+            space_per_flex = free_space / (flex_count as f64);
 
             let max_child_extent = space_per_flex * flex as f64;
 
@@ -325,7 +332,7 @@ impl<WL: WidgetList> Flex<WL> {
             // FitFlex::Tight forces tight constraints on its child.
             // FitFlex::Loose forces loose constraints on its child.
             //
-            // Can we implement this differently?
+            // Can we implement following differently?
 
             let flex_constraints = match self.cross_axis_alignment {
                 CrossAxisAlignment::Stretch => match self.direction {
@@ -358,7 +365,10 @@ impl<WL: WidgetList> Flex<WL> {
                 },
             };
 
-            child.layout(flex_constraints);
+            let mut child_size = child.layout(flex_constraints);
+            let main_size = *child_size.main(self.direction);
+            free_space -= main_size;
+            flex_count -= flex;
         }
     }
 }
@@ -369,23 +379,9 @@ struct InflexResult {
     allocated_space: f64,
 }
 
-fn get_flex(child: &ChildContext) -> Option<usize> {
-    child.try_parent_data::<FlexData>().map(|d| d.flex_factor)
-}
-
-/// Todo: Use this!
-fn get_fit(child: &ChildContext) -> Option<FlexFit> {
-    child.try_parent_data::<FlexData>().map(|d| d.fit)
-}
-
 #[derive(Debug)]
 struct MainAxisSizes {
-    // 1. Here return `total_min: f64` which is how big column is on the main
-    //    axis if every flexible widget had size 0.
-    // 2. In the caller do `total_flex_space = (constraints.max_size - total_min).max(0.)`.
-    // 3. Then do `space_per_flex= total_flex_space / flex_count`.
-    // 4. The rest is easy.
-    /// Total size of [`Flex`] if every flexible had size 0.
+    /// Total size of [`Flex`] if every flexible child had size 0.
     total_min: f64,
     /// Padding before first child.
     padding_top: f64,
@@ -393,14 +389,24 @@ struct MainAxisSizes {
     space_between: f64,
 }
 
-#[derive(Debug)]
-struct FlexLayoutSizes {
-    /// Total size of a widget on the main axis. It includes whitespace.
-    main_size: f64,
-    /// Total size of a widget on the cross axis.
-    cross_size: f64,
-    /// Sum of the sizes of the non-flexible children.
-    allocated_size: f64,
+fn get_flex(child: &ChildContext) -> Option<usize> {
+    child.try_parent_data::<FlexData>().map(|d| d.flex_factor)
+}
+
+fn get_fit(child: &ChildContext) -> Option<FlexFit> {
+    child.try_parent_data::<FlexData>().map(|d| d.fit)
+}
+
+fn is_flex(c: &ChildContext) -> bool {
+    get_flex(c).unwrap_or(0) > 0
+}
+
+fn fit_loose(c: &ChildContext) -> bool {
+    get_fit(c).unwrap() == FlexFit::Loose
+}
+
+fn fit_tight(c: &ChildContext) -> bool {
+    get_fit(c).unwrap() == FlexFit::Tight
 }
 
 fn start_is_top_left(
