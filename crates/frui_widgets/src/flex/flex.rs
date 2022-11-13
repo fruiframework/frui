@@ -139,8 +139,6 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         let main_size = size.main(self.direction);
         *main_size = main_size.max(total_min);
         size
-
-        // For some reason Row renders correctly, and Column not!
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
@@ -210,9 +208,6 @@ impl<WL: WidgetList> Flex<WL> {
         }
     }
 
-    /// Todo: Maybe separate laying out from computing offsets? Like get flex
-    /// count buy laying out manually, but keep it in a separate function to
-    /// compute the `padding`, `space_between`, etc. ?
     fn compute_main_sizes(
         &self,
         flexible: bool,
@@ -287,8 +282,7 @@ impl<WL: WidgetList> Flex<WL> {
         let total_min = {
             match self.main_axis_alignment {
                 Start | Center | End | SpaceBetween => back_to_back,
-                SpaceAround => padding_top + back_to_back + padding_top,
-                SpaceEvenly => padding_top + back_to_back + padding_top,
+                SpaceAround | SpaceEvenly => padding_top + back_to_back + padding_top,
             }
         };
 
@@ -306,8 +300,6 @@ impl<WL: WidgetList> Flex<WL> {
         mut free_space: f64,
         mut flex_count: usize,
     ) {
-        let mut space_per_flex;
-
         // Layout `FlexFit::Loose` children first since they can take less than
         // `space_per_flex * flex`, then layout `FlexFit::Tight` children which
         // must have that exact size.
@@ -320,7 +312,7 @@ impl<WL: WidgetList> Flex<WL> {
         for child in children_fit_ordered {
             let flex = child.try_parent_data::<FlexData>().unwrap().flex_factor;
 
-            space_per_flex = free_space / (flex_count as f64);
+            let space_per_flex = free_space / (flex_count as f64);
 
             let max_child_extent = space_per_flex * flex as f64;
 
@@ -329,46 +321,52 @@ impl<WL: WidgetList> Flex<WL> {
                 FlexFit::Tight => max_child_extent,
             };
 
-            // FitFlex::Tight forces tight constraints on its child.
-            // FitFlex::Loose forces loose constraints on its child.
-            //
-            // Can we implement following differently?
-
-            let flex_constraints = match self.cross_axis_alignment {
-                CrossAxisAlignment::Stretch => match self.direction {
-                    Axis::Horizontal => Constraints {
-                        min_width: min_child_extent,
-                        max_width: max_child_extent,
-                        min_height: constraints.max_height,
-                        max_height: constraints.max_height,
-                    },
-                    Axis::Vertical => Constraints {
-                        min_width: constraints.max_width,
-                        max_width: constraints.max_width,
-                        min_height: min_child_extent,
-                        max_height: max_child_extent,
-                    },
-                },
-                _ => match self.direction {
-                    Axis::Horizontal => Constraints {
-                        min_width: min_child_extent,
-                        max_width: max_child_extent,
-                        min_height: 0.0,
-                        max_height: constraints.max_height,
-                    },
-                    Axis::Vertical => Constraints {
-                        min_width: 0.0,
-                        max_width: constraints.max_width,
-                        min_height: min_child_extent,
-                        max_height: max_child_extent,
-                    },
-                },
-            };
+            let flex_constraints =
+                self.flex_constraints(min_child_extent, max_child_extent, constraints);
 
             let mut child_size = child.layout(flex_constraints);
             let main_size = *child_size.main(self.direction);
+
             free_space -= main_size;
             flex_count -= flex;
+        }
+    }
+
+    fn flex_constraints(
+        &self,
+        min_child_extent: f64,
+        max_child_extent: f64,
+        constraints: Constraints,
+    ) -> Constraints {
+        match self.cross_axis_alignment {
+            CrossAxisAlignment::Stretch => match self.direction {
+                Axis::Horizontal => Constraints {
+                    min_width: min_child_extent,
+                    max_width: max_child_extent,
+                    min_height: constraints.max_height,
+                    max_height: constraints.max_height,
+                },
+                Axis::Vertical => Constraints {
+                    min_width: constraints.max_width,
+                    max_width: constraints.max_width,
+                    min_height: min_child_extent,
+                    max_height: max_child_extent,
+                },
+            },
+            _ => match self.direction {
+                Axis::Horizontal => Constraints {
+                    min_width: min_child_extent,
+                    max_width: max_child_extent,
+                    min_height: 0.0,
+                    max_height: constraints.max_height,
+                },
+                Axis::Vertical => Constraints {
+                    min_width: 0.0,
+                    max_width: constraints.max_width,
+                    min_height: min_child_extent,
+                    max_height: max_child_extent,
+                },
+            },
         }
     }
 }
