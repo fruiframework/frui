@@ -20,7 +20,7 @@ pub mod prelude {
                 },
                 render_ctx::{
                     ChildContext, ChildrenIter, Constraints, Offset, ParentData, RenderContext,
-                    RenderState, Size,
+                    RenderState, Size, Radius, Rect, RRect
                 },
             },
             implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
@@ -34,7 +34,7 @@ pub mod prelude {
     pub use druid_shell::{
         kurbo::*,
         piet::{
-            Brush, Color, FontFamily, FontStyle, FontWeight, RenderContext as PietRenderContext,
+            Brush, Color, FontFamily, FontStyle, FontWeight, RenderContext as PietRenderContext
         },
         KeyEvent, MouseButton,
     };

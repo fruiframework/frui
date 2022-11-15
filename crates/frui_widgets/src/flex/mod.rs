@@ -14,7 +14,7 @@ pub mod stack;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct BoxLayoutData {
-    offset: Offset,
+    pub offset: Offset,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
