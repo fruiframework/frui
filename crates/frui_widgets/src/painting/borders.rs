@@ -1,13 +1,24 @@
 use std::ops::{Mul, Add};
 
+use druid_shell::piet::StrokeStyle;
 use frui::prelude::*;
 
-use crate::{EdgeInsets, TextDirection};
+use crate::{EdgeInsets};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BorderStyle {
     None,
     Solid,
+    /// Dashed line with a gap at the start and end of the line.
+    /// Follow the standard of PostScript
+    /// 
+    /// Example:
+    /// A dash line with 5px solid and 5px gap, and 2px solid and 5px gap, start offset 0px
+    /// ```rust
+    /// BorderStyle::Dashed(vec![5.0, 5.0, 2.0, 5.0], 0.0)
+    /// ```
+    /// You can use offset to change the start position of the line and make an animation.
+    Dash(Vec<f64>, f64),
 }
 
 /// A side of a border of a box.
@@ -39,7 +50,7 @@ impl BorderSide {
             BorderSide {
                 color: a.color.clone(),
                 width: a.width + b.width,
-                style: BorderStyle::Solid,
+                style: a.style.clone(),
             }
         }
     }
@@ -63,7 +74,15 @@ impl BorderSide {
         BorderSide {
             color: color.unwrap_or(self.color.clone()),
             width: width.unwrap_or(self.width),
-            style: style.unwrap_or(self.style),
+            style: style.unwrap_or(self.style.clone()),
+        }
+    }
+
+    pub fn to_stroke_style(&self) -> Option<StrokeStyle> {
+        if let BorderStyle::Dash(ref dash, offset) = self.style {
+            Some(StrokeStyle::new().dash(dash.clone(), offset))
+        } else {
+            None
         }
     }
 }
@@ -87,26 +106,7 @@ impl Mul<f64> for BorderSide {
 pub trait ShapeBorder : Add + Sized {
     fn dimensions(&self) -> EdgeInsets;
 
-    fn stroke_path(&self, rect: Rect, text_direction: Option<TextDirection>) -> BezPath;
+    fn stroke_path(&self, rect: Rect) -> BezPath;
 
-    fn shape_path(&self, rect: Rect, text_direction: Option<TextDirection>) -> BezPath;
-
-    fn paint(&self, canvas: &mut PaintContext, rect: Rect, text_direction: Option<TextDirection>);
+    fn shape_path(&self, rect: Rect) -> BezPath;
 }
-
-// pub struct ShapeBorder<E, S>
-// where
-//     E: Directional<Output = EdgeInsets>,
-//     S: Shape,
-// {
-//     pub dimensions: E,
-//     pub shape: S,
-// }
-
-// impl<E, S> ShapeBorder<E, S>
-// where
-//     E: Directional<Output = EdgeInsets>,
-//     S: Shape,
-// {
-//     fn paint(&self, canvas: &mut PaintContext, rect: Rect, text_direction: TextDirection) {}
-// }

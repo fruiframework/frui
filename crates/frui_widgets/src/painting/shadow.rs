@@ -1,6 +1,5 @@
 use std::ops::Mul;
 
-use druid_shell::piet::PaintBrush;
 use frui::prelude::*;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -18,6 +17,18 @@ pub struct BoxShadow {
     pub blur_radius: f64,
     pub spread_radius: f64,
     pub blur_style: BlurStyle,
+}
+
+impl BoxShadow {
+        pub fn paint(&self, canvas: &mut PaintContext, rect: Rect, _offset: &Offset) {
+        let brush = canvas.solid_brush(self.color.clone());
+        canvas.with_save(|c| {
+            let translate: Vec2 = (self.offset.x, self.offset.y).into();
+            c.transform(Affine::translate(translate));
+            c.blurred_rect(rect.into(), self.blur_radius, &brush);
+            Ok(())
+        }).unwrap();
+    }
 }
 
 impl Mul<f64> for BoxShadow {

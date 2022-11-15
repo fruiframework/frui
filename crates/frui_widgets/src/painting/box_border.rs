@@ -1,11 +1,12 @@
 use std::{ops::Add};
 
+use druid_shell::piet::StrokeStyle;
 use frui::prelude::*;
 
-use crate::{borders::BorderSide, Directional, ShapeBorder, TextDirection, EdgeInsets, EPSILON};
+use crate::{borders::BorderSide, Directional, ShapeBorder, TextDirection, EdgeInsets, EPSILON, BorderRadius, BorderStyle};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum BoxShape {
+    pub enum BoxShape {
     Circle,
     Rectangle,
 }
@@ -58,20 +59,34 @@ impl ShapeBorder for BoxBorder {
         EdgeInsets::from_ltrb(self.left.width, self.top.width, self.right.width, self.bottom.width)
     }
 
-    fn stroke_path(&self, rect: Rect, text_direction: Option<TextDirection>) -> BezPath {
+    fn stroke_path(&self, rect: Rect) -> BezPath {
         Into::<druid_shell::piet::kurbo::Rect>::into(self.dimensions().deflate_rect(rect)).into_path(EPSILON)
     }
 
-    fn shape_path(&self, rect: Rect, text_direction: Option<TextDirection>) -> BezPath {
+    fn shape_path(&self, rect: Rect) -> BezPath {
         Into::<druid_shell::piet::kurbo::Rect>::into(rect.clone()).into_path(EPSILON)
-    }
-
-    fn paint(&self, canvas: &mut PaintContext, rect: Rect, text_direction: Option<TextDirection>) {
-        todo!()
     }
 }
 
 impl BoxBorder {
+    pub fn all(color: Color, width: f64, stroke_style: BorderStyle) -> Self {
+        let side = BorderSide {
+            color,
+            width,
+            style: stroke_style,
+        };
+        Self::from_border_side(side)
+    }
+
+    pub fn from_border_side(side: BorderSide) -> Self {
+        Self {
+            top: side.clone(),
+            right: side.clone(),
+            bottom: side.clone(),
+            left: side,
+        }
+    }
+
     pub fn merge(a: &BoxBorder, b: &BoxBorder) -> Self {
         Self {
             top: BorderSide::merge(&a.top, &b.top),
@@ -101,6 +116,35 @@ impl BoxBorder {
         self.top.style == self.right.style
             && self.right.style == self.bottom.style
             && self.bottom.style == self.left.style
+    }
+
+    pub fn paint(&self, canvas: &mut PaintContext, rect: Rect, shape: Option<BoxShape>, border_radius: BorderRadius) {
+        assert!(self.is_uniform(), "BoxBorder::paint() can only paint uniform borders");
+        if self.top.width == 0.0 {
+            return;
+        }
+
+        let path = if let Some(shape) = shape {
+            match shape {
+                BoxShape::Circle => {
+                    let center = rect.center();
+                    let radius = rect.width().min(rect.height()) / 2.0;
+                    Circle::new(center, radius).into_path(EPSILON)
+                }
+                BoxShape::Rectangle => {
+                    RoundedRect::try_from(border_radius.to_rrect(&rect)).unwrap().into_path(EPSILON)
+                }
+            }
+        } else {
+            druid_shell::piet::kurbo::Rect::from(rect).into_path(EPSILON)
+        };
+
+        let brush = canvas.solid_brush(self.top.color.clone());
+        if let Some(stroke_style) = self.top.to_stroke_style() {
+            canvas.stroke_styled(path, &brush, self.top.width, &stroke_style);
+        } else {
+            canvas.stroke(path, &brush, self.top.width);
+        }
     }
 }
 

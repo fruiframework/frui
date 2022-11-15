@@ -2,6 +2,8 @@ use druid_shell::kurbo::Rect;
 
 use frui::prelude::*;
 
+use crate::{Decoration, DecorationPosition, TextDirection};
+
 
 
 #[derive(RenderWidget)]
@@ -79,5 +81,38 @@ impl<W: Widget> RenderWidget for Container<W> {
         }
 
         ctx.child(0).paint(canvas, offset)
+    }
+}
+
+#[derive(RenderWidget)]
+pub struct DecoratedBox<W: Widget, D: Decoration> {
+    pub child: W,
+    pub decoration: D,
+    pub position: DecorationPosition,
+}
+
+impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
+    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+        vec![&self.child]
+    }
+
+    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+        ctx.child(0).layout(constraints)
+    }
+
+    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+        let rect = Rect::from_origin_size(offset, ctx.size());
+        let path = self.decoration.get_clip_path(rect.into(), &TextDirection::Ltr);
+        if self.position == DecorationPosition::Background {
+            self.decoration.paint(canvas, rect.into(), offset);
+        }
+        canvas.with_save(|c| {
+            c.clip(path);
+            ctx.child(0).paint(c, offset);
+            Ok(())
+        }).unwrap();
+        if self.position == DecorationPosition::Foreground {
+            self.decoration.paint(canvas, rect.into(), offset);
+        }
     }
 }
