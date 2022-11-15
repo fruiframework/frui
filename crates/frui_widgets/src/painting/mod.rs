@@ -13,4 +13,4 @@ pub mod edge_insets;
 pub mod decoration;
 pub mod shadow;
 
-pub const EPSILON: f64 = 1E-9;
+pub const EPSILON: f64 = 1E-9; 
