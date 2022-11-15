@@ -9,6 +9,7 @@ mod text;
 mod transform;
 mod widget_list;
 mod boxes;
+mod painting;
 
 pub use self::basic::*;
 pub use self::container::*;
@@ -20,6 +21,7 @@ pub use self::text::*;
 pub use self::transform::*;
 pub use self::widget_list::*;
 pub use self::boxes::*;
+pub use self::painting::*;
 
 #[doc(hidden)]
 pub use frui::macro_exports;

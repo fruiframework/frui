@@ -13,7 +13,7 @@ use crate::{
         runner::{window_handler::APP_HANDLE, PaintContext},
         tree::{WidgetNode, WidgetNodeRef},
     },
-    prelude::WidgetState,
+    prelude::{WidgetState, InheritedState, InheritedWidget},
 };
 
 mod common;
@@ -104,6 +104,24 @@ impl<'a, T> _RenderContext<'a, T> {
 
     pub fn size(&self) -> Size {
         self.ctx.size()
+    }
+
+    pub fn depend_on_inherited_widget<W>(&self) -> Option<InheritedState<W::State>>
+    where
+        W: InheritedWidget + WidgetState,
+    {
+        // Register and get inherited widget of specified key.
+        let node = self
+            .ctx
+            .node
+            .depend_on_inherited_widget_of_key::<W::UniqueTypeId>()?;
+
+        // Fixme: reuse in both BuildContext and RenderContext
+
+        Some(InheritedState {
+            node,
+            _p: PhantomData,
+        })
     }
 }
 

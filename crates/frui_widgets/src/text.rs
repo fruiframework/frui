@@ -5,10 +5,22 @@ use druid_shell::piet::{
     TextLayoutBuilder,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum TextDirection {
     Rtl,
     Ltr,
+}
+
+impl Default for TextDirection {
+    fn default() -> Self {
+        TextDirection::Ltr
+    }
+}
+
+pub trait Directional {
+    type Output;
+
+    fn resolve(&self, text_direction: &TextDirection) -> Self::Output;
 }
 
 #[derive(RenderWidget, Builder)]

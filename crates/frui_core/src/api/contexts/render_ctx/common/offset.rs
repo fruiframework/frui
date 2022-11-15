@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub};
+use std::ops::{Add, Sub, Mul};
 
 use druid_shell::kurbo::Point;
 
@@ -8,6 +8,12 @@ use super::Size;
 pub struct Offset {
     pub x: f64,
     pub y: f64,
+}
+
+impl Offset {
+    pub fn new(x: f64, y: f64) -> Self {
+        Offset { x, y }
+    }
 }
 
 impl Add for Offset {
@@ -28,6 +34,17 @@ impl Sub for Offset {
         Self {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
+        }
+    }
+}
+
+impl Mul<f64> for Offset {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self {
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }
