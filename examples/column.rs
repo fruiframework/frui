@@ -18,7 +18,7 @@ struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        DebugContainer::child(
+        DebugContainer::new(
             Column::builder()
                 .space_between(20.0)
                 .main_axis_size(MainAxisSize::Min)

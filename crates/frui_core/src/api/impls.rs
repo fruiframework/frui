@@ -94,8 +94,8 @@ impl RenderWidget for () {
         vec![]
     }
 
-    fn layout(&self, _: RenderContext<Self>, _: Constraints) -> Size {
-        Size::ZERO
+    fn layout(&self, _: RenderContext<Self>, c: Constraints) -> Size {
+        c.biggest()
     }
 
     fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}

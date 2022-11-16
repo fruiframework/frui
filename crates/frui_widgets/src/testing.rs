@@ -1,21 +1,34 @@
 use frui::prelude::{RenderContext, *};
 
 use druid_shell::piet::{
-    kurbo::Rect,
-    Color,
-    LineCap,
-    RenderContext as PietRenderContext,
-    StrokeStyle,
+    kurbo::Rect, Color, LineCap, RenderContext as PietRenderContext, StrokeStyle,
 };
 
-#[derive(RenderWidget)]
+pub trait DebugContainerExt: Widget + Sized {
+    fn debug_container(self) -> DebugContainer<Self> {
+        DebugContainer {
+            child: self,
+            print_size: "",
+        }
+    }
+}
+
+impl<T: Widget> DebugContainerExt for T {}
+
+#[derive(RenderWidget, Builder)]
 pub struct DebugContainer<W: Widget> {
     pub child: W,
+    /// Print to the console size of child widget computed during layout. It
+    /// will not print to the console if str == "".
+    pub print_size: &'static str,
 }
 
 impl<W: Widget> DebugContainer<W> {
-    pub fn child(child: W) -> Self {
-        Self { child }
+    pub fn new(child: W) -> Self {
+        Self {
+            child,
+            print_size: "",
+        }
     }
 }
 
@@ -25,7 +38,13 @@ impl<W: Widget> RenderWidget for DebugContainer<W> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        ctx.child(0).layout(constraints)
+        let size = ctx.child(0).layout(constraints);
+
+        if self.print_size != "" {
+            println!("{} = {:?}", self.print_size, size);
+        }
+
+        size
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
