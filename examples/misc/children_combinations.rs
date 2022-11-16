@@ -2,11 +2,38 @@
 
 use frui::prelude::*;
 
-pub fn big_big_big() -> impl WidgetList {
+pub fn inflexible() -> impl WidgetList {
     (
-        Big(100., 100., Color::rgb8(13, 245, 152)),
-        Big(100., 100., Color::rgb8(255, 0, 110)),
-        Big(100., 100., Color::rgb8(0, 186, 255)),
+        Big::new(Color::rgb8(13, 245, 152)),
+        Big::new(Color::rgb8(255, 0, 110)),
+        Big::new(Color::rgb8(0, 186, 255)),
+    )
+}
+
+pub fn flexible_inflexible() -> impl WidgetList {
+    (
+        Expanded::new(
+            Container::builder()
+                .width(100.)
+                .color(Color::RED)
+                .child(Text::new("Tight,flex=1")),
+        ),
+        Big::new(Color::rgb8(13, 245, 152)),
+        Flexible::new(
+            Container::builder()
+                .width(100.)
+                .color(Color::RED)
+                .child(Text::new("Loose,flex=1")),
+        ),
+        Big::new(Color::rgb8(255, 0, 110)),
+        Expanded::new(
+            Container::builder()
+                .width(100.)
+                .color(Color::RED)
+                .child(Text::new("Tight,flex=2")),
+        )
+        .flex(2),
+        Big::new(Color::rgb8(0, 186, 255)),
     )
 }
 
