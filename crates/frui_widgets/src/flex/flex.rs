@@ -133,11 +133,19 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         }
 
         let mut size = constraints.biggest();
+        let size_main = size.main(self.direction);
 
-        // Ensure overflow error appears when there is no space to lay out
-        // flexible children of size of at least 0.
-        let main_size = size.main(self.direction);
-        *main_size = main_size.max(total_min);
+        // If Flex contains flexible widgets, it will take all available space
+        // on the main axis.
+        //
+        // We also make sure that overflow error appears when there is no space
+        // to lay out flexible children of size of at least 0.
+        if flexible || matches!(self.main_axis_size, MainAxisSize::Max) {
+            *size_main = size_main.max(total_min)
+        } else {
+            *size_main = total_min
+        }
+
         size
     }
 
@@ -230,7 +238,7 @@ impl<WL: WidgetList> Flex<WL> {
         // Space between at least 2 children, not padding before first and last child.
         let space_between;
 
-        if !flexible {
+        if !flexible && matches!(self.main_axis_size, MainAxisSize::Max) {
             let available = total_space - allocated_space;
 
             space_between = match self.main_axis_alignment {
@@ -257,9 +265,9 @@ impl<WL: WidgetList> Flex<WL> {
         let back_to_back = space_between * (child_count - 1.) + allocated_space;
 
         // Padding before the first child.
-        let padding_top;
+        let mut padding_top;
 
-        if flexible {
+        if flexible || matches!(self.main_axis_size, MainAxisSize::Min) {
             match self.main_axis_alignment {
                 SpaceAround => padding_top = space_between / 2.,
                 SpaceEvenly => padding_top = space_between,
@@ -276,14 +284,12 @@ impl<WL: WidgetList> Flex<WL> {
         };
 
         // In case it's negative (if constraints are too small to fit).
-        let padding_top = padding_top.max(0.);
+        padding_top = padding_top.max(0.);
 
         // Total space if each of flex widgets had 0 size.
-        let total_min = {
-            match self.main_axis_alignment {
-                Start | Center | End | SpaceBetween => back_to_back,
-                SpaceAround | SpaceEvenly => padding_top + back_to_back + padding_top,
-            }
+        let total_min = match self.main_axis_alignment {
+            Start | Center | End | SpaceBetween => back_to_back,
+            SpaceAround | SpaceEvenly => padding_top + back_to_back + padding_top,
         };
 
         MainAxisSizes {
