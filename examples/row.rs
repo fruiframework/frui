@@ -10,44 +10,21 @@
 use frui::prelude::*;
 
 mod misc;
-use misc::children_combinations::Big;
+use misc::children_combinations as list;
 
 #[derive(ViewWidget)]
 struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        DebugContainer::child(
+        DebugContainer::new(
             Row::builder()
                 .space_between(20.0)
-                .main_axis_size(MainAxisSize::Max)
-                .main_axis_alignment(MainAxisAlignment::End)
+                .main_axis_size(MainAxisSize::Min)
+                .main_axis_alignment(MainAxisAlignment::Center)
                 // .cross_axis_size(CrossAxisSize::Max)
                 // .cross_axis_alignment(CrossAxisAlignment::Center)
-                .children((
-                    Expanded::new(
-                        Container::builder()
-                            .height(100.)
-                            .color(Color::RED)
-                            .child(Text::new("Expanded.flex=1")),
-                    ),
-                    Big(100., 100., Color::rgb8(13, 245, 152)),
-                    Flexible::new(
-                        Container::builder()
-                            .height(100.)
-                            .color(Color::RED)
-                            .child(Text::new("Flexible.flex=1")),
-                    ),
-                    Big(100., 100., Color::rgb8(255, 0, 110)),
-                    Expanded::new(
-                        Container::builder()
-                            .height(100.)
-                            .color(Color::RED)
-                            .child(Text::new("Expanded.flex=2")),
-                    )
-                    .flex(2),
-                    Big(100., 100., Color::rgb8(0, 186, 255)),
-                )),
+                .children(list::flexible_inflexible()),
         )
     }
 }
