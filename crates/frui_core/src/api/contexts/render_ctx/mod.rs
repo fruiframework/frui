@@ -128,6 +128,7 @@ impl<'a> ChildContext<'a> {
         self.ctx.paint(canvas, offset)
     }
 
+    #[track_caller]
     pub fn size(&self) -> Size {
         self.ctx.size()
     }
@@ -242,6 +243,7 @@ impl AnyRenderContext {
         Some(ChildContext::new(ctx))
     }
 
+    #[track_caller]
     fn size(&self) -> Size {
         self.node.borrow().render_data.size
     }
