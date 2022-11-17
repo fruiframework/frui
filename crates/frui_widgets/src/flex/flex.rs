@@ -15,16 +15,9 @@ impl Axis {
             Axis::Vertical => constraints.max_height,
         }
     }
-
-    fn flip(&self) -> Self {
-        match self {
-            Axis::Horizontal => Axis::Vertical,
-            Axis::Vertical => Axis::Horizontal,
-        }
-    }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VerticalDirection {
     Up,
     Down,
@@ -98,18 +91,19 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         let InflexResult {
             flex_count,
+            cross_size_min,
             allocated_space,
         } = self.layout_inflexible(ctx.children(), constraints);
 
         let flexible = flex_count > 0;
 
         let MainAxisSizes {
-            total_min,
-            padding_top,
+            main_size_min,
+            leading_space,
             space_between,
         } = self.compute_main_sizes(flexible, child_count, constraints, allocated_space);
 
-        let free_space = (main_size_max - total_min).max(0.);
+        let free_space = (main_size_max - main_size_min).max(0.);
 
         if flexible {
             assert!(can_flex, "flex received unbounded constraints");
@@ -119,21 +113,37 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         //
         // Position chlidren:
 
-        let mut main_offset = padding_top;
+        // Todo: compute cross size for flexible children
+
+        let cross_size = match self.cross_axis_size {
+            CrossAxisSize::Min => cross_size_min,
+            CrossAxisSize::Max => constraints
+                .biggest()
+                .cross(self.direction)
+                .max(cross_size_min),
+        };
+
+        let mut main_offset = leading_space;
 
         for child in ctx.children() {
-            let child_main = *child.size().main(self.direction);
+            let child_size = child.size();
             let child_offset = &mut child
                 .try_parent_data_mut::<FlexData>()
                 .unwrap()
                 .box_data
                 .offset;
-            *child_offset.main(self.direction) = main_offset;
-            main_offset += child_main + space_between;
+
+            let cross_offset =
+                self.compute_cross_offset(child_size.cross(self.direction), cross_size);
+
+            *child_offset.main_mut(self.direction) = main_offset;
+            *child_offset.cross_mut(self.direction) = cross_offset;
+
+            main_offset += child_size.main(self.direction) + space_between;
         }
 
         let mut size = constraints.biggest();
-        let size_main = size.main(self.direction);
+        let size_main = size.main_mut(self.direction);
 
         // If Flex contains flexible widgets, it will take all available space
         // on the main axis.
@@ -141,9 +151,9 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         // We also make sure that overflow error appears when there is no space
         // to lay out flexible children of size of at least 0.
         if flexible || matches!(self.main_axis_size, MainAxisSize::Max) {
-            *size_main = size_main.max(total_min)
+            *size_main = size_main.max(main_size_min)
         } else {
-            *size_main = total_min
+            *size_main = main_size_min
         }
 
         size
@@ -160,23 +170,10 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 }
 
 impl<WL: WidgetList> Flex<WL> {
-    fn get_main_size(&self, size: &Size) -> f64 {
-        match self.direction {
-            Axis::Horizontal => size.width,
-            Axis::Vertical => size.height,
-        }
-    }
-
-    fn get_cross_size(&self, size: &Size) -> f64 {
-        match self.direction {
-            Axis::Horizontal => size.height,
-            Axis::Vertical => size.width,
-        }
-    }
-
     fn layout_inflexible(&self, children: ChildIter, constraints: Constraints) -> InflexResult {
         let mut flex_count = 0;
-        let mut allocated_space = 0.;
+        let mut cross_size_min = 0.0;
+        let mut allocated_space = 0.0;
 
         // Compute total flex and layout non-flexible children
         for child in children.clone() {
@@ -185,34 +182,33 @@ impl<WL: WidgetList> Flex<WL> {
             if flex > 0 {
                 flex_count += flex;
             } else {
-                let child_constraints = match self.cross_axis_alignment {
-                    CrossAxisAlignment::Stretch => match self.direction {
-                        Axis::Horizontal => {
-                            Constraints::new_tight_for(None, Some(constraints.max_height))
-                        }
-                        Axis::Vertical => {
-                            Constraints::new_tight_for(Some(constraints.max_width), None)
-                        }
-                    },
-                    _ => match self.direction {
-                        Axis::Horizontal => {
-                            Constraints::new(0.0, f64::INFINITY, 0.0, constraints.max_height)
-                        }
-                        Axis::Vertical => {
-                            Constraints::new(0.0, constraints.max_width, 0.0, f64::INFINITY)
-                        }
-                    },
-                };
+                let child_constraints = self.inflexible_constraints(constraints);
 
                 let child_size = child.layout(child_constraints);
-                allocated_space += self.get_main_size(&child_size);
-                // cross_size = cross_size.max(self.get_cross_size(&child_size));
+                allocated_space += child_size.main(self.direction);
+                cross_size_min = f64::max(cross_size_min, child_size.cross(self.direction));
             }
         }
 
         InflexResult {
             flex_count,
+            cross_size_min,
             allocated_space,
+        }
+    }
+
+    fn inflexible_constraints(&self, constraints: Constraints) -> Constraints {
+        match self.cross_axis_alignment {
+            CrossAxisAlignment::Stretch => match self.direction {
+                Axis::Horizontal => Constraints::new_tight_for(None, Some(constraints.max_height)),
+                Axis::Vertical => Constraints::new_tight_for(Some(constraints.max_width), None),
+            },
+            _ => match self.direction {
+                Axis::Horizontal => {
+                    Constraints::new(0.0, f64::INFINITY, 0.0, constraints.max_height)
+                }
+                Axis::Vertical => Constraints::new(0.0, constraints.max_width, 0.0, f64::INFINITY),
+            },
         }
     }
 
@@ -235,7 +231,7 @@ impl<WL: WidgetList> Flex<WL> {
             Axis::Vertical => constraints.max_height,
         };
 
-        // Space between at least 2 children, not padding before first and last child.
+        // Space between computed based on available space.
         let space_between;
 
         if !flexible && matches!(self.main_axis_size, MainAxisSize::Max) {
@@ -264,17 +260,17 @@ impl<WL: WidgetList> Flex<WL> {
         // between those children).
         let back_to_back = space_between * (child_count - 1.) + allocated_space;
 
-        // Padding before the first child.
-        let mut padding_top;
+        // Space before the first child.
+        let mut leading_space;
 
         if flexible || matches!(self.main_axis_size, MainAxisSize::Min) {
             match self.main_axis_alignment {
-                SpaceAround => padding_top = space_between / 2.,
-                SpaceEvenly => padding_top = space_between,
-                _ => padding_top = 0.0,
+                SpaceAround => leading_space = space_between / 2.,
+                SpaceEvenly => leading_space = space_between,
+                _ => leading_space = 0.0,
             }
         } else {
-            padding_top = match self.main_axis_alignment {
+            leading_space = match self.main_axis_alignment {
                 Start | SpaceBetween => 0.0,
                 End => total_space - back_to_back,
                 Center => (total_space - back_to_back) / 2.,
@@ -284,17 +280,17 @@ impl<WL: WidgetList> Flex<WL> {
         };
 
         // In case it's negative (if constraints are too small to fit).
-        padding_top = padding_top.max(0.);
+        leading_space = leading_space.max(0.);
 
         // Total space if each of flex widgets had 0 size.
-        let total_min = match self.main_axis_alignment {
+        let main_size_min = match self.main_axis_alignment {
             Start | Center | End | SpaceBetween => back_to_back,
-            SpaceAround | SpaceEvenly => padding_top + back_to_back + padding_top,
+            SpaceAround | SpaceEvenly => leading_space + back_to_back + leading_space,
         };
 
         MainAxisSizes {
-            total_min,
-            padding_top,
+            main_size_min,
+            leading_space,
             space_between,
         }
     }
@@ -331,7 +327,7 @@ impl<WL: WidgetList> Flex<WL> {
                 self.flex_constraints(min_child_extent, max_child_extent, constraints);
 
             let mut child_size = child.layout(flex_constraints);
-            let main_size = *child_size.main(self.direction);
+            let main_size = *child_size.main_mut(self.direction);
 
             free_space -= main_size;
             flex_count -= flex;
@@ -375,20 +371,43 @@ impl<WL: WidgetList> Flex<WL> {
             },
         }
     }
+
+    fn compute_cross_offset(&self, size: f64, total_size: f64) -> f64 {
+        use CrossAxisAlignment::*;
+
+        let available = total_size - size;
+
+        match (self.cross_axis_alignment, self.start_is_top_left()) {
+            (Start, true) | (End, false) => 0.0,
+            (Start, false) | (End, true) => available,
+            (Center, _) => available / 2.,
+            (Stretch, _) => 0.0,
+            (Baseline, _) => todo!("implement baseline alignment"),
+        }
+    }
+
+    fn start_is_top_left(&self) -> bool {
+        match (self.direction, self.text_direction, self.vertical_direction) {
+            (Axis::Vertical, TextDirection::Ltr, _) => true,
+            (Axis::Horizontal, _, VerticalDirection::Down) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug)]
 struct InflexResult {
     flex_count: usize,
+    cross_size_min: f64,
     allocated_space: f64,
 }
 
 #[derive(Debug)]
 struct MainAxisSizes {
     /// Total size of [`Flex`] if every flexible child had size 0.
-    total_min: f64,
+    main_size_min: f64,
     /// Padding before first child.
-    padding_top: f64,
+    leading_space: f64,
     /// Space between children.
     space_between: f64,
 }
@@ -413,41 +432,70 @@ fn fit_tight(c: &ChildContext) -> bool {
     get_fit(c).unwrap() == FlexFit::Tight
 }
 
-fn start_is_top_left(
-    direction: &Axis,
-    text_direction: &TextDirection,
-    vertical_direction: &VerticalDirection,
-) -> bool {
-    match direction {
-        Axis::Horizontal => match text_direction {
-            TextDirection::Ltr => true,
-            TextDirection::Rtl => false,
-        },
-        Axis::Vertical => match vertical_direction {
-            VerticalDirection::Up => false,
-            VerticalDirection::Down => true,
-        },
-    }
-}
-
 trait AxisExt {
-    fn main(&mut self, axis: Axis) -> &mut f64;
+    fn main(&self, axis: Axis) -> f64;
+    fn main_mut(&mut self, axis: Axis) -> &mut f64;
+
+    fn cross(&self, axis: Axis) -> f64;
+    fn cross_mut(&mut self, axis: Axis) -> &mut f64;
 }
 
 impl AxisExt for Offset {
-    fn main(&mut self, axis: Axis) -> &mut f64 {
+    fn main(&self, axis: Axis) -> f64 {
+        match axis {
+            Axis::Horizontal => self.x,
+            Axis::Vertical => self.y,
+        }
+    }
+
+    fn main_mut(&mut self, axis: Axis) -> &mut f64 {
         match axis {
             Axis::Horizontal => &mut self.x,
             Axis::Vertical => &mut self.y,
         }
     }
+
+    fn cross(&self, axis: Axis) -> f64 {
+        match axis {
+            Axis::Horizontal => self.y,
+            Axis::Vertical => self.x,
+        }
+    }
+
+    fn cross_mut(&mut self, axis: Axis) -> &mut f64 {
+        match axis {
+            Axis::Horizontal => &mut self.y,
+            Axis::Vertical => &mut self.x,
+        }
+    }
 }
 
 impl AxisExt for Size {
-    fn main(&mut self, axis: Axis) -> &mut f64 {
+    fn main(&self, axis: Axis) -> f64 {
+        match axis {
+            Axis::Horizontal => self.width,
+            Axis::Vertical => self.height,
+        }
+    }
+
+    fn main_mut(&mut self, axis: Axis) -> &mut f64 {
         match axis {
             Axis::Horizontal => &mut self.width,
             Axis::Vertical => &mut self.height,
+        }
+    }
+
+    fn cross(&self, axis: Axis) -> f64 {
+        match axis {
+            Axis::Horizontal => self.height,
+            Axis::Vertical => self.width,
+        }
+    }
+
+    fn cross_mut(&mut self, axis: Axis) -> &mut f64 {
+        match axis {
+            Axis::Horizontal => &mut self.height,
+            Axis::Vertical => &mut self.width,
         }
     }
 }
