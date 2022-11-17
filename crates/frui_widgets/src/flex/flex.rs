@@ -42,13 +42,36 @@ impl Row {
 #[derive(RenderWidget, Builder)]
 pub struct Flex<WL: WidgetList> {
     pub children: WL,
+
+    /// Whether the children should be laid out vertically ([`Column`]) or
+    /// horizontally ([`Row`]).
     pub direction: Axis,
+
+    /// Whether first element in `children` list should be on left or right of
+    /// this [`Flex`]. Applies only if `direction` is set to
+    /// [`Horizontal`](Axis::Horizontal).
     pub text_direction: TextDirection,
+
+    /// Whether first element in `children` list should be on top or bottom of
+    /// this [`Flex`]. Applies only if `direction` is set to
+    /// [`Vertical`](Axis::Horizontal).
     pub vertical_direction: VerticalDirection,
+
+    /// Minimum amount of space added between children widgets.
     pub space_between: f64,
+
+    /// Whether [`Flex`] should take full available size on the main axis or
+    /// only the minimum to fit the children.
     pub main_axis_size: MainAxisSize,
+
+    /// Whether [`Flex`] should take full available size on the cross axis or
+    /// only the minimum to fit the children.
     pub cross_axis_size: CrossAxisSize,
+
+    /// How children should be laid out on the main axis.
     pub main_axis_alignment: MainAxisAlignment,
+
+    /// How children should be laid out on the cross axis.
     pub cross_axis_alignment: CrossAxisAlignment,
 }
 
@@ -57,6 +80,7 @@ impl Flex<()> {
         Self {
             children: (),
             direction: Axis::Horizontal,
+            // Rename following??
             text_direction: TextDirection::Ltr,
             vertical_direction: VerticalDirection::Down,
             space_between: 0.0,
