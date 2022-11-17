@@ -91,8 +91,8 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         let InflexResult {
             flex_count,
-            cross_size_min,
             allocated_space,
+            mut cross_size_min,
         } = self.layout_inflexible(ctx.children(), constraints);
 
         let flexible = flex_count > 0;
@@ -107,13 +107,15 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         if flexible {
             assert!(can_flex, "flex received unbounded constraints");
-            self.layout_flexible(ctx.children(), constraints, free_space, flex_count);
+
+            let cross_size_min_flex =
+                self.layout_flexible(ctx.children(), constraints, free_space, flex_count);
+
+            cross_size_min = cross_size_min.max(cross_size_min_flex);
         }
 
         //
         // Position chlidren:
-
-        // Todo: compute cross size for flexible children
 
         let cross_size = match self.cross_axis_size {
             CrossAxisSize::Min => cross_size_min,
@@ -142,7 +144,13 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             main_offset += child_size.main(self.direction) + space_between;
         }
 
+        //
+        // Compute Flex size.
+
         let mut size = constraints.biggest();
+
+        *size.cross_mut(self.direction) = cross_size;
+
         let size_main = size.main_mut(self.direction);
 
         // If Flex contains flexible widgets, it will take all available space
@@ -301,7 +309,9 @@ impl<WL: WidgetList> Flex<WL> {
         constraints: Constraints,
         mut free_space: f64,
         mut flex_count: usize,
-    ) {
+    ) -> f64 {
+        let mut cross_size_min = 0.;
+
         // Layout `FlexFit::Loose` children first since they can take less than
         // `space_per_flex * flex`, then layout `FlexFit::Tight` children which
         // must have that exact size.
@@ -326,12 +336,14 @@ impl<WL: WidgetList> Flex<WL> {
             let flex_constraints =
                 self.flex_constraints(min_child_extent, max_child_extent, constraints);
 
-            let mut child_size = child.layout(flex_constraints);
-            let main_size = *child_size.main_mut(self.direction);
+            let child_size = child.layout(flex_constraints);
 
-            free_space -= main_size;
             flex_count -= flex;
+            free_space -= child_size.main(self.direction);
+            cross_size_min = f64::max(cross_size_min, child_size.cross(self.direction));
         }
+
+        cross_size_min
     }
 
     fn flex_constraints(
