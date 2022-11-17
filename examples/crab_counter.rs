@@ -45,8 +45,6 @@ impl ViewWidget for CrabCounter {
                         },
                     )),
             ))
-            .debug_container()
-            .print_size("app")
     }
 }
 
