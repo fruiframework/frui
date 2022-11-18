@@ -258,10 +258,6 @@ impl<'a> ChildIter<'a> {
     pub fn len(&self) -> usize {
         self.parent_ctx.node.children().len()
     }
-
-    pub fn _last(&self) -> Option<ChildContext> {
-        self.parent_ctx.try_child(self.len().checked_sub(1)?)
-    }
 }
 
 impl Clone for ChildIter<'_> {
