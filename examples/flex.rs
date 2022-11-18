@@ -10,8 +10,8 @@ struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
-        UnconstrainedBox {
-            child: Flex::builder()
+        DebugContainer::new(
+            Flex::builder()
                 .space_between(10.0)
                 .direction(Axis::Vertical)
                 .text_direction(TextDirection::Rtl)
@@ -54,7 +54,6 @@ impl ViewWidget for App {
                         fit: FlexFit::Tight,
                         flex: 2,
                     },
-                    // Equals with `Flexible { child: Text::new("Hello world!"), fit: FlexFit::Tight, flex: 1 }`
                     Expanded::new(ColoredBox {
                         child: Text::new("Hello world!"),
                         color: Color::GREEN,
@@ -67,7 +66,7 @@ impl ViewWidget for App {
                         Size::new(100.0, 100.0),
                     ),
                 )),
-        }
+        )
     }
 }
 
