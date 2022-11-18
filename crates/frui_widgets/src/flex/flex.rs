@@ -162,7 +162,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         // Position chlidren.
 
         let (main_axis_flipped, mut main_offset) =
-            self.compute_main_offset(ctx.children(), main_size, leading_space);
+            self.compute_main_offset(main_size, leading_space);
 
         for child in ctx.children() {
             let child_size = child.size();
@@ -172,17 +172,19 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
                 .box_data
                 .offset;
 
+            if main_axis_flipped {
+                main_offset -= child_size.main(self.direction);
+                *child_offset.main_mut(self.direction) = main_offset;
+                main_offset -= space_between;
+            } else {
+                *child_offset.main_mut(self.direction) = main_offset;
+                main_offset += child_size.main(self.direction) + space_between;
+            }
+
             let cross_offset =
                 self.compute_cross_offset(child_size.cross(self.direction), cross_size);
 
-            *child_offset.main_mut(self.direction) = main_offset;
             *child_offset.cross_mut(self.direction) = cross_offset;
-
-            if main_axis_flipped {
-                main_offset -= child_size.main(self.direction) + space_between;
-            } else {
-                main_offset += child_size.main(self.direction) + space_between;
-            }
         }
 
         size
@@ -440,25 +442,12 @@ impl<WL: WidgetList> Flex<WL> {
         size
     }
 
-    fn compute_main_offset(
-        &self,
-        children: ChildIter,
-        main_size: f64,
-        leading_space: f64,
-    ) -> (bool, f64) {
+    fn compute_main_offset(&self, main_size: f64, leading_space: f64) -> (bool, f64) {
         let main_offset;
         let main_axis_flipped = self.is_main_axis_flipped();
 
         if main_axis_flipped {
-            match children._last() {
-                Some(c) => {
-                    let child_main = c.size().main(self.direction);
-                    main_offset = main_size - leading_space - child_main;
-                }
-                None => {
-                    main_offset = 0.;
-                }
-            }
+            main_offset = main_size - leading_space;
         } else {
             main_offset = leading_space
         }

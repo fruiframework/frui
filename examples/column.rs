@@ -4,14 +4,14 @@
 //! widget.
 //!
 //! Feel free to modify each of the properties of the [`Column`] to see how it
-//! affects the way its children are laid out.
+//! affects the way its children are laid out!
 
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
 
 mod misc;
-use misc::children_combinations as list;
+use misc::flex_children as list;
 
 #[derive(ViewWidget)]
 struct App;
@@ -21,10 +21,10 @@ impl ViewWidget for App {
         DebugContainer::new(
             Column::builder()
                 .space_between(20.0)
-                .main_axis_size(MainAxisSize::Min)
-                .main_axis_alignment(MainAxisAlignment::SpaceEvenly)
-                // .cross_axis_size(CrossAxisSize::Max)
-                // .cross_axis_alignment(CrossAxisAlignment::Center)
+                .main_axis_size(MainAxisSize::Max)
+                .cross_axis_size(CrossAxisSize::Max)
+                .main_axis_alignment(MainAxisAlignment::Center)
+                .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children(list::inflexible()),
         )
     }

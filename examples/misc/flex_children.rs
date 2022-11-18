@@ -2,9 +2,13 @@
 
 use frui::prelude::*;
 
-const SQUARE_RED: Big = Big::new(Color::rgb8(255, 0, 110));
-const SQUARE_BLUE: Big = Big(50., 50., Color::rgb8(0, 186, 255));
-const SQUARE_GREEN: Big = Big::new(Color::rgb8(13, 245, 152));
+const RED: Color = Color::rgb8(255, 0, 110);
+const BLUE: Color = Color::rgb8(0, 186, 255);
+const GREEN: Color = Color::rgb8(13, 245, 152);
+
+const SQUARE_RED: Big = Big::new(RED);
+const SQUARE_BLUE: Big = Big(50., 50., BLUE);
+const SQUARE_GREEN: Big = Big::new(GREEN);
 
 pub fn inflexible() -> impl WidgetList {
     (SQUARE_RED, SQUARE_BLUE, SQUARE_GREEN)
@@ -16,21 +20,21 @@ pub fn flexible() -> impl WidgetList {
             Container::builder()
                 .width(100.)
                 .height(100.)
-                .color(Color::RED)
+                .color(RED)
                 .child(Text::new("Tight,flex=1")),
         ),
         Flexible::new(
             Container::builder()
                 .width(50.)
                 .height(50.)
-                .color(Color::RED)
+                .color(BLUE)
                 .child(Text::new("Loose,flex=1")),
         ),
         Expanded::new(
             Container::builder()
                 .width(100.)
                 .height(100.)
-                .color(Color::RED)
+                .color(GREEN)
                 .child(Text::new("Tight,flex=2")),
         )
         .flex(2),
@@ -43,7 +47,7 @@ pub fn flexible_inflexible() -> impl WidgetList {
             Container::builder()
                 .width(100.)
                 .height(100.)
-                .color(Color::RED)
+                .color(RED)
                 .child(Text::new("Tight,flex=1")),
         ),
         SQUARE_RED,
@@ -51,7 +55,7 @@ pub fn flexible_inflexible() -> impl WidgetList {
             Container::builder()
                 .width(50.)
                 .height(50.)
-                .color(Color::RED)
+                .color(BLUE)
                 .child(Text::new("Loose,flex=1")),
         ),
         SQUARE_BLUE,
@@ -59,7 +63,7 @@ pub fn flexible_inflexible() -> impl WidgetList {
             Container::builder()
                 .width(100.)
                 .height(100.)
-                .color(Color::RED)
+                .color(GREEN)
                 .child(Text::new("Tight,flex=2")),
         )
         .flex(2),

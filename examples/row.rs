@@ -3,14 +3,14 @@
 //! [`DebugContainer`] is used to visualize layout bounds of the [`Row`] widget.
 //!
 //! Feel free to modify each of the properties of the [`Row`] to see how it
-//! affects the way its children are laid out.
+//! affects the way its children are laid out!
 
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
 
 mod misc;
-use misc::children_combinations as list;
+use misc::flex_children as list;
 
 #[derive(ViewWidget)]
 struct App;
@@ -21,12 +21,12 @@ impl ViewWidget for App {
             Row::builder()
                 .space_between(20.0)
                 .main_axis_size(MainAxisSize::Min)
-                .cross_axis_size(CrossAxisSize::Min)
+                .cross_axis_size(CrossAxisSize::Max)
                 .main_axis_alignment(MainAxisAlignment::Center)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
-                .text_direction(TextDirection::Rtl)
+                .text_direction(TextDirection::Ltr)
                 .vertical_direction(VerticalDirection::Up)
-                .children(list::inflexible()),
+                .children(list::flexible_inflexible()),
         )
     }
 }
