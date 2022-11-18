@@ -2,7 +2,7 @@ use druid_shell::kurbo::Rect;
 
 use frui::prelude::*;
 
-use crate::{Decoration, DecorationPosition, TextDirection};
+use crate::{Decoration, DecorationPosition, TextDirection, BoxDecoration, DefaultBoxDecoration};
 
 
 
@@ -84,11 +84,21 @@ impl<W: Widget> RenderWidget for Container<W> {
     }
 }
 
-#[derive(RenderWidget)]
+#[derive(RenderWidget, Builder)]
 pub struct DecoratedBox<W: Widget, D: Decoration> {
     pub child: W,
     pub decoration: D,
     pub position: DecorationPosition,
+}
+
+impl DecoratedBox<(), DefaultBoxDecoration> {
+    pub fn builder() -> Self {
+        Self {
+            child: (),
+            decoration: BoxDecoration::builder(),
+            position: DecorationPosition::Background,
+        }
+    }
 }
 
 impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
@@ -97,7 +107,7 @@ impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
     }
 
     fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        ctx.child(0).layout(constraints)
+        self.decoration.padding().inflate_size(ctx.child(0).layout(constraints))
     }
 
     fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {

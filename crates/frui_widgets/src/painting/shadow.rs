@@ -20,7 +20,8 @@ pub struct BoxShadow {
 }
 
 impl BoxShadow {
-        pub fn paint(&self, canvas: &mut PaintContext, rect: Rect, _offset: &Offset) {
+    pub fn paint(&self, canvas: &mut PaintContext, rect: Rect, _offset: &Offset) {
+        assert!(self.blur_style == BlurStyle::Normal, "Shadow now only supports BlurStyle::Normal blur style");
         let brush = canvas.solid_brush(self.color.clone());
         canvas.with_save(|c| {
             let translate: Vec2 = (self.offset.x, self.offset.y).into();

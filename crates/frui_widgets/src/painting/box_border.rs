@@ -1,6 +1,5 @@
 use std::{ops::Add};
 
-use druid_shell::piet::StrokeStyle;
 use frui::prelude::*;
 
 use crate::{borders::BorderSide, Directional, ShapeBorder, TextDirection, EdgeInsets, EPSILON, BorderRadius, BorderStyle};
@@ -148,7 +147,7 @@ impl BoxBorder {
     }
 }
 
-pub struct BoxBoxderDirectional {
+pub struct BoxBorderDirectional {
     pub top: BorderSide,
     pub start: BorderSide,
     pub end: BorderSide,
@@ -156,7 +155,7 @@ pub struct BoxBoxderDirectional {
     pub shape: BoxShape,
 }
 
-impl Directional for BoxBoxderDirectional {
+impl Directional for BoxBorderDirectional {
     type Output = BoxBorder;
 
     fn resolve(&self, text_direction: &TextDirection) -> Self::Output {
