@@ -47,14 +47,14 @@ pub struct Flex<WL: WidgetList> {
     /// horizontally ([`Row`]).
     pub direction: Axis,
 
-    /// Whether first element in `children` list should be on left or right of
-    /// this [`Flex`]. Applies only if `direction` is set to
-    /// [`Horizontal`](Axis::Horizontal).
+    /// If `direction` is set to [`Horizontal`](Axis::Horizontal), it specifies
+    /// whether first element in `children` should be on left or right of this
+    /// [`Flex`]. It also affects what `cross_axis_size` considers start/end.
     pub text_direction: TextDirection,
 
-    /// Whether first element in `children` list should be on top or bottom of
-    /// this [`Flex`]. Applies only if `direction` is set to
-    /// [`Vertical`](Axis::Horizontal).
+    /// If `direction` is set to [`Vertical`](Axis::Vertical), it specifies
+    /// whether first element in `children` should be on top or bottom of this
+    /// [`Flex`]. It also affects what `cross_axis_size` considers start/end.
     pub vertical_direction: VerticalDirection,
 
     /// Minimum amount of space added between children widgets.
@@ -80,17 +80,11 @@ impl Flex<()> {
         Self {
             children: (),
             direction: Axis::Horizontal,
-            // Rename following??
             text_direction: TextDirection::Ltr,
             vertical_direction: VerticalDirection::Down,
             space_between: 0.0,
-            // The default differs from Flutter, but the reasoning is to allow
-            // "Column in Column" or "Row in Row" without the need to specify
-            // `MainAxisSize::Min` everytime.
             main_axis_size: MainAxisSize::Min,
             cross_axis_size: CrossAxisSize::Min,
-            // Todo: Since `MainAxisSize` is `Min` by default, maybe set
-            // `MainAxisAlignment` to `Center` by default?
             main_axis_alignment: MainAxisAlignment::Start,
             cross_axis_alignment: CrossAxisAlignment::Center,
         }
