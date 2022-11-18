@@ -1,5 +1,6 @@
 use std::ops::Deref;
 
+use crate::render::*;
 use crate::{api::Widget, macro_exports::RenderWidgetOS, prelude::*};
 
 use super::implementers::{RawWidget, WidgetDerive};
@@ -90,36 +91,27 @@ impl WidgetDerive for () {
 }
 
 impl RenderWidget for () {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![]
     }
 
-    fn layout(&self, _: RenderContext<Self>, c: Constraints) -> Size {
+    fn layout(&self, _: &LayoutCtx<Self>, c: Constraints) -> Size {
         c.biggest()
     }
 
-    fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}
+    fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}
 }
 
 impl RawWidget for () {
-    fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
+    fn build<'w>(&'w self, ctx: &'w super::contexts::RawBuildCtx) -> Vec<super::WidgetPtr<'w>> {
         <Self as RenderWidgetOS>::build(self, ctx)
     }
 
-    fn layout<'w>(
-        &self,
-        ctx: &'w super::contexts::render_ctx::AnyRenderContext,
-        constraints: Constraints,
-    ) -> Size {
+    fn layout<'w>(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
         <Self as RenderWidgetOS>::layout(self, ctx, constraints)
     }
 
-    fn paint<'w>(
-        &'w self,
-        ctx: &'w super::contexts::render_ctx::AnyRenderContext,
-        canvas: &mut PaintContext,
-        offset: &Offset,
-    ) {
+    fn paint<'w>(&'w self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
         <Self as RenderWidgetOS>::paint(self, ctx, canvas, offset)
     }
 
@@ -131,13 +123,13 @@ impl RawWidget for () {
 macro_rules! impl_widget_os_deref_ {
     ($($impl:tt)*) => {
         $($impl)* {
-            fn build<'w>(&'w self, ctx: &'w super::contexts::Context) -> Vec<super::WidgetPtr<'w>> {
+            fn build<'w>(&'w self, ctx: &'w super::contexts::RawBuildCtx) -> Vec<super::WidgetPtr<'w>> {
                 self.deref().build(ctx)
             }
 
             fn layout<'w>(
                 &self,
-                ctx: &'w super::contexts::render_ctx::AnyRenderContext,
+                ctx: LayoutCtxOS,
                 constraints: Constraints,
             ) -> Size {
                 self.deref().layout(ctx, constraints)
@@ -145,8 +137,8 @@ macro_rules! impl_widget_os_deref_ {
 
             fn paint<'w>(
                 &'w self,
-                ctx: &'w super::contexts::render_ctx::AnyRenderContext,
-                canvas: &mut PaintContext,
+                ctx: PaintCtxOS,
+                canvas: &mut Canvas,
                 offset: &Offset,
             ) {
                 self.deref().paint(ctx, canvas, offset)

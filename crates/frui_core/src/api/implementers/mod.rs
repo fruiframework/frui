@@ -2,14 +2,14 @@ use std::any::TypeId;
 
 use frui_macros::copy_trait_as;
 
-use crate::prelude::{Constraints, Offset, PaintContext, Size};
+use crate::render::*;
 
 use super::{
     any_ext::AnyExt,
     contexts::{
         build_ctx::widget_state::WidgetStateOS,
-        render_ctx::{AnyRenderContext, ParentDataOS, RenderStateOS},
-        Context,
+        render::{ParentDataOS, RenderStateOS},
+        RawBuildCtx,
     },
     local_key::WidgetLocalKey,
     pointer_events::HitTestOS,
@@ -60,11 +60,11 @@ pub trait OS:
     + StructuralEqOS
     + AnyExt
 {
-    fn build<'w>(&'w self, ctx: &'w Context) -> Vec<WidgetPtr<'w>>;
+    fn build<'w>(&'w self, ctx: &'w RawBuildCtx) -> Vec<WidgetPtr<'w>>;
 
-    fn layout<'w>(&self, ctx: &'w AnyRenderContext, constraints: Constraints) -> Size;
+    fn layout(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size;
 
-    fn paint<'w>(&'w self, ctx: &'w AnyRenderContext, canvas: &mut PaintContext, offset: &Offset);
+    fn paint(&self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset);
 
     fn inherited_key(&self) -> Option<TypeId> {
         None

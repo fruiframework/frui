@@ -1,8 +1,7 @@
-use frui::prelude::{RenderContext, *};
+use frui::prelude::*;
+use frui::render::*;
 
-use druid_shell::piet::{
-    kurbo::Rect, Color, LineCap, RenderContext as PietRenderContext, StrokeStyle,
-};
+use druid_shell::piet::{kurbo::Rect, Color, LineCap, RenderContext, StrokeStyle};
 
 pub trait DebugContainerExt: Widget + Sized {
     fn debug_container(self) -> DebugContainer<Self> {
@@ -33,11 +32,11 @@ impl<W: Widget> DebugContainer<W> {
 }
 
 impl<W: Widget> RenderWidget for DebugContainer<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let size = ctx.child(0).layout(constraints);
 
         if self.print_size != "" {
@@ -47,7 +46,7 @@ impl<W: Widget> RenderWidget for DebugContainer<W> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset);
 
         let rect = Rect::from_origin_size(*offset, ctx.child(0).size());

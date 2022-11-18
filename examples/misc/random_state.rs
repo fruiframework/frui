@@ -15,7 +15,7 @@ impl WidgetState for RandomState {
 }
 
 impl ViewWidget for RandomState {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Text::new(ctx.state().to_string())
     }
 }
@@ -25,7 +25,7 @@ impl ViewWidget for RandomState {
 pub struct ChangesOnRebuild;
 
 impl ViewWidget for ChangesOnRebuild {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Text::new(rand::thread_rng().gen::<usize>().to_string())
     }
 }

@@ -1,4 +1,5 @@
-use frui::{app::TEXT_FACTORY, prelude::*};
+use frui::prelude::*;
+use frui::render::*;
 
 use druid_shell::piet::{
     kurbo::Point, Color, FontFamily, FontWeight, PietTextLayout, Text as TextExt, TextLayout,
@@ -47,14 +48,14 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 
 #[cfg(not(feature = "miri"))]
 impl<S: AsRef<str>> RenderWidget for Text<S> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![] as Vec<()>
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let max_width = constraints.biggest().width;
 
-        *ctx.rstate_mut() = TEXT_FACTORY.with(|f| {
+        *ctx.render_state_mut() = TEXT_FACTORY.with(|f| {
             f.get()
                 .new_text_layout(self.text.as_ref().to_owned())
                 .font(self.family.clone(), self.size)
@@ -65,15 +66,15 @@ impl<S: AsRef<str>> RenderWidget for Text<S> {
                 .unwrap()
         });
 
-        let text_size = ctx.rstate().size().into();
+        let text_size = ctx.render_state().size().into();
 
         constraints.constrain(text_size)
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        PietRenderContext::draw_text(
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        RenderContext::draw_text(
             canvas,
-            &ctx.rstate(),
+            &ctx.render_state(),
             Point {
                 x: offset.x,
                 y: offset.y,
@@ -96,18 +97,18 @@ impl<S: AsRef<str>> RenderState for Text<S> {
 
 #[cfg(feature = "miri")]
 impl<S: AsRef<str>> RenderWidget for Text<S> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![] as Vec<()>
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
-        let _: &mut TextRenderState = &mut ctx.rstate_mut();
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
+        let _: &mut TextRenderState = &mut ctx.render_state_mut();
 
         Size {
-            width: constraints.min().width,
-            height: constraints.min().height,
+            width: constraints.smallest().width,
+            height: constraints.smallest().height,
         }
     }
 
-    fn paint(&self, _: RenderContext<Self>, _: &mut PaintContext, _: &Offset) {}
+    fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}
 }
