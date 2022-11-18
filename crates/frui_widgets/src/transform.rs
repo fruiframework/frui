@@ -1,18 +1,19 @@
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(RenderWidget)]
 pub struct Transform<W: Widget>(pub Affine, pub W);
 
 impl<W: Widget> RenderWidget for Transform<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.1]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let r = canvas.with_save(|cv| {
             cv.transform(self.0);
             ctx.child(0).paint(cv, offset);

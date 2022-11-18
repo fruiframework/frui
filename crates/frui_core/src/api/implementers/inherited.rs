@@ -1,8 +1,8 @@
 use std::any::TypeId;
 
 use crate::{
-    api::{contexts::render_ctx::AnyRenderContext, IntoWidgetPtr, WidgetPtr},
-    prelude::{Constraints, Offset, PaintContext, Size},
+    api::{IntoWidgetPtr, WidgetPtr},
+    render::*,
 };
 
 use super::{InheritedWidgetOS, WidgetDerive};
@@ -12,15 +12,15 @@ pub trait InheritedWidget: WidgetDerive + Sized {
 }
 
 impl<T: InheritedWidget> InheritedWidgetOS for T {
-    fn build<'w>(&'w self, _: &'w crate::api::contexts::Context) -> Vec<WidgetPtr<'w>> {
+    fn build<'w>(&'w self, _: &'w crate::api::contexts::RawBuildCtx) -> Vec<WidgetPtr<'w>> {
         vec![T::build(self).into_widget_ptr()]
     }
 
-    fn layout<'w>(&'w self, ctx: &'w AnyRenderContext, constraints: Constraints) -> Size {
+    fn layout<'w>(&'w self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
         ctx.child(0).layout(constraints)
     }
 
-    fn paint<'w>(&'w self, ctx: &'w AnyRenderContext, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint<'w>(&'w self, mut ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 

@@ -1,6 +1,5 @@
-use druid_shell::kurbo::Rect;
-
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(RenderWidget)]
 pub struct Container<W: Widget> {
@@ -52,21 +51,21 @@ impl<W: Widget> Container<W> {
 }
 
 impl<W: Widget> RenderWidget for Container<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let constraints = Constraints::new_tight_for(self.width, self.height).enforce(constraints);
 
         ctx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Some(color) = &self.color {
             let brush = &canvas.solid_brush(color.clone());
 
-            PietRenderContext::fill(canvas, Rect::from_origin_size(offset, ctx.size()), brush);
+            RenderContext::fill(canvas, Rect::from_origin_size(offset, ctx.size()), brush);
         }
 
         ctx.child(0).paint(canvas, offset)

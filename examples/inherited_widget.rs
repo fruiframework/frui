@@ -50,7 +50,7 @@ impl<W: Widget> InheritedWidget for InheritedSwitch<W> {
 // access to the state of the InheritedWidget.
 
 impl InheritedSwitch<()> {
-    pub fn of<'a, T>(ctx: BuildContext<'a, T>) -> SwitchGuard<'a> {
+    pub fn of<'a, T>(ctx: BuildCtx<'a, T>) -> SwitchGuard<'a> {
         let state = ctx.depend_on_inherited_widget::<Self>().unwrap();
 
         SwitchGuard::new(state)
@@ -67,7 +67,7 @@ impl InheritedSwitch<()> {
 struct InheritedSwitchDispatcher;
 
 impl ViewWidget for InheritedSwitchDispatcher {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         KeyboardEventDetector {
             on_event: |_| InheritedSwitch::of(ctx).switch(),
             child: (),
@@ -84,7 +84,7 @@ impl ViewWidget for InheritedSwitchDispatcher {
 struct InheritedSwitchConsumer;
 
 impl ViewWidget for InheritedSwitchConsumer {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Text::new(InheritedSwitch::of(ctx).to_string())
     }
 }
@@ -101,7 +101,7 @@ impl ViewWidget for InheritedSwitchConsumer {
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Center::child(Column::builder().children((
             Text::new(concat!(
                 "Following widget doesn't depend on inherited widget, ",
@@ -134,7 +134,7 @@ mod test {
     use super::*;
     use frui::{
         app::runner::miri::MiriRunner,
-        druid_shell::{keyboard_types::Key, Modifiers},
+        druid_shell::{keyboard_types::Key, KeyEvent, Modifiers},
     };
 
     #[test]

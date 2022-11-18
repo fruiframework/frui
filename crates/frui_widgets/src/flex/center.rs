@@ -1,4 +1,5 @@
 use frui::prelude::*;
+use frui::render::*;
 
 #[derive(RenderWidget)]
 pub struct Center<W: Widget> {
@@ -12,11 +13,11 @@ impl<W: Widget> Center<W> {
 }
 
 impl<W: Widget> RenderWidget for Center<W> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints.loosen());
 
         let mut size = constraints.biggest();
@@ -30,7 +31,7 @@ impl<W: Widget> RenderWidget for Center<W> {
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let self_size = ctx.size();
         let child_size = ctx.child(0).size();
 
