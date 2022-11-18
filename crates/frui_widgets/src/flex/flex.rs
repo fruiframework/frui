@@ -107,11 +107,17 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         let can_flex = main_size_max < f64::INFINITY;
         let child_count = ctx.children().len();
 
+        //
+        // Override child parent data to store calculated offsets.
+
         for child in ctx.children() {
             if child.try_parent_data::<FlexData>().is_none() {
                 child.set_parent_data(FlexData::default());
             }
         }
+
+        //
+        // Layout inflexible children.
 
         let InflexResult {
             flex_count,
@@ -121,13 +127,19 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         let flexible = flex_count > 0;
 
+        //
+        // Compute main axis sizes based on inflexible children.
+
         let MainAxisSizes {
             main_size_min,
             leading_space,
             space_between,
-        } = self.compute_main_sizes(flexible, child_count, constraints, allocated_space);
+        } = self.compute_main_size(flexible, child_count, constraints, allocated_space);
 
         let free_space = (main_size_max - main_size_min).max(0.);
+
+        //
+        // Layout flexible children.
 
         if flexible {
             assert!(can_flex, "flex received unbounded constraints");
@@ -139,17 +151,18 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         }
 
         //
-        // Position chlidren:
+        // Compute size of this `Flex` widget.
 
-        let cross_size = match self.cross_axis_size {
-            CrossAxisSize::Min => cross_size_min,
-            CrossAxisSize::Max => constraints
-                .biggest()
-                .cross(self.direction)
-                .max(cross_size_min),
-        };
+        let size = self.compute_size(flexible, main_size_min, cross_size_min, constraints);
 
-        let mut main_offset = leading_space;
+        let main_size = size.main(self.direction);
+        let cross_size = size.cross(self.direction);
+
+        //
+        // Position chlidren.
+
+        let (main_axis_flipped, mut main_offset) =
+            self.compute_main_offset(ctx.children(), main_size, leading_space);
 
         for child in ctx.children() {
             let child_size = child.size();
@@ -165,27 +178,11 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             *child_offset.main_mut(self.direction) = main_offset;
             *child_offset.cross_mut(self.direction) = cross_offset;
 
-            main_offset += child_size.main(self.direction) + space_between;
-        }
-
-        //
-        // Compute Flex size.
-
-        let mut size = constraints.biggest();
-
-        *size.cross_mut(self.direction) = cross_size;
-
-        let size_main = size.main_mut(self.direction);
-
-        // If Flex contains flexible widgets, it will take all available space
-        // on the main axis.
-        //
-        // We also make sure that overflow error appears when there is no space
-        // to lay out flexible children of size of at least 0.
-        if flexible || matches!(self.main_axis_size, MainAxisSize::Max) {
-            *size_main = size_main.max(main_size_min)
-        } else {
-            *size_main = main_size_min
+            if main_axis_flipped {
+                main_offset -= child_size.main(self.direction) + space_between;
+            } else {
+                main_offset += child_size.main(self.direction) + space_between;
+            }
         }
 
         size
@@ -244,7 +241,7 @@ impl<WL: WidgetList> Flex<WL> {
         }
     }
 
-    fn compute_main_sizes(
+    fn compute_main_size(
         &self,
         flexible: bool,
         child_count: usize,
@@ -408,6 +405,67 @@ impl<WL: WidgetList> Flex<WL> {
         }
     }
 
+    fn compute_size(
+        &self,
+        flexible: bool,
+        main_size_min: f64,
+        cross_size_min: f64,
+        constraints: Constraints,
+    ) -> Size {
+        let mut size = constraints.biggest();
+
+        let cross_size = match self.cross_axis_size {
+            CrossAxisSize::Min => cross_size_min,
+            CrossAxisSize::Max => constraints
+                .biggest()
+                .cross(self.direction)
+                .max(cross_size_min),
+        };
+
+        *size.cross_mut(self.direction) = cross_size;
+
+        let main_size = size.main_mut(self.direction);
+
+        // If Flex contains flexible widgets, it will take all available space
+        // on the main axis.
+        //
+        // We also make sure that overflow error appears when there is no space
+        // to lay out flexible children of size of at least 0.
+        if flexible || matches!(self.main_axis_size, MainAxisSize::Max) {
+            *main_size = main_size.max(main_size_min)
+        } else {
+            *main_size = main_size_min
+        }
+
+        size
+    }
+
+    fn compute_main_offset(
+        &self,
+        children: ChildIter,
+        main_size: f64,
+        leading_space: f64,
+    ) -> (bool, f64) {
+        let main_offset;
+        let main_axis_flipped = self.is_main_axis_flipped();
+
+        if main_axis_flipped {
+            match children._last() {
+                Some(c) => {
+                    let child_main = c.size().main(self.direction);
+                    main_offset = main_size - leading_space - child_main;
+                }
+                None => {
+                    main_offset = 0.;
+                }
+            }
+        } else {
+            main_offset = leading_space
+        }
+
+        (main_axis_flipped, main_offset)
+    }
+
     fn compute_cross_offset(&self, size: f64, total_size: f64) -> f64 {
         use CrossAxisAlignment::*;
 
@@ -426,6 +484,14 @@ impl<WL: WidgetList> Flex<WL> {
         match (self.direction, self.text_direction, self.vertical_direction) {
             (Axis::Vertical, TextDirection::Ltr, _) => true,
             (Axis::Horizontal, _, VerticalDirection::Down) => true,
+            _ => false,
+        }
+    }
+
+    fn is_main_axis_flipped(&self) -> bool {
+        match (self.direction, self.text_direction, self.vertical_direction) {
+            (Axis::Vertical, _, VerticalDirection::Up) => true,
+            (Axis::Horizontal, TextDirection::Rtl, _) => true,
             _ => false,
         }
     }
