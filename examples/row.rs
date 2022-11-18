@@ -24,7 +24,9 @@ impl ViewWidget for App {
                 .cross_axis_size(CrossAxisSize::Min)
                 .main_axis_alignment(MainAxisAlignment::Center)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
-                .children(list::flexible_inflexible()),
+                .text_direction(TextDirection::Rtl)
+                .vertical_direction(VerticalDirection::Up)
+                .children(list::inflexible()),
         )
     }
 }
