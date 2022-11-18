@@ -56,16 +56,9 @@ impl<W: Widget> RenderWidget for Container<W> {
     }
 
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        let size = ctx.child(0).layout(Constraints {
-            max_width: self.width.unwrap_or(constraints.max_width),
-            max_height: self.height.unwrap_or(constraints.max_height),
-            ..constraints
-        });
+        let constraints = Constraints::new_tight_for(self.width, self.height).enforce(constraints);
 
-        Size {
-            width: self.width.unwrap_or(size.width),
-            height: self.height.unwrap_or(size.height),
-        }
+        ctx.child(0).layout(constraints)
     }
 
     fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {

@@ -95,8 +95,8 @@ impl RenderWidget for () {
         vec![]
     }
 
-    fn layout(&self, _: &LayoutCtx<Self>, _: Constraints) -> Size {
-        Size::ZERO
+    fn layout(&self, _: &LayoutCtx<Self>, c: Constraints) -> Size {
+        c.biggest()
     }
 
     fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}

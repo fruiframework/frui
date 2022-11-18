@@ -74,7 +74,7 @@ impl Default for CrossAxisAlignment {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FlexFit {
     Loose,
     Tight,
@@ -83,8 +83,8 @@ pub enum FlexFit {
 /// Used by flexible widgets to determine the flex factor of a child.
 #[derive(Debug, Clone, Copy)]
 pub struct FlexData {
-    flex_factor: usize,
     fit: FlexFit,
+    flex_factor: usize,
     box_data: BoxLayoutData,
 }
 
@@ -112,11 +112,25 @@ impl DerefMut for FlexData {
     }
 }
 
-#[derive(RenderWidget)]
+#[derive(RenderWidget, Builder)]
 pub struct Flexible<W: Widget> {
     pub fit: FlexFit,
     pub flex: usize,
     pub child: W,
+}
+
+impl Flexible<()> {
+    pub fn new(child: impl Widget) -> Flexible<impl Widget> {
+        Flexible::builder().child(child)
+    }
+
+    pub fn builder() -> Self {
+        Self {
+            fit: FlexFit::Loose,
+            flex: 1,
+            child: (),
+        }
+    }
 }
 
 impl<W: Widget> ParentData for Flexible<W> {

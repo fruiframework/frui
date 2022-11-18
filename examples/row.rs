@@ -3,32 +3,30 @@
 //! [`DebugContainer`] is used to visualize layout bounds of the [`Row`] widget.
 //!
 //! Feel free to modify each of the properties of the [`Row`] to see how it
-//! affects the way its children are laid out.
+//! affects the way its children are laid out!
 
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
 
 mod misc;
-use misc::children_combinations::Big;
+use misc::flex_children as list;
 
 #[derive(ViewWidget)]
 struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
-        DebugContainer::child(
+        DebugContainer::new(
             Row::builder()
                 .space_between(20.0)
-                .main_axis_size(MainAxisSize::Max)
-                .cross_axis_size(CrossAxisSize::Max)
+                .text_direction(TextDirection::Ltr)
+                .vertical_direction(VerticalDirection::Up)
+                .main_axis_size(MainAxisSize::Min)
+                .cross_axis_size(CrossAxisSize::Min)
                 .main_axis_alignment(MainAxisAlignment::Center)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
-                .children((
-                    Big(Color::rgb8(13, 245, 152)),
-                    Big(Color::rgb8(255, 0, 110)),
-                    Big(Color::rgb8(0, 186, 255)),
-                )),
+                .children(list::flexible_inflexible()),
         )
     }
 }
