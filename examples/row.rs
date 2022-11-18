@@ -20,12 +20,12 @@ impl ViewWidget for App {
         DebugContainer::new(
             Row::builder()
                 .space_between(20.0)
-                .main_axis_size(MainAxisSize::Min)
-                .cross_axis_size(CrossAxisSize::Max)
-                .main_axis_alignment(MainAxisAlignment::Center)
-                .cross_axis_alignment(CrossAxisAlignment::Center)
                 .text_direction(TextDirection::Ltr)
                 .vertical_direction(VerticalDirection::Up)
+                .main_axis_size(MainAxisSize::Min)
+                .cross_axis_size(CrossAxisSize::Min)
+                .main_axis_alignment(MainAxisAlignment::Center)
+                .cross_axis_alignment(CrossAxisAlignment::Center)
                 .children(list::flexible_inflexible()),
         )
     }
