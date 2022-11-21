@@ -21,7 +21,7 @@ impl WidgetState for CrabCounter {
 }
 
 impl ViewWidget for CrabCounter {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Column::builder()
             .space_between(60.0)
             .main_axis_size(MainAxisSize::Max)
@@ -32,9 +32,6 @@ impl ViewWidget for CrabCounter {
                 Text::new(format!("{} 🦀", *ctx.state()))
                     .size(100.0)
                     .weight(FontWeight::BOLD),
-                // Todo: Make better construction methods:
-                //
-                // SizedBox::from_size((), Size::new(0.0, 60.0)),
                 Row::builder()
                     .space_between(10.0) //
                     .children((
@@ -58,9 +55,10 @@ fn main() {
 #[cfg(all(test, feature = "miri"))]
 mod test {
     use super::*;
+
     use frui::{
         app::runner::miri::MiriRunner,
-        druid_shell::{keyboard_types::Key, Modifiers},
+        druid_shell::{keyboard_types::Key, KeyEvent, Modifiers},
     };
 
     #[test]

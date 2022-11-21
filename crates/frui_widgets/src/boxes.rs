@@ -1,4 +1,5 @@
 use frui::prelude::*;
+use frui::render::*;
 
 use crate::BoxLayoutData;
 
@@ -17,11 +18,11 @@ impl<T: Widget> ParentData for ConstrainedBox<T> {
 }
 
 impl<T: Widget> RenderWidget for ConstrainedBox<T> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let constraints = self.constraints.enforce(constraints);
         let child_size = ctx.child(0).layout(constraints);
 
@@ -32,7 +33,7 @@ impl<T: Widget> RenderWidget for ConstrainedBox<T> {
         }
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }
@@ -51,11 +52,11 @@ impl<T: Widget> ParentData for UnconstrainedBox<T> {
 }
 
 impl<T: Widget> RenderWidget for UnconstrainedBox<T> {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints.loosen());
         if child_size != Size::ZERO {
             child_size
@@ -64,7 +65,7 @@ impl<T: Widget> RenderWidget for UnconstrainedBox<T> {
         }
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }

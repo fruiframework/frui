@@ -1,11 +1,9 @@
 use std::any::TypeId;
 
-use crate::macro_exports::{Context, RawWidget};
+use crate::macro_exports::{RawBuildCtx, RawWidget};
 
 use super::{
-    any_ext::AnyExt,
-    contexts::build_ctx::STATE_UPDATE_SUPRESSED,
-    structural_eq::StructuralEqOS,
+    any_ext::AnyExt, contexts::build_ctx::STATE_UPDATE_SUPRESSED, structural_eq::StructuralEqOS,
     Widget,
 };
 
@@ -58,7 +56,7 @@ impl<'a> WidgetPtr<'a> {
     /// # Note
     ///
     /// Returned [`WidgetPtr`] has erased lifetime, but its invariants must be upheld.
-    pub fn build(&self, ctx: &Context) -> Vec<WidgetPtr<'static>> {
+    pub fn build(&self, ctx: &RawBuildCtx) -> Vec<WidgetPtr<'static>> {
         STATE_UPDATE_SUPRESSED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         let ptrs = self.kind.build(ctx);
@@ -93,7 +91,7 @@ impl<'a> WidgetPtr<'a> {
         StructuralEqOS::eq(self.kind, other.as_any_ext())
     }
 
-    pub fn mount(&self, build_ctx: &Context) {
+    pub fn mount(&self, build_ctx: &RawBuildCtx) {
         STATE_UPDATE_SUPRESSED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         self.kind.mount(build_ctx);
@@ -101,7 +99,7 @@ impl<'a> WidgetPtr<'a> {
         STATE_UPDATE_SUPRESSED.store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
-    pub fn unmount(&self, build_ctx: &Context) {
+    pub fn unmount(&self, build_ctx: &RawBuildCtx) {
         STATE_UPDATE_SUPRESSED.store(true, std::sync::atomic::Ordering::SeqCst);
 
         self.kind.unmount(build_ctx);

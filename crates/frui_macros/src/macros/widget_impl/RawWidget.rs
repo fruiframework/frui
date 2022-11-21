@@ -11,7 +11,7 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
     let Imports {
         Vec, TypeId,
         RawWidget, WidgetPtr,
-        Context, PaintContext, AnyRenderContext,
+        RawBuildCtx, LayoutCtxOS, PaintCtxOS, Canvas, 
         Size, Offset, Constraints, 
     } = imports_impl_widget_os();
 
@@ -20,20 +20,15 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
 
     quote! {
         impl #impl_generics #RawWidget for #Target #ty_generics #where_clause {
-            fn build<'w>(&'w self, ctx: &'w #Context) -> #Vec<#WidgetPtr<'w>> {
+            fn build<'w>(&'w self, ctx: &'w #RawBuildCtx) -> #Vec<#WidgetPtr<'w>> {
                 <Self as #WidgetKindOS>::build(self, ctx)
             }
 
-            fn layout<'w>(&self, ctx: &'w #AnyRenderContext, constraints: #Constraints) -> #Size {
+            fn layout(&self, ctx: #LayoutCtxOS, constraints: #Constraints) -> #Size {
                 <Self as #WidgetKindOS>::layout(self, ctx, constraints)
             }
 
-            fn paint<'w>(
-                &'w self,
-                ctx: &'w #AnyRenderContext,
-                canvas: &mut #PaintContext,
-                offset: &#Offset
-            ) {
+            fn paint(&self, ctx: #PaintCtxOS, canvas: &mut #Canvas, offset: &#Offset) {
                 <Self as #WidgetKindOS>::paint(self, ctx, canvas, offset)
             }
 
@@ -62,9 +57,10 @@ struct Imports {
     RawWidget: TokenStream,
     WidgetPtr: TokenStream,
     // Contextes
-    Context: TokenStream,
-    PaintContext: TokenStream,
-    AnyRenderContext: TokenStream,
+    RawBuildCtx: TokenStream,
+    LayoutCtxOS: TokenStream,
+    Canvas: TokenStream,
+    PaintCtxOS: TokenStream,
     // Types
     Size: TokenStream,
     Offset: TokenStream,
@@ -79,9 +75,10 @@ fn imports_impl_widget_os() -> Imports {
         TypeId: quote!(::std::any::TypeId),
         RawWidget: quote!(#exports::RawWidget),
         WidgetPtr: quote!(#exports::WidgetPtr),
-        Context: quote!(#exports::Context),
-        PaintContext: quote!(#exports::PaintContext),
-        AnyRenderContext: quote!(#exports::AnyRenderContext),
+        RawBuildCtx: quote!(#exports::RawBuildCtx),
+        LayoutCtxOS: quote!(#exports::LayoutCtxOS),
+        Canvas: quote!(#exports::Canvas),
+        PaintCtxOS: quote!(#exports::PaintCtxOS),
         Size: quote!(#exports::Size),
         Offset: quote!(#exports::Offset),
         Constraints: quote!(#exports::Constraints),

@@ -29,7 +29,7 @@ where
     PS: FnPointerScroll,
     CHILD: Widget,
 {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         &self.child
     }
 }

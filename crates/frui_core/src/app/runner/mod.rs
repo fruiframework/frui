@@ -22,9 +22,9 @@ pub type WindowHandle = miri::WindowHandle;
 pub type WindowHandle = druid_shell::WindowHandle;
 
 #[cfg(feature = "miri")]
-pub type PaintContext<'a> = miri::PaintContext<'a>;
+pub type Canvas<'a> = miri::Canvas<'a>;
 #[cfg(not(feature = "miri"))]
-pub type PaintContext<'a> = druid_shell::piet::Piet<'a>;
+pub type Canvas<'a> = druid_shell::piet::Piet<'a>;
 
 /// Wrapper around [`druid_shell::WinHandler`] that allows us to run tests in Miri.
 /// This implementation can be called by both [`MiriRunner`] and [`druid_shell::WinHandler`].
@@ -33,7 +33,7 @@ pub trait FruiWindowHandler {
 
     fn prepare_paint(&mut self);
 
-    fn paint(&mut self, piet: &mut PaintContext, invalid: &druid_shell::Region);
+    fn paint(&mut self, piet: &mut Canvas, invalid: &druid_shell::Region);
 
     fn size(&mut self, size: druid_shell::kurbo::Size);
 

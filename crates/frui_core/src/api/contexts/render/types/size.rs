@@ -27,6 +27,12 @@ impl Size {
     }
 }
 
+impl std::fmt::Display for Size {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}x{})", self.width, self.height)
+    }
+}
+
 impl Add for Size {
     type Output = Self;
 
