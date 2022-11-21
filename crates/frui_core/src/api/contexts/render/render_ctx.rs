@@ -12,7 +12,7 @@ use crate::{
         runner::window_handler::APP_HANDLE,
         tree::{WidgetNode, WidgetNodeRef},
     },
-    prelude::Widget,
+    prelude::{Widget, InheritedState, InheritedWidget, WidgetState},
 };
 
 pub struct LayoutCtx<T> {
@@ -26,6 +26,30 @@ impl<T> LayoutCtx<T> {
             ctx: any,
             _p: PhantomData,
         }
+    }
+    
+    pub fn depend_on_inherited_widget<W>(&self) -> Option<InheritedState<W::State>>
+    where
+        W: InheritedWidget + WidgetState,
+    {
+        // Register and get inherited widget of specified key.
+        let node = self
+            .node
+            .depend_on_inherited_widget_of_key::<W::UniqueTypeId>()?;
+
+        // Todo:
+        //
+        // 1. Get node above.
+        // 2. Increase rc/borrow count.
+        // 3. Get reference to the widget's state (can be done at once in step
+        //    above).
+        // 4. Return InheritedGuard<'a> with that `node`, `refcell` guard, and
+        //    extracted reference. Possibly transmute.
+
+        Some(InheritedState {
+            node,
+            _p: PhantomData,
+        })
     }
 }
 

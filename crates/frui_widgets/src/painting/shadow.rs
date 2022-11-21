@@ -1,6 +1,7 @@
 use std::ops::Mul;
 
-use frui::prelude::*;
+use druid_shell::{kurbo::Affine, piet::RenderContext};
+use frui::{prelude::*, render::{Rect, Offset, Canvas}};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum BlurStyle {
@@ -20,13 +21,12 @@ pub struct BoxShadow {
 }
 
 impl BoxShadow {
-    pub fn paint(&self, canvas: &mut PaintContext, rect: Rect, _offset: &Offset) {
+    pub fn paint(&self, canvas: &mut Canvas, rect: Rect, _offset: &Offset) {
         assert!(self.blur_style == BlurStyle::Normal, "Shadow now only supports BlurStyle::Normal blur style");
         let brush = canvas.solid_brush(self.color.clone());
         if self.spread_radius < rect.shortest_side() {
             canvas.with_save(|c| {
-                let translate: Vec2 = (self.offset.x, self.offset.y).into();
-                c.transform(Affine::translate(translate));
+                c.transform(Affine::translate((self.offset.x, self.offset.y,)));
                 let rect = rect.inflate(self.spread_radius);
                 c.blurred_rect(rect.into(), self.blur_radius, &brush);
                 Ok(())

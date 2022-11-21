@@ -1,6 +1,7 @@
 use std::{ops::Add};
 
-use frui::prelude::*;
+use druid_shell::{kurbo::{BezPath, Circle, RoundedRect, Shape}, piet::RenderContext};
+use frui::{prelude::*, render::{Rect, Canvas}};
 
 use crate::{borders::BorderSide, Directional, ShapeBorder, TextDirection, EdgeInsets, EPSILON, BorderRadius, BorderStyle};
 
@@ -117,7 +118,7 @@ impl BoxBorder {
             && self.bottom.style == self.left.style
     }
 
-    pub fn paint(&self, canvas: &mut PaintContext, rect: Rect, shape: Option<BoxShape>, border_radius: BorderRadius) {
+    pub fn paint(&self, canvas: &mut Canvas, rect: Rect, shape: Option<BoxShape>, border_radius: BorderRadius) {
         assert!(self.is_uniform(), "BoxBorder::paint() can only paint uniform borders");
         if self.top.width == 0.0 {
             return;

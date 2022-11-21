@@ -1,5 +1,5 @@
-use druid_shell::piet::{kurbo::Shape};
-use frui::prelude::*;
+use druid_shell::{piet::{kurbo::Shape, RenderContext}, kurbo::{BezPath, RoundedRect, Circle}};
+use frui::{prelude::*, render::{Offset, Rect, Canvas}};
 
 use crate::{
     border_radius::BorderRadius, box_border::BoxShape, BoxBorder, BoxShadow, Directional,
@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub trait BoxPainter {
-    fn paint(&self, canvas: &mut PaintContext, offset: Offset);
+    fn paint<T>(&self, canvas: &mut Canvas, offset: Offset);
 }
 
 pub trait Decoration {
@@ -15,7 +15,7 @@ pub trait Decoration {
 
     fn get_clip_path(&self, rect: Rect, text_direction: &TextDirection) -> BezPath;
 
-    fn paint(&self, canvas: &mut PaintContext, rect: Rect, offset: &Offset);
+    fn paint(&self, canvas: &mut Canvas, rect: Rect, offset: &Offset);
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -72,7 +72,7 @@ where
         self
     }
 
-    pub fn border<BORDER>(mut self, border: BORDER) -> BoxDecoration<BORDER, BR>
+    pub fn border<BORDER>(self, border: BORDER) -> BoxDecoration<BORDER, BR>
     where
         BORDER: Directional<Output = BoxBorder>,
     {
@@ -86,7 +86,7 @@ where
         }
     }
 
-    pub fn border_radius<RADIUS>(mut self, border_radius: RADIUS) -> BoxDecoration<B, RADIUS>
+    pub fn border_radius<RADIUS>(self, border_radius: RADIUS) -> BoxDecoration<B, RADIUS>
     where
         RADIUS: Directional<Output = BorderRadius>,
     {
@@ -139,7 +139,7 @@ where
         }
     }
 
-    fn paint(&self, canvas: &mut PaintContext, rect: Rect, offset: &Offset) {
+    fn paint(&self, canvas: &mut Canvas, rect: Rect, offset: &Offset) {
         let path = self.get_clip_path(rect, &self.text_direction);
 
         // draw shadows

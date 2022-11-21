@@ -1,5 +1,7 @@
 use std::ops::{Add, Div, Mul, Neg, Rem, Sub, BitAnd, BitOr};
 
+use druid_shell::kurbo::Point;
+
 use super::{Offset, Size};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
@@ -37,7 +39,7 @@ impl Rect {
         Rect::from_ltrb(a.x.min(b.x), a.y.min(b.y), a.x.max(b.x), a.y.max(b.y))
     }
 
-    pub fn from_origin_size(origin: impl Into<Offset>, size: impl Into<Size>) -> Rect {
+    pub fn from_origin_size(origin: impl Into<Point>, size: impl Into<Size>) -> Rect {
         let origin = origin.into();
         let size = size.into();
         Rect::from_ltwh(origin.x, origin.y, size.width, size.height)

@@ -1,4 +1,4 @@
-use frui::prelude::*;
+use frui::render::{Radius, RRect, Rect};
 
 use crate::{Directional, TextDirection};
 

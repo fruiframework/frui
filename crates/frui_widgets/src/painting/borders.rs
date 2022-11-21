@@ -1,7 +1,8 @@
 use std::ops::{Mul, Add};
 
-use druid_shell::piet::StrokeStyle;
+use druid_shell::{piet::StrokeStyle, kurbo::BezPath};
 use frui::prelude::*;
+use frui::render::Rect;
 
 use crate::{EdgeInsets};
 
