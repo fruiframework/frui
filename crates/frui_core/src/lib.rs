@@ -40,7 +40,7 @@ pub mod render {
 
     pub use druid_shell::{kurbo, piet};
     pub use druid_shell::{
-        kurbo::{Affine, Point, Rect, Vec2},
+        kurbo::{Affine, Point, Rect as DruidRect, Vec2},
         piet::{Color, RenderContext},
     };
 }
@@ -61,7 +61,7 @@ pub mod macro_exports {
             WidgetPtr,
         },
         prelude::Widget,
-        render::{Canvas, Constraints, Offset, Size, Radius, Rect, RRect},
+        render::{Canvas, Constraints, Offset, Size},
     };
 }
 

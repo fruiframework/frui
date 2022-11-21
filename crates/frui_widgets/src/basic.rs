@@ -6,14 +6,14 @@ use frui::render::*;
 use crate::{Alignment, BoxLayoutData, Directional, EdgeInsets, TextDirection};
 
 pub trait ChildParentDataProvider<T: RenderWidget> {
-    fn ensure_parent_data<F, P>(&self, ctx: RenderContext<'_, T>, default: F)
+    fn ensure_parent_data<F, P>(&self, ctx: &LayoutCtx<T>, default: F)
     where
         F: Fn() -> P,
         P: 'static;
 }
 
 impl<T: RenderWidget> ChildParentDataProvider<T> for T {
-    fn ensure_parent_data<F, P>(&self, ctx: RenderContext<'_, T>, default: F)
+    fn ensure_parent_data<F, P>(&self, ctx: &LayoutCtx<T>, default: F)
     where
         F: Fn() -> P,
         P: 'static,
@@ -48,12 +48,12 @@ impl<T: Widget> InheritedWidget for Directionality<T> {
 }
 
 impl Directionality<()> {
-    pub fn of<'a, T>(ctx: RenderContext<'a, T>) -> Option<TextDirection> {
+    pub fn of<T>(ctx: &LayoutCtx<T>) -> Option<TextDirection> {
         let state = ctx.depend_on_inherited_widget::<Self>();
         state.map(|s| *s.as_ref().deref())
     }
 
-    pub fn of_or_default<'a, T>(ctx: RenderContext<'a, T>) -> TextDirection {
+    pub fn of_or_default<T>(ctx: &LayoutCtx<T>) -> TextDirection {
         Self::of(ctx).unwrap_or_default()
     }
     
@@ -114,16 +114,16 @@ impl<T: Widget> LimitedBox<T> {
 }
 
 impl<T: Widget> RenderWidget for LimitedBox<T> {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let limited_constraints = self.limit_constraints(&constraints);
         constraints.constrain(ctx.child(0).layout(limited_constraints))
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         ctx.child(0).paint(canvas, offset)
     }
 }
@@ -142,11 +142,11 @@ where
     T: Widget,
     A: Directional<Output = Alignment>,
 {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         self.ensure_parent_data(ctx, || BoxLayoutData::default());
         let text_direction = self.text_direction.unwrap_or_else(|| {
             Directionality::of_or_default(ctx)
@@ -178,11 +178,9 @@ where
         size
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
-        let child = ctx.child(0);
-        let child_parent_data = child.try_parent_data::<BoxLayoutData>().unwrap();
-        child
-            .paint(canvas, &(child_parent_data.offset + *offset))
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        let child_offset = ctx.child(0).try_parent_data::<BoxLayoutData>().unwrap().offset;
+        ctx.child(0).paint(canvas, &(child_offset + *offset))
     }
 }
 
@@ -197,11 +195,11 @@ where
     T: Widget,
     P: Directional<Output = EdgeInsets>,
 {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         self.ensure_parent_data(ctx, BoxLayoutData::default);
         let text_direction = Directionality::of_or_default(ctx);
         let padding = self
@@ -215,7 +213,7 @@ where
         constraints.constrain(child_size + padding.collapsed_size())
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let child_offset = ctx
             .child(0)
             .try_parent_data::<BoxLayoutData>()

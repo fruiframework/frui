@@ -68,8 +68,7 @@ impl<W: Widget> RenderWidget for Container<W> {
     fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Some(color) = &self.color {
             let brush = &canvas.solid_brush(color.clone());
-
-            RenderContext::fill(canvas, Rect::from_origin_size(offset, ctx.size()), brush);
+            canvas.fill(DruidRect::from_origin_size(offset, ctx.size()), brush);
         }
 
         ctx.child(0).paint(canvas, offset)
@@ -94,15 +93,15 @@ impl DecoratedBox<(), DefaultBoxDecoration> {
 }
 
 impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         self.decoration.padding().inflate_size(ctx.child(0).layout(constraints))
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let rect = Rect::from_origin_size(offset, ctx.size());
         let path = self.decoration.get_clip_path(rect.into(), &TextDirection::Ltr);
         if self.position == DecorationPosition::Background {
