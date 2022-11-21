@@ -65,38 +65,28 @@ impl Constraints {
         }
     }
 
-    /// Returns new constraints with a tight width and/or height as close to the
+    /// Returns new tight constraints with width and/or height as close to the
     /// given width and height as possible while still respecting the original
     /// constraints.
+    #[rustfmt::skip]
     pub fn tighten(&self, width: Option<f64>, height: Option<f64>) -> Self {
         Self {
-            min_width: width.map_or(self.min_width, |w| w.clamp(self.min_width, self.max_width)),
-            max_width: width.map_or(self.max_width, |w| w.clamp(self.min_width, self.max_width)),
-            min_height: height.map_or(self.min_height, |h| {
-                h.clamp(self.min_height, self.max_height)
-            }),
-            max_height: height.map_or(self.max_height, |h| {
-                h.clamp(self.min_height, self.max_height)
-            }),
+            min_width: width.map_or(self.min_width, |v| v.clamp(self.min_width, self.max_width)),
+            max_width: width.map_or(self.max_width, |v| v.clamp(self.min_width, self.max_width)),
+            min_height: height.map_or(self.min_height, |v| v.clamp(self.min_height, self.max_height)),
+            max_height: height.map_or(self.max_height, |v| v.clamp(self.min_height, self.max_height)),
         }
     }
 
     /// Returns new constraints that respect the given constraints while being
     /// as close as possible to the original constraints.
+    #[rustfmt::skip]
     pub fn enforce(&self, constraints: Constraints) -> Self {
         Self {
-            min_width: self
-                .min_width
-                .clamp(constraints.min_width, constraints.max_width),
-            max_width: self
-                .max_width
-                .clamp(constraints.min_width, constraints.max_width),
-            min_height: self
-                .min_height
-                .clamp(constraints.min_height, constraints.max_height),
-            max_height: self
-                .max_height
-                .clamp(constraints.min_height, constraints.max_height),
+            min_width: self.min_width.clamp(constraints.min_width, constraints.max_width),
+            max_width: self.max_width.clamp(constraints.min_width, constraints.max_width),
+            min_height: self.min_height.clamp(constraints.min_height, constraints.max_height),
+            max_height: self.max_height.clamp(constraints.min_height, constraints.max_height),
         }
     }
 

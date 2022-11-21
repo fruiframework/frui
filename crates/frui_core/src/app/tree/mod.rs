@@ -11,18 +11,19 @@ use druid_shell::IdleToken;
 
 use crate::{
     api::{
-        contexts::{render_ctx::AnyRenderContext, Context},
+        contexts::{render::LayoutCtxOS, RawBuildCtx},
         local_key::LocalKeyAny,
         pointer_events::events::PointerEvent,
         IntoWidgetPtr, WidgetPtr,
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
-    prelude::{Constraints, Offset, PaintContext, Size},
+    macro_exports::PaintCtxOS,
+    render::{Canvas, Constraints, Offset, Size},
 };
 
 use self::pointer_handler::PointerHandler;
 
-mod pointer_handler;
+pub mod pointer_handler;
 
 pub(crate) struct WidgetTree {
     /// Root widget contains necessary configuration to support `InheritedWidget`s.
@@ -49,11 +50,11 @@ impl WidgetTree {
     }
 
     pub fn layout(&mut self, constraints: Constraints) {
-        AnyRenderContext::new(self.root()).layout(constraints);
+        LayoutCtxOS::new(self.root()).layout(constraints);
     }
 
-    pub fn paint(&mut self, piet: &mut PaintContext) {
-        AnyRenderContext::new(self.root()).paint(piet, &Offset::default());
+    pub fn paint(&mut self, piet: &mut Canvas) {
+        PaintCtxOS::new(self.root()).paint(piet, &Offset::default());
     }
 
     pub fn handle_pointer_event(&mut self, event: PointerEvent) {
@@ -119,7 +120,7 @@ pub(crate) struct WidgetInner {
 pub(crate) struct WidgetNode {
     widget_ptr: WidgetPtr<'static>,
 
-    context: Context,
+    context: RawBuildCtx,
     inner: RefCell<WidgetInner>,
 
     parent: Option<WidgetNodeRef>,
@@ -139,7 +140,7 @@ impl WidgetNode {
 
         let mut this = UnsafeCell::new(Box::new(WidgetNode {
             widget_ptr,
-            context: Context {
+            context: RawBuildCtx {
                 node: WidgetNodeRef {
                     is_alive: Rc::new(Cell::new(true)),
                     ptr: std::ptr::null_mut(),
@@ -765,7 +766,7 @@ impl WidgetNode {
 
         let mut this = UnsafeCell::new(Box::new(WidgetNode {
             widget_ptr: widget_ptr.clone(),
-            context: Context {
+            context: RawBuildCtx {
                 node: WidgetNodeRef {
                     is_alive: Rc::new(Cell::new(true)),
                     ptr: std::ptr::null_mut(),
@@ -803,18 +804,18 @@ trait WidgetNodePtrExt {
     fn inner_ptr(&self) -> *const RefCell<WidgetInner>;
     fn widget_ptr(&self) -> *const WidgetPtr<'static>;
     fn parent_ptr(&self) -> *const Option<WidgetNodeRef>;
-    fn context_ptr(&self) -> *const Context;
+    fn context_ptr(&self) -> *const RawBuildCtx;
     fn children_ptr(&self) -> *const Vec<UnsafeCell<Box<WidgetNode>>>;
 
     fn inner_ptr_mut(&self) -> *mut RefCell<WidgetInner>;
     fn widget_ptr_mut(&self) -> *mut WidgetPtr<'static>;
     fn parent_ptr_mut(&self) -> *mut Option<WidgetNodeRef>;
-    fn context_ptr_mut(&self) -> *mut Context;
+    fn context_ptr_mut(&self) -> *mut RawBuildCtx;
     fn children_ptr_mut(&self) -> *mut Vec<UnsafeCell<Box<WidgetNode>>>;
 }
 
 impl WidgetNodePtrExt for *mut WidgetNode {
-    fn context_ptr(&self) -> *const Context {
+    fn context_ptr(&self) -> *const RawBuildCtx {
         unsafe { std::ptr::addr_of!((**self).context) }
     }
 
@@ -834,7 +835,7 @@ impl WidgetNodePtrExt for *mut WidgetNode {
         unsafe { std::ptr::addr_of!((**self).children) }
     }
 
-    fn context_ptr_mut(&self) -> *mut Context {
+    fn context_ptr_mut(&self) -> *mut RawBuildCtx {
         unsafe { std::ptr::addr_of_mut!((**self).context) }
     }
 
@@ -862,14 +863,14 @@ trait UnsafeCellWidgetNodePtrExt {
     fn inner_ptr(&self) -> *const RefCell<WidgetInner>;
     fn widget_ptr(&self) -> *const WidgetPtr<'static>;
     fn parent_ptr(&self) -> *const Option<WidgetNodeRef>;
-    fn context_ptr(&self) -> *const Context;
+    fn context_ptr(&self) -> *const RawBuildCtx;
     fn children_ptr(&self) -> *const Vec<UnsafeCell<Box<WidgetNode>>>;
 
     fn node_ptr_mut(&self) -> *mut WidgetNode;
     fn inner_ptr_mut(&mut self) -> *mut RefCell<WidgetInner>;
     fn widget_ptr_mut(&mut self) -> *mut WidgetPtr<'static>;
     fn parent_ptr_mut(&mut self) -> *mut Option<WidgetNodeRef>;
-    fn context_ptr_mut(&mut self) -> *mut Context;
+    fn context_ptr_mut(&mut self) -> *mut RawBuildCtx;
     fn children_ptr_mut(&mut self) -> *mut Vec<UnsafeCell<Box<WidgetNode>>>;
 }
 
@@ -890,7 +891,7 @@ impl UnsafeCellWidgetNodePtrExt for UnsafeCell<Box<WidgetNode>> {
         unsafe { std::ptr::addr_of!((*self.get()).parent) }
     }
 
-    fn context_ptr(&self) -> *const Context {
+    fn context_ptr(&self) -> *const RawBuildCtx {
         unsafe { std::ptr::addr_of!((*self.get()).context) }
     }
 
@@ -914,7 +915,7 @@ impl UnsafeCellWidgetNodePtrExt for UnsafeCell<Box<WidgetNode>> {
         unsafe { std::ptr::addr_of_mut!((*self.get()).parent) }
     }
 
-    fn context_ptr_mut(&mut self) -> *mut Context {
+    fn context_ptr_mut(&mut self) -> *mut RawBuildCtx {
         unsafe { std::ptr::addr_of_mut!((*self.get()).context) }
     }
 

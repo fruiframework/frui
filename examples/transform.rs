@@ -6,6 +6,7 @@
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
+use frui::render::*;
 
 mod counter;
 
@@ -15,7 +16,7 @@ use counter::Counter;
 struct CounterRotated;
 
 impl ViewWidget for CounterRotated {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         let screen_width = 500.;
         let screen_height = 400.;
 

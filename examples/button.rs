@@ -33,7 +33,7 @@ impl<L: Widget, F: Fn()> WidgetState for Button<L, F> {
 }
 
 impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         let (is_hovered, is_pressed) = (ctx.state().is_hovered, ctx.state().is_pressed);
 
         let color = if is_pressed {
@@ -92,22 +92,22 @@ fn main() {
     run_app(Button {
         label: Text::new(":)"),
         on_click: || println!("clicked!"),
-    })
+    });
 }
 
 #[cfg(test)]
 #[cfg(feature = "miri")]
 mod test {
     use super::*;
-    use frui::{
-        app::runner::miri::MiriRunner,
-        druid_shell::{Modifiers, MouseButtons, MouseEvent},
-    };
+
+    use frui::app::runner::miri::MiriRunner;
+    use frui::druid_shell::{Modifiers, MouseButton, MouseButtons, MouseEvent};
+    use frui::render::*;
 
     static COUNT: std::sync::Mutex<isize> = std::sync::Mutex::new(0);
 
     #[derive(ViewWidget)]
-    struct OnlyButtons;
+    pub struct OnlyButtons;
 
     impl WidgetState for OnlyButtons {
         type State = isize;
@@ -118,19 +118,21 @@ mod test {
     }
 
     impl ViewWidget for OnlyButtons {
-        fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+        fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
             *COUNT.lock().unwrap() = *ctx.state();
 
-            Row::builder().space_between(10.0).children((
-                Button {
-                    label: (),
-                    on_click: || *ctx.state_mut() += 1,
-                },
-                Button {
-                    label: (),
-                    on_click: || *ctx.state_mut() -= 1,
-                },
-            ))
+            UnconstrainedBox {
+                child: Row::builder().space_between(10.0).children((
+                    Button {
+                        label: (),
+                        on_click: || *ctx.state_mut() += 1,
+                    },
+                    Button {
+                        label: (),
+                        on_click: || *ctx.state_mut() -= 1,
+                    },
+                )),
+            }
         }
     }
 

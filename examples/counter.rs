@@ -22,7 +22,7 @@ impl WidgetState for Counter {
 }
 
 impl ViewWidget for Counter {
-    fn build<'w>(&'w self, ctx: BuildContext<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
         Column::builder()
             .space_between(60.0)
             .main_axis_size(MainAxisSize::Max)

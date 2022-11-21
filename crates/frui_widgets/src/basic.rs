@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
 use frui::prelude::*;
+use frui::render::*;
 
 use crate::{Alignment, BoxLayoutData, Directional, EdgeInsets, TextDirection};
 
@@ -65,11 +66,11 @@ pub struct ColoredBox<T: Widget> {
 }
 
 impl<T: Widget> RenderWidget for ColoredBox<T> {
-    fn build<'w>(&'w self, _ctx: BuildContext<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: RenderContext<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         let child_size = ctx.child(0).layout(constraints);
         if child_size != Size::ZERO {
             child_size
@@ -78,7 +79,7 @@ impl<T: Widget> RenderWidget for ColoredBox<T> {
         }
     }
 
-    fn paint(&self, ctx: RenderContext<Self>, canvas: &mut PaintContext, offset: &Offset) {
+    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let rect = Rect::from_origin_size(*offset, ctx.size());
         let brush = &canvas.solid_brush(self.color.clone());
         canvas.fill(druid_shell::piet::kurbo::Rect::from(rect), brush);

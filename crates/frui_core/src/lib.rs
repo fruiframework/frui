@@ -9,53 +9,59 @@ pub mod api;
 pub mod app;
 
 pub mod prelude {
-    pub use frui_macros::{InheritedWidget, RenderWidget, ViewWidget};
-
     pub use super::{
         api::{
-            contexts::{
-                build_ctx::{
-                    BuildContext, InheritedState, InheritedStateRef, InheritedStateRefMut,
-                    WidgetState,
-                },
-                render_ctx::{
-                    ChildContext, ChildrenIter, Constraints, Offset, ParentData, RenderContext,
-                    RenderState, Size, Radius, Rect, RRect
-                },
+            contexts::build_ctx::{
+                BuildCtx, InheritedState, InheritedStateRef, InheritedStateRefMut, WidgetState,
             },
-            implementers::{inherited::InheritedWidget, render::RenderWidget, view::ViewWidget},
+            implementers::{inherited::InheritedWidget, view::ViewWidget},
             impls::BoxedWidget,
             pointer_events::*,
             Widget,
         },
-        app::runner::{native::run_app, PaintContext},
+        app::runner::native::run_app,
     };
 
-    pub use druid_shell::{
-        kurbo::*,
-        piet::{
-            Brush, Color, FontFamily, FontStyle, FontWeight, RenderContext as PietRenderContext
-        },
-        KeyEvent, MouseButton,
-    };
+    pub use druid_shell::piet::{Color, FontWeight};
 
-    pub use frui_macros::Builder;
+    // Macros exports.
+    pub use frui_macros::{Builder, InheritedWidget, RenderWidget, ViewWidget};
 
-    // Widget exports.
+    // Core widgets exports.
     pub use super::api::local_key::LocalKey;
 }
+
+pub mod render {
+    pub use crate::api::implementers::render::RenderWidget;
+
+    pub use crate::api::contexts::render::*;
+    pub use crate::app::runner::Canvas;
+    pub use crate::app::TEXT_FACTORY;
+
+    pub use druid_shell::{kurbo, piet};
+    pub use druid_shell::{
+        kurbo::{Affine, Point, Rect, Vec2},
+        piet::{Color, RenderContext},
+    };
+}
+
 #[doc(hidden)]
 pub mod macro_exports {
+
     pub use crate::{
         api::{
-            contexts::{render_ctx::AnyRenderContext, Context},
+            contexts::{
+                render::{LayoutCtxOS, PaintCtxOS},
+                RawBuildCtx,
+            },
             implementers::{
                 InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,
             },
             structural_eq::{StructuralEq, StructuralEqImpl},
             WidgetPtr,
         },
-        prelude::{Constraints, Offset, PaintContext, Size, Widget},
+        prelude::Widget,
+        render::{Canvas, Constraints, Offset, Size, Radius, Rect, RRect},
     };
 }
 

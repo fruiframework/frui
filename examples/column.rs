@@ -4,32 +4,30 @@
 //! widget.
 //!
 //! Feel free to modify each of the properties of the [`Column`] to see how it
-//! affects the way its children are laid out.
+//! affects the way its children are laid out!
 
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
 
 mod misc;
-use misc::children_combinations::Big;
+use misc::flex_children as list;
 
 #[derive(ViewWidget)]
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildContext<'w, Self>) -> Self::Widget<'w> {
-        DebugContainer::child(
+    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+        DebugContainer::new(
             Column::builder()
-                .space_between(10.0)
-                .main_axis_size(MainAxisSize::Max)
-                .cross_axis_size(CrossAxisSize::Max)
-                .main_axis_alignment(MainAxisAlignment::SpaceBetween)
+                .space_between(20.0)
+                .text_direction(TextDirection::Ltr)
+                .vertical_direction(VerticalDirection::Up)
+                .main_axis_size(MainAxisSize::Min)
+                .cross_axis_size(CrossAxisSize::Min)
+                .main_axis_alignment(MainAxisAlignment::Center)
                 .cross_axis_alignment(CrossAxisAlignment::Center)
-                .children((
-                    Big(Color::rgb8(13, 245, 152)),
-                    Big(Color::rgb8(255, 0, 110)),
-                    Big(Color::rgb8(0, 186, 255)),
-                )),
+                .children(list::flexible()),
         )
     }
 }
@@ -43,7 +41,7 @@ mod test {
     use super::*;
     use frui::{
         app::runner::miri::MiriRunner,
-        druid_shell::{keyboard_types::Key, Modifiers},
+        druid_shell::{keyboard_types::Key, KeyEvent, Modifiers},
     };
 
     #[test]

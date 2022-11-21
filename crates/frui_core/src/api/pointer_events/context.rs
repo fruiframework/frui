@@ -1,17 +1,12 @@
-use std::{cell::RefCell, collections::HashMap, marker::PhantomData, rc::Rc};
+use std::marker::PhantomData;
 
 use druid_shell::kurbo::{Affine, Point};
 
-use crate::{
-    api::contexts::render_ctx::ext::RenderExt,
-    app::tree::{WidgetNode, WidgetNodeRef},
-    prelude::{Size, Widget},
-};
+use crate::app::tree::pointer_handler::HitTestEntries;
+use crate::app::tree::{WidgetNode, WidgetNodeRef};
+use crate::prelude::Widget;
+use crate::render::*;
 
-/// This context allows to access state of given widget during hit testing (see
-/// [`CtxStateExt`] implementation below). Additionally, some methods useful for
-/// hit-testing are accessible through [`HitTestCtxOS`] to which this structure
-/// derefs.
 pub struct HitTestCtx<W> {
     pub(crate) inner: HitTestCtxOS,
     _p: PhantomData<W>,
@@ -35,15 +30,16 @@ impl<W> HitTestCtx<W> {
 #[derive(Clone)]
 pub struct HitTestCtxOS {
     pub(crate) node: WidgetNodeRef,
-    pub(crate) hit_entries: Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>,
     /// All affine transformations applied to point at this depth.
     pub(crate) affine: Affine,
+    /// All widgets that got hit and registered for pointer events.
+    pub(crate) hit_entries: HitTestEntries,
 }
 
 impl HitTestCtxOS {
     pub(crate) fn new(
         node: &WidgetNodeRef,
-        hit_entries: Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>,
+        hit_entries: HitTestEntries,
         affine: Affine,
     ) -> HitTestCtxOS {
         Self {

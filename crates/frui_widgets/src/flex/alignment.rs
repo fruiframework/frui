@@ -1,4 +1,5 @@
-use frui::prelude::{Offset, Size};
+use frui::render::*;
+
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 

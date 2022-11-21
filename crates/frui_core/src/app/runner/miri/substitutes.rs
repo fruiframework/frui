@@ -2,8 +2,7 @@ use std::{borrow::Cow, marker::PhantomData, sync::Mutex};
 
 use druid_shell::{
     piet::{CoreGraphicsImage, CoreGraphicsText, CoreGraphicsTextLayout, IntoBrush, PietText},
-    Cursor,
-    IdleToken,
+    Cursor, IdleToken,
 };
 
 pub static REQUEST_ANIM_FRAME: Mutex<bool> = Mutex::new(false);
@@ -57,12 +56,12 @@ impl WindowHandle {
 
 /// Placeholder for [`Piet`](druid_shell::piet::Piet) that allows us to test Frui in Miri.
 #[derive(Default)]
-pub struct PaintContext<'a> {
+pub struct Canvas<'a> {
     _p: PhantomData<&'a ()>,
 }
 
 #[allow(unused)]
-impl druid_shell::piet::RenderContext for PaintContext<'_> {
+impl druid_shell::piet::RenderContext for Canvas<'_> {
     type Brush = Brush;
 
     type Text = CoreGraphicsText;
@@ -197,12 +196,12 @@ impl druid_shell::piet::RenderContext for PaintContext<'_> {
 #[derive(Debug, Clone, Copy)]
 pub struct Brush;
 
-impl IntoBrush<PaintContext<'_>> for Brush {
+impl IntoBrush<Canvas<'_>> for Brush {
     fn make_brush<'a>(
         &'a self,
-        _piet: &mut PaintContext<'_>,
+        _piet: &mut Canvas<'_>,
         _bbox: impl FnOnce() -> druid_shell::kurbo::Rect,
-    ) -> Cow<'a, <PaintContext<'_> as druid_shell::piet::RenderContext>::Brush> {
+    ) -> Cow<'a, <Canvas<'_> as druid_shell::piet::RenderContext>::Brush> {
         Cow::Owned(Brush)
     }
 }
