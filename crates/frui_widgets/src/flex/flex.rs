@@ -434,6 +434,13 @@ impl<WL: WidgetList> Flex<WL> {
             *main_size = main_size_min
         }
 
+        // As a temporary solution, we're rounding resulting size to mitigate
+        // rounding errors so that overflow error doesn't occur.
+        let main_size = size.main_mut(self.direction);
+        *main_size = main_size.round();
+        let cross_size = size.cross_mut(self.direction);
+        *cross_size = cross_size.round();
+
         size
     }
 

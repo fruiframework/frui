@@ -1,15 +1,18 @@
 #![feature(type_alias_impl_trait)]
-use frui::{prelude::*, render::{Offset, Size}};
+use frui::{
+    prelude::*,
+    render::{Offset, Size},
+};
 
 fn main() {
     run_app(ColoredBox {
+        color: Color::WHITE,
         child: Row::builder()
-            .cross_axis_alignment(CrossAxisAlignment::Center)
-            .cross_axis_size(CrossAxisSize::Max)
-            .space_between(20.0)
-            .main_axis_alignment(MainAxisAlignment::SpaceAround)
             .main_axis_size(MainAxisSize::Max)
-            .children(vec!(
+            .cross_axis_size(CrossAxisSize::Max)
+            .main_axis_alignment(MainAxisAlignment::SpaceEvenly)
+            .cross_axis_alignment(CrossAxisAlignment::Center)
+            .children((
                 SizedBox::from_size(
                     DecoratedBox::builder()
                         .child(Center::child(Text::new("Hello, world!")))
@@ -39,12 +42,11 @@ fn main() {
                         .decoration(
                             BoxDecoration::builder()
                                 .color(Color::Rgba32(0xFC6900FF))
-                                .shape(BoxShape::Circle)
+                                .shape(BoxShape::Circle),
                         )
                         .position(DecorationPosition::Background),
-                    Size::new(100.0, 100.0)
+                    Size::new(100.0, 100.0),
                 ),
             )),
-        color: Color::WHITE,
     });
 }

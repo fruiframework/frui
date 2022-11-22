@@ -1,5 +1,11 @@
-use druid_shell::{piet::{kurbo::Shape, RenderContext}, kurbo::{BezPath, RoundedRect, Circle}};
-use frui::{prelude::*, render::{Offset, Rect, Canvas}};
+use druid_shell::{
+    kurbo::{BezPath, Circle, RoundedRect},
+    piet::{kurbo::Shape, RenderContext},
+};
+use frui::{
+    prelude::*,
+    render::{Canvas, Offset, Rect},
+};
 
 use crate::{
     border_radius::BorderRadius, box_border::BoxShape, BoxBorder, BoxShadow, Directional,
@@ -146,7 +152,7 @@ where
         if (self.shape != BoxShape::Rectangle || self.border_radius.is_some())
             && !self.box_shadow.is_empty()
         {
-            log::warn!("Box shadows are not supported for non-rectangular shapes");
+            log::warn!("Box shadows are not supported for non-rectangular shapes (yet)");
         }
         for shadow in &self.box_shadow {
             shadow.paint(canvas, rect, offset);
