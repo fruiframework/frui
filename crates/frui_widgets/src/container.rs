@@ -98,7 +98,7 @@ impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
     }
 
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        self.decoration.padding().inflate_size(ctx.child(0).layout(constraints))
+        constraints.constrain(ctx.child(0).layout(constraints))
     }
 
     fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {

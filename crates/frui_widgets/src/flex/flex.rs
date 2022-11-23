@@ -104,12 +104,8 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         //
         // Override child parent data to store calculated offsets.
-
-        for child in ctx.children() {
-            if child.try_parent_data::<FlexData>().is_none() {
-                child.set_parent_data(FlexData::default());
-            }
-        }
+        
+        self.ensure_parent_data(ctx, || FlexData::default());
 
         //
         // Layout inflexible children.
