@@ -6,6 +6,8 @@ use druid_shell::piet::{
     TextLayoutBuilder,
 };
 
+use crate::Directionality;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TextDirection {
     Rtl,

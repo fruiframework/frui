@@ -14,7 +14,6 @@ impl ViewWidget for App {
             Flex::builder()
                 .space_between(10.0)
                 .direction(Axis::Vertical)
-                .text_direction(TextDirection::Rtl)
                 .vertical_direction(VerticalDirection::Down)
                 .main_axis_size(MainAxisSize::Max)
                 .cross_axis_size(CrossAxisSize::Min)
@@ -71,5 +70,8 @@ impl ViewWidget for App {
 }
 
 fn main() {
-    run_app(App);
+    run_app(Directionality {
+        direction: TextDirection::Rtl,
+        child: App,
+    });
 }
