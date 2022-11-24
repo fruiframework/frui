@@ -134,6 +134,16 @@ pub struct LimitedBox<T: Widget> {
     pub max_height: f64,
 }
 
+impl LimitedBox<()> {
+    pub fn builder() -> Self {
+        Self {
+            child: (),
+            max_width: f64::INFINITY,
+            max_height: f64::INFINITY,
+        }
+    }
+}
+
 impl<T: Widget> LimitedBox<T> {
     fn limit_constraints(&self, constraints: &Constraints) -> Constraints {
         Constraints {
@@ -154,7 +164,7 @@ impl<T: Widget> LimitedBox<T> {
 }
 
 impl<T: Widget> RenderWidget for LimitedBox<T> {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 

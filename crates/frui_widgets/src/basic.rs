@@ -72,6 +72,18 @@ pub struct Align<T: Widget, A: Directional<Output = Alignment>> {
     pub text_direction: Option<TextDirection>,
 }
 
+impl Align<(), Alignment> {
+    pub fn builder() -> Self {
+        Self {
+            child: (),
+            alignment: Alignment::default(),
+            widgh_factor: None,
+            height_factor: None,
+            text_direction: None,
+        }
+    }
+}
+
 impl<T, A> RenderWidget for Align<T, A>
 where
     T: Widget,
@@ -123,6 +135,15 @@ where
 pub struct Padding<T: Widget, P: Directional<Output = EdgeInsets>> {
     pub child: T,
     pub padding: P,
+}
+
+impl Padding<(), EdgeInsets> {
+    pub fn builder() -> Self {
+        Self {
+            child: (),
+            padding: EdgeInsets::ZERO,
+        }
+    }
 }
 
 impl<T, P> RenderWidget for Padding<T, P>
