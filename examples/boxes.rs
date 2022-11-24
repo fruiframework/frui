@@ -1,6 +1,7 @@
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
+use frui::render::*;
 
 mod misc;
 
@@ -9,41 +10,98 @@ struct App;
 
 impl ViewWidget for App {
     fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
-        Flex {
-            children: (
-                UnconstrainedBox {
-                    child: SizedBox::new(
-                        ColoredBox {
-                            child: Text::new("Hello world!"),
-                            color: Color::RED,
-                        },
-                        Some(100.0),
-                        Some(100.0),
-                    ),
-                },
-                UnconstrainedBox {
+        Stack::builder().children((
+            Align::builder()
+                .alignment(AlignmentDirectional::TOP_START)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("TOP_START"),
+                        color: Color::OLIVE,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::TOP_CENTER)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("TOP_CENTER"),
+                        color: Color::RED,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::TOP_END)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("TOP_END"),
+                        color: Color::PURPLE,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::CENTER_START)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("CENTER_START"),
+                        color: Color::BLUE,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::CENTER)
+                .child(LimitedBox {
                     child: ColoredBox {
-                        child: Text::new("Hello world!"),
+                        child: Padding::builder()
+                            .padding(EdgeInsets::all(10.0))
+                            .child(Text::new("CENTER").color(Color::BLACK)),
+                        color: Color::YELLOW,
+                    },
+                    max_width: 100.0,
+                    max_height: 100.0,
+                }),
+            Align::builder()
+                .alignment(AlignmentDirectional::CENTER_END)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("CENTER_END"),
+                        color: Color::GREEN,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::BOTTOM_START)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("BOTTOM_START"),
                         color: Color::FUCHSIA,
                     },
-                },
-                Expanded::new(ColoredBox {
-                    child: Text::new("Hello world!"),
-                    color: Color::GREEN,
-                }),
-            ),
-            direction: Axis::Horizontal,
-            space_between: 10.,
-            main_axis_size: MainAxisSize::Max,
-            main_axis_alignment: MainAxisAlignment::Start,
-            cross_axis_alignment: CrossAxisAlignment::Stretch,
-            cross_axis_size: CrossAxisSize::Min,
-            text_direction: TextDirection::Ltr,
-            vertical_direction: VerticalDirection::Down,
-        }
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::BOTTOM_CENTER)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("BOTTOM_CENTER"),
+                        color: Color::TEAL,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+            Align::builder()
+                .alignment(AlignmentDirectional::BOTTOM_END)
+                .child(SizedBox::from_size(
+                    ColoredBox {
+                        child: Text::new("BOTTOM_END"),
+                        color: Color::AQUA,
+                    },
+                    Size::new(100.0, 100.0),
+                )),
+        ))
     }
 }
 
 fn main() {
-    run_app(App);
+    run_app(Directionality {
+        direction: TextDirection::Rtl,
+        child: App,
+    });
 }
