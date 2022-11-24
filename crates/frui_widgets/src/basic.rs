@@ -56,6 +56,10 @@ impl Directionality<()> {
     pub fn of_or_default<T>(ctx: &LayoutCtx<T>) -> TextDirection {
         Self::of(ctx).unwrap_or_default()
     }
+
+    pub fn unwrap_or_default<T>(text_direction: Option<TextDirection>, ctx: &LayoutCtx<T>) -> TextDirection {
+        text_direction.unwrap_or_else(|| Self::of_or_default(ctx))
+    }
     
 }
 
