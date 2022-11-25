@@ -322,6 +322,7 @@ impl Rem<f64> for Radius {
     }
 }
 
+/// Rounded rectangle.
 pub struct RRect {
     pub top: f64,
     pub right: f64,
