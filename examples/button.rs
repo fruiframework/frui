@@ -57,13 +57,17 @@ impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
                 PointerRegion::builder()
                     .on_enter(|_| ctx.state_mut().is_hovered = true)
                     .on_exit(|_| ctx.state_mut().is_hovered = false)
-                    .child(
-                        Container::builder()
-                            .width(WIDTH)
-                            .height(HEIGHT)
-                            .color(color)
+                    .child(SizedBox::from_size(
+                        DecoratedBox::builder()
+                            .position(DecorationPosition::Background)
+                            .decoration(
+                                BoxDecoration::builder()
+                                    .color(color)
+                                    .border_radius(BorderRadius::circular(15.0)),
+                            )
                             .child(Center::child(&self.label)),
-                    ),
+                        Size::new(WIDTH, HEIGHT),
+                    )),
             )
     }
 }
