@@ -12,6 +12,12 @@ impl ViewWidget for App {
         Stack::builder()
             .alignment(AlignmentDirectional::CENTER_END)
             .children((
+                Positioned::builder()
+                    .top(100.0)
+                    .left(100.0)
+                    .bottom(100.0)
+                    .right(100.0)
+                    .child(Container::builder().color(Color::AQUA)),
                 Text::new("🦀") //
                     .size(100.0)
                     .weight(FontWeight::BOLD),
@@ -24,20 +30,9 @@ impl ViewWidget for App {
                             .width(50.0)
                             .height(50.0),
                     ),
-                Positioned::builder()
-                    .right(10.0)
-                    .bottom(10.0)
-                    .left(10.0)
-                    .top(50.0)
-                    .child(
-                        Container::builder()
-                            .color(Color::AQUA)
-                            .width(50.0)
-                            .height(50.0),
-                    ),
                 Center::child(
-                    Text::new("🦀") //
-                        .size(100.0)
+                    Text::new("Centered") //
+                        .size(50.0)
                         .weight(FontWeight::BOLD),
                 ),
             ))
