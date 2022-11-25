@@ -22,6 +22,8 @@ pub mod prelude {
         app::runner::native::run_app,
     };
 
+    pub use crate::render::{Offset, Size};
+
     pub use druid_shell::piet::{Color, FontWeight};
 
     // Macros exports.

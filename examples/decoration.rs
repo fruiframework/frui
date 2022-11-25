@@ -1,9 +1,6 @@
 #![feature(type_alias_impl_trait)]
 
-use frui::{
-    prelude::*,
-    render::{Offset, Size},
-};
+use frui::prelude::*;
 
 fn main() {
     run_app(ColoredBox {

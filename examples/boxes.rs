@@ -1,7 +1,6 @@
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
-use frui::render::*;
 
 mod misc;
 
