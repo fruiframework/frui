@@ -1,4 +1,5 @@
 #![feature(type_alias_impl_trait)]
+
 use frui::{
     prelude::*,
     render::{Offset, Size},
@@ -15,7 +16,7 @@ fn main() {
             .children((
                 SizedBox::from_size(
                     DecoratedBox::builder()
-                        .child(Center::child(Text::new("Hello, world!")))
+                        .position(DecorationPosition::Background)
                         .decoration(
                             BoxDecoration::builder()
                                 .color(Color::Rgba32(0x28C6A8FF))
@@ -33,18 +34,18 @@ fn main() {
                                     blur_style: BlurStyle::Normal,
                                 }]),
                         )
-                        .position(DecorationPosition::Background),
+                        .child(Center::child(Text::new("Hello, world!"))),
                     Size::new(100.0, 100.0),
                 ),
                 SizedBox::from_size(
                     DecoratedBox::builder()
-                        .child(Center::child(Text::new("+").size(60.0)))
+                        .position(DecorationPosition::Background)
                         .decoration(
                             BoxDecoration::builder()
                                 .color(Color::Rgba32(0xFC6900FF))
                                 .shape(BoxShape::Circle),
                         )
-                        .position(DecorationPosition::Background),
+                        .child(Center::child(Text::new("+").size(60.0))),
                     Size::new(100.0, 100.0),
                 ),
             )),

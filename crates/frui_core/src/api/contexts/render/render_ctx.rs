@@ -12,7 +12,7 @@ use crate::{
         runner::window_handler::APP_HANDLE,
         tree::{WidgetNode, WidgetNodeRef},
     },
-    prelude::{Widget, InheritedState, InheritedWidget, WidgetState},
+    prelude::{InheritedState, InheritedWidget, Widget, WidgetState},
 };
 
 pub struct LayoutCtx<T> {
@@ -27,7 +27,7 @@ impl<T> LayoutCtx<T> {
             _p: PhantomData,
         }
     }
-    
+
     pub fn depend_on_inherited_widget<W>(&self) -> Option<InheritedState<W::State>>
     where
         W: InheritedWidget + WidgetState,

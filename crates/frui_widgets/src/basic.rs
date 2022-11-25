@@ -57,10 +57,12 @@ impl Directionality<()> {
         Self::of(ctx).unwrap_or_default()
     }
 
-    pub fn unwrap_or_default<T>(text_direction: Option<TextDirection>, ctx: &LayoutCtx<T>) -> TextDirection {
+    pub fn unwrap_or_default<T>(
+        text_direction: Option<TextDirection>,
+        ctx: &LayoutCtx<T>,
+    ) -> TextDirection {
         text_direction.unwrap_or_else(|| Self::of_or_default(ctx))
     }
-    
 }
 
 #[derive(RenderWidget, Builder)]
@@ -95,12 +97,10 @@ where
 
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         self.ensure_parent_data(ctx, || BoxLayoutData::default());
-        let text_direction = self.text_direction.unwrap_or_else(|| {
-            Directionality::of_or_default(ctx)
-        });
-        let alignment = self
-            .alignment
-            .resolve(&text_direction);
+        let text_direction = self
+            .text_direction
+            .unwrap_or_else(|| Directionality::of_or_default(ctx));
+        let alignment = self.alignment.resolve(&text_direction);
         let shrink_wrap_width =
             self.widgh_factor.is_some() || constraints.max_width == f64::INFINITY;
         let shrink_wrap_height =
@@ -126,7 +126,11 @@ where
     }
 
     fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        let child_offset = ctx.child(0).try_parent_data::<BoxLayoutData>().unwrap().offset;
+        let child_offset = ctx
+            .child(0)
+            .try_parent_data::<BoxLayoutData>()
+            .unwrap()
+            .offset;
         ctx.child(0).paint(canvas, &(child_offset + *offset))
     }
 }
@@ -158,9 +162,7 @@ where
     fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
         self.ensure_parent_data(ctx, BoxLayoutData::default);
         let text_direction = Directionality::of_or_default(ctx);
-        let padding = self
-            .padding
-            .resolve(&text_direction);
+        let padding = self.padding.resolve(&text_direction);
         let child_constraints = padding.deflate_constraints(&constraints);
         let child_size = ctx.child(0).layout(child_constraints);
         let child = ctx.child(0);

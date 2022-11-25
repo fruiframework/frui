@@ -1,12 +1,21 @@
-use std::{ops::Add};
+use std::ops::Add;
 
-use druid_shell::{kurbo::{BezPath, Circle, RoundedRect, Shape}, piet::RenderContext};
-use frui::{prelude::*, render::{Rect, Canvas}};
+use druid_shell::{
+    kurbo::{BezPath, Circle, RoundedRect, Shape},
+    piet::RenderContext,
+};
+use frui::{
+    prelude::*,
+    render::{Canvas, Rect},
+};
 
-use crate::{borders::BorderSide, Directional, ShapeBorder, TextDirection, EdgeInsets, EPSILON, BorderRadius, BorderStyle};
+use crate::{
+    borders::BorderSide, BorderRadius, BorderStyle, Directional, EdgeInsets, ShapeBorder,
+    TextDirection, EPSILON,
+};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-    pub enum BoxShape {
+pub enum BoxShape {
     Circle,
     Rectangle,
 }
@@ -56,11 +65,17 @@ impl Add for BoxBorder {
 
 impl ShapeBorder for BoxBorder {
     fn dimensions(&self) -> EdgeInsets {
-        EdgeInsets::from_ltrb(self.left.width, self.top.width, self.right.width, self.bottom.width)
+        EdgeInsets::from_ltrb(
+            self.left.width,
+            self.top.width,
+            self.right.width,
+            self.bottom.width,
+        )
     }
 
     fn stroke_path(&self, rect: Rect) -> BezPath {
-        Into::<druid_shell::piet::kurbo::Rect>::into(self.dimensions().deflate_rect(rect)).into_path(EPSILON)
+        Into::<druid_shell::piet::kurbo::Rect>::into(self.dimensions().deflate_rect(rect))
+            .into_path(EPSILON)
     }
 
     fn shape_path(&self, rect: Rect) -> BezPath {
@@ -118,8 +133,17 @@ impl BoxBorder {
             && self.bottom.style == self.left.style
     }
 
-    pub fn paint(&self, canvas: &mut Canvas, rect: Rect, shape: Option<BoxShape>, border_radius: BorderRadius) {
-        assert!(self.is_uniform(), "BoxBorder::paint() can only paint uniform borders");
+    pub fn paint(
+        &self,
+        canvas: &mut Canvas,
+        rect: Rect,
+        shape: Option<BoxShape>,
+        border_radius: BorderRadius,
+    ) {
+        assert!(
+            self.is_uniform(),
+            "BoxBorder::paint() can only paint uniform borders"
+        );
         if self.top.width == 0.0 {
             return;
         }
@@ -131,9 +155,9 @@ impl BoxBorder {
                     let radius = rect.width().min(rect.height()) / 2.0;
                     Circle::new(center, radius).into_path(EPSILON)
                 }
-                BoxShape::Rectangle => {
-                    RoundedRect::try_from(border_radius.to_rrect(&rect)).unwrap().into_path(EPSILON)
-                }
+                BoxShape::Rectangle => RoundedRect::try_from(border_radius.to_rrect(&rect))
+                    .unwrap()
+                    .into_path(EPSILON),
             }
         } else {
             druid_shell::piet::kurbo::Rect::from(rect).into_path(EPSILON)

@@ -13,7 +13,7 @@ impl ViewWidget for App {
         DebugContainer::new(
             Flex::builder()
                 .space_between(10.0)
-                .direction(Axis::Vertical)
+                .direction(Axis::Horizontal)
                 .vertical_direction(VerticalDirection::Down)
                 .main_axis_size(MainAxisSize::Max)
                 .cross_axis_size(CrossAxisSize::Min)
@@ -28,6 +28,8 @@ impl ViewWidget for App {
                         Size::new(100.0, 100.0),
                     ),
                     Flexible {
+                        flex: 1,
+                        fit: FlexFit::Tight,
                         child: SizedBox::from_size(
                             ColoredBox {
                                 child: Text::new("Hello world!"),
@@ -35,8 +37,6 @@ impl ViewWidget for App {
                             },
                             Size::new(100.0, 100.0),
                         ),
-                        fit: FlexFit::Tight,
-                        flex: 1,
                     },
                     SizedBox::from_size(
                         ColoredBox {
@@ -46,12 +46,12 @@ impl ViewWidget for App {
                         Size::new(100.0, 100.0),
                     ),
                     Flexible {
+                        flex: 2,
+                        fit: FlexFit::Tight,
                         child: ColoredBox {
                             child: Text::new("Hello world!"),
                             color: Color::FUCHSIA,
                         },
-                        fit: FlexFit::Tight,
-                        flex: 2,
                     },
                     Expanded::new(ColoredBox {
                         child: Text::new("Hello world!"),

@@ -1,4 +1,7 @@
-use frui::{prelude::*, render::{Constraints, Size, Offset, Rect}};
+use frui::{
+    prelude::*,
+    render::{Constraints, Offset, Rect, Size},
+};
 
 use std::{
     fmt::{Display, Formatter},

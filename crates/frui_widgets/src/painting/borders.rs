@@ -1,10 +1,10 @@
-use std::ops::{Mul, Add};
+use std::ops::{Add, Mul};
 
-use druid_shell::{piet::StrokeStyle, kurbo::BezPath};
+use druid_shell::{kurbo::BezPath, piet::StrokeStyle};
 use frui::prelude::*;
 use frui::render::Rect;
 
-use crate::{EdgeInsets};
+use crate::EdgeInsets;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BorderStyle {
@@ -12,7 +12,7 @@ pub enum BorderStyle {
     Solid,
     /// Dashed line with a gap at the start and end of the line.
     /// Follow the standard of PostScript
-    /// 
+    ///
     /// Example:
     /// A dash line with 5px solid and 5px gap, and 2px solid and 5px gap, start offset 0px
     /// ```rust
@@ -104,7 +104,7 @@ impl Mul<f64> for BorderSide {
     }
 }
 
-pub trait ShapeBorder : Add + Sized {
+pub trait ShapeBorder: Add + Sized {
     fn dimensions(&self) -> EdgeInsets;
 
     fn stroke_path(&self, rect: Rect) -> BezPath;
