@@ -1,7 +1,10 @@
 use std::ops::Mul;
 
 use druid_shell::{kurbo::Affine, piet::RenderContext};
-use frui::{prelude::*, render::{Rect, Offset, Canvas}};
+use frui::{
+    prelude::*,
+    render::{Canvas, Offset, Rect},
+};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum BlurStyle {
@@ -22,15 +25,20 @@ pub struct BoxShadow {
 
 impl BoxShadow {
     pub fn paint(&self, canvas: &mut Canvas, rect: Rect, _offset: &Offset) {
-        assert!(self.blur_style == BlurStyle::Normal, "Shadow now only supports BlurStyle::Normal blur style");
+        assert!(
+            self.blur_style == BlurStyle::Normal,
+            "Shadow now only supports BlurStyle::Normal blur style"
+        );
         let brush = canvas.solid_brush(self.color.clone());
         if self.spread_radius < rect.shortest_side() {
-            canvas.with_save(|c| {
-                c.transform(Affine::translate((self.offset.x, self.offset.y,)));
-                let rect = rect.inflate(self.spread_radius);
-                c.blurred_rect(rect.into(), self.blur_radius, &brush);
-                Ok(())
-            }).unwrap();
+            canvas
+                .with_save(|c| {
+                    c.transform(Affine::translate((self.offset.x, self.offset.y)));
+                    let rect = rect.inflate(self.spread_radius);
+                    c.blurred_rect(rect.into(), self.blur_radius, &brush);
+                    Ok(())
+                })
+                .unwrap();
         } else {
             log::warn!("Spread radius is larger than the shortest side of the rect, the shadow will not be painted");
         }

@@ -3,7 +3,7 @@ use frui::render::*;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::{TextDirection, Directional};
+use crate::{Directional, TextDirection};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct Alignment {
@@ -105,7 +105,7 @@ pub struct AlignmentDirectional {
 
 impl Directional for AlignmentDirectional {
     type Output = Alignment;
-    
+
     fn resolve(&self, text_direction: &TextDirection) -> Alignment {
         let start = match text_direction {
             TextDirection::Ltr => self.start,

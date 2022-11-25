@@ -51,7 +51,7 @@ pub struct Flex<WL: WidgetList> {
     /// If `direction` is set to [`Horizontal`](Axis::Horizontal), it specifies
     /// whether first element in `children` should be on left or right of this
     /// [`Flex`]. It also affects what `cross_axis_size` considers start/end.
-    /// 
+    ///
     /// If `text_direction` is set to `None`, `Flex` will use the value of
     /// its ancestor [`Directionality`], or default if no ancestor found.
     pub text_direction: Option<TextDirection>,
@@ -108,7 +108,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         //
         // Override child parent data to store calculated offsets.
-        
+
         self.ensure_parent_data(ctx, || FlexData::default());
 
         //
@@ -161,10 +161,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 
         for child in ctx.children() {
             let child_size = child.size();
-            let child_offset = &mut child
-                .try_parent_data_mut::<FlexData>()
-                .unwrap()
-                .offset;
+            let child_offset = &mut child.try_parent_data_mut::<FlexData>().unwrap().offset;
 
             if main_axis_flipped {
                 main_offset -= child_size.main(self.direction);
@@ -175,8 +172,11 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
                 main_offset += child_size.main(self.direction) + space_between;
             }
 
-            let cross_offset =
-                self.compute_cross_offset(child_size.cross(self.direction), cross_size, text_direction);
+            let cross_offset = self.compute_cross_offset(
+                child_size.cross(self.direction),
+                cross_size,
+                text_direction,
+            );
 
             *child_offset.cross_mut(self.direction) = cross_offset;
         }
@@ -443,7 +443,12 @@ impl<WL: WidgetList> Flex<WL> {
         size
     }
 
-    fn compute_main_offset(&self, main_size: f64, leading_space: f64, text_direction: TextDirection) -> (bool, f64) {
+    fn compute_main_offset(
+        &self,
+        main_size: f64,
+        leading_space: f64,
+        text_direction: TextDirection,
+    ) -> (bool, f64) {
         let main_offset;
         let main_axis_flipped = self.is_main_axis_flipped(text_direction);
 
@@ -456,12 +461,20 @@ impl<WL: WidgetList> Flex<WL> {
         (main_axis_flipped, main_offset)
     }
 
-    fn compute_cross_offset(&self, size: f64, total_size: f64, text_direction: TextDirection) -> f64 {
+    fn compute_cross_offset(
+        &self,
+        size: f64,
+        total_size: f64,
+        text_direction: TextDirection,
+    ) -> f64 {
         use CrossAxisAlignment::*;
 
         let available = total_size - size;
 
-        match (self.cross_axis_alignment, self.start_is_top_left(text_direction)) {
+        match (
+            self.cross_axis_alignment,
+            self.start_is_top_left(text_direction),
+        ) {
             (Start, true) | (End, false) => 0.0,
             (Start, false) | (End, true) => available,
             (Center, _) => available / 2.,

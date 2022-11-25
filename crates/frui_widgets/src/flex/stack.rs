@@ -1,5 +1,5 @@
 use crate::alignment::{Alignment, AlignmentDirectional};
-use crate::{BoxLayoutData, TextDirection, WidgetList, Directional};
+use crate::{BoxLayoutData, Directional, TextDirection, WidgetList};
 
 use frui::prelude::*;
 use frui::render::*;
@@ -203,9 +203,9 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
 
         if self.clip {
             let r = canvas.with_save(|cv| {
-                cv.clip(Into::<druid_shell::piet::kurbo::Rect>::into(Rect::from_origin_size(
-                    *offset, size
-                )));
+                cv.clip(Into::<druid_shell::piet::kurbo::Rect>::into(
+                    Rect::from_origin_size(*offset, size),
+                ));
 
                 for mut child in ctx.children() {
                     let offset = *offset + self.get_layout_offset(&child, &alignment, size);

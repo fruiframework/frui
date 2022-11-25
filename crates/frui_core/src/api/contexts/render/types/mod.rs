@@ -1,9 +1,9 @@
 mod constraints;
+mod geometry;
 mod offset;
 mod size;
-mod geometry;
 
 pub use constraints::*;
+pub use geometry::*;
 pub use offset::*;
 pub use size::*;
-pub use geometry::*;

@@ -1,4 +1,4 @@
-use frui::render::{Radius, RRect, Rect};
+use frui::render::{RRect, Radius, Rect};
 
 use crate::{Directional, TextDirection};
 
@@ -26,7 +26,12 @@ impl BorderRadius {
         BorderRadius::all(Radius::circular(radius))
     }
 
-    pub fn only(top_left: Radius, top_right: Radius, bottom_left: Radius, bottom_right: Radius) -> BorderRadius {
+    pub fn only(
+        top_left: Radius,
+        top_right: Radius,
+        bottom_left: Radius,
+        bottom_right: Radius,
+    ) -> BorderRadius {
         BorderRadius {
             top_left,
             top_right,
@@ -54,7 +59,9 @@ impl BorderRadius {
     }
 
     pub fn is_uniform(&self) -> bool {
-        self.top_left == self.top_right && self.top_left == self.bottom_left && self.top_left == self.bottom_right
+        self.top_left == self.top_right
+            && self.top_left == self.bottom_left
+            && self.top_left == self.bottom_right
     }
 
     pub fn to_rrect(&self, rect: &Rect) -> RRect {
@@ -104,5 +111,3 @@ impl Directional for BorderRadiusDirectional {
         }
     }
 }
-
-

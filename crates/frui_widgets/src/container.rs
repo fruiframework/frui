@@ -1,9 +1,7 @@
 use frui::prelude::*;
 use frui::render::*;
 
-use crate::{Decoration, DecorationPosition, TextDirection, BoxDecoration, DefaultBoxDecoration};
-
-
+use crate::{BoxDecoration, Decoration, DecorationPosition, DefaultBoxDecoration, TextDirection};
 
 #[derive(RenderWidget)]
 pub struct Container<W: Widget> {
@@ -103,15 +101,19 @@ impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
 
     fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let rect = Rect::from_origin_size(offset, ctx.size());
-        let path = self.decoration.get_clip_path(rect.into(), &TextDirection::Ltr);
+        let path = self
+            .decoration
+            .get_clip_path(rect.into(), &TextDirection::Ltr);
         if self.position == DecorationPosition::Background {
             self.decoration.paint(canvas, rect.into(), offset);
         }
-        canvas.with_save(|c| {
-            c.clip(path);
-            ctx.child(0).paint(c, offset);
-            Ok(())
-        }).unwrap();
+        canvas
+            .with_save(|c| {
+                c.clip(path);
+                ctx.child(0).paint(c, offset);
+                Ok(())
+            })
+            .unwrap();
         if self.position == DecorationPosition::Foreground {
             self.decoration.paint(canvas, rect.into(), offset);
         }

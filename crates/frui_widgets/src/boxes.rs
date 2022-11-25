@@ -98,7 +98,6 @@ impl SizedBox {
     }
 }
 
-
 #[derive(RenderWidget, Builder)]
 pub struct ColoredBox<T: Widget> {
     pub child: T,

@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Neg, Rem, Sub, BitAnd, BitOr};
+use std::ops::{Add, BitAnd, BitOr, Div, Mul, Neg, Rem, Sub};
 
 use druid_shell::kurbo::Point;
 
