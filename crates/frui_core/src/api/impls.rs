@@ -96,7 +96,7 @@ impl RenderWidget for () {
     }
 
     fn layout(&self, _: &LayoutCtx<Self>, c: Constraints) -> Size {
-        c.biggest()
+        c.smallest()
     }
 
     fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}
