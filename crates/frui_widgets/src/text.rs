@@ -12,6 +12,18 @@ pub enum TextDirection {
     Ltr,
 }
 
+impl Default for TextDirection {
+    fn default() -> Self {
+        TextDirection::Ltr
+    }
+}
+
+pub trait Directional {
+    type Output;
+
+    fn resolve(&self, text_direction: &TextDirection) -> Self::Output;
+}
+
 #[derive(RenderWidget, Builder)]
 pub struct Text<S: AsRef<str>> {
     text: S,
