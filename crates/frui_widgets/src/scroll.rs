@@ -71,8 +71,8 @@ impl<W: Widget> RenderWidget for Scroll<W> {
             return;
         }
 
-        let viewport = Rect::from_origin_size(offset, ctx.size());
-        canvas.clip(viewport);
+        let viewport = Rect::from_origin_size(*offset, ctx.size());
+        canvas.clip(druid_shell::piet::kurbo::Rect::from(viewport));
         canvas.transform(Affine::translate(-ctx.widget_state().scroll_offset));
 
         ctx.child(0).paint(canvas, offset);

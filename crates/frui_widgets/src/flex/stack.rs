@@ -1,5 +1,5 @@
 use crate::alignment::{Alignment, AlignmentDirectional};
-use crate::{AlignmentGeometry, BoxLayoutData, TextDirection, WidgetList};
+use crate::{BoxLayoutData, Directional, TextDirection, WidgetList};
 
 use frui::prelude::*;
 use frui::render::*;
@@ -11,7 +11,7 @@ pub enum StackFit {
 }
 
 #[derive(RenderWidget, Builder)]
-pub struct Stack<WL: WidgetList, A: AlignmentGeometry> {
+pub struct Stack<WL: WidgetList, A: Directional<Output = Alignment>> {
     pub children: WL,
     pub clip: bool,
     pub alignment: A,
@@ -128,7 +128,7 @@ impl Stack<(), AlignmentDirectional> {
     }
 }
 
-impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
+impl<WL: WidgetList, A: Directional<Output = Alignment>> Stack<WL, A> {
     fn get_layout_offset(&self, child: &PaintCtxOS, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(
@@ -138,7 +138,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> Stack<WL, A> {
     }
 }
 
-impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
+impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<WL, A> {
     fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
@@ -203,11 +203,8 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
 
         if self.clip {
             let r = canvas.with_save(|cv| {
-                cv.clip(Rect::new(
-                    offset.x,
-                    offset.y,
-                    offset.x + size.width,
-                    offset.y + size.height,
+                cv.clip(Into::<druid_shell::piet::kurbo::Rect>::into(
+                    Rect::from_origin_size(*offset, size),
                 ));
 
                 for mut child in ctx.children() {
@@ -227,7 +224,7 @@ impl<WL: WidgetList, A: AlignmentGeometry> RenderWidget for Stack<WL, A> {
     }
 }
 
-impl<WL: WidgetList, A: AlignmentGeometry> HitTest for Stack<WL, A> {
+impl<WL: WidgetList, A: Directional<Output = Alignment>> HitTest for Stack<WL, A> {
     fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
         if ctx.layout_box().contains(point) {
             for mut child in ctx.children().rev() {

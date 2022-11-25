@@ -22,6 +22,8 @@ pub mod prelude {
         app::runner::native::run_app,
     };
 
+    pub use crate::render::{Offset, Size};
+
     pub use druid_shell::piet::{Color, FontWeight};
 
     // Macros exports.
@@ -40,7 +42,7 @@ pub mod render {
 
     pub use druid_shell::{kurbo, piet};
     pub use druid_shell::{
-        kurbo::{Affine, Point, Rect, Vec2},
+        kurbo::{Affine, Point, Rect as DruidRect, Vec2},
         piet::{Color, RenderContext},
     };
 }
