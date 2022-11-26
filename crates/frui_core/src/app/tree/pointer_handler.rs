@@ -77,11 +77,11 @@ impl PointerHandler {
         event: &PointerEvent,
     ) {
         let ctx = HitTestCtxOS::new(&node, new_hit_entries.clone(), Affine::default());
-        node.widget().raw().hit_test_os(ctx.clone(), event.pos());
+        node.widget().hit_test_os(ctx.clone(), event.pos());
     }
 
     fn handle_event(&self, node: &WidgetNodeRef, event: PointerEvent) {
         let ctx = HitTestCtxOS::new(node, Rc::new(RefCell::default()), Affine::default());
-        node.widget().raw().handle_event_os(ctx.clone(), &event);
+        node.widget().handle_event_os(ctx.clone(), &event);
     }
 }

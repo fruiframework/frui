@@ -122,9 +122,7 @@ impl druid_shell::piet::RenderContext for Canvas<'_> {
         todo!()
     }
 
-    fn clip(&mut self, shape: impl druid_shell::kurbo::Shape) {
-        todo!()
-    }
+    fn clip(&mut self, shape: impl druid_shell::kurbo::Shape) {}
 
     fn text(&mut self) -> &mut Self::Text {
         todo!()
