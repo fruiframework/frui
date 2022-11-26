@@ -8,10 +8,7 @@ use super::{
 };
 
 use crate::{
-    app::{
-        runner::window_handler::APP_HANDLE,
-        tree::{WidgetNode, WidgetNodeRef},
-    },
+    app::{runner::window_handler::APP_HANDLE, tree::WidgetNodeRef},
     prelude::{InheritedState, InheritedWidget, Widget, WidgetState},
 };
 
@@ -90,13 +87,14 @@ impl LayoutCtxOS {
     }
 
     pub fn layout(&self, constraints: Constraints) -> Size {
-        let widget = self.node.widget().clone();
-        let size = widget.raw().layout(self.clone(), constraints);
+        let widget = self.node.widget();
+
+        let size = widget.layout(self.clone(), constraints);
 
         if cfg!(debug_assertions) {
             if size > constraints.biggest() {
-                if widget.raw().debug_name_short() != "DebugContainer" {
-                    log::warn!("`{}` overflowed", widget.raw().debug_name_short());
+                if widget.debug_name_short() != "DebugContainer" {
+                    log::warn!("`{}` overflowed", widget.debug_name_short());
                 }
             }
         }
@@ -125,7 +123,7 @@ impl LayoutCtxOS {
     fn try_child(&self, index: usize) -> Option<LayoutCtxOS> {
         let child = self.node.children().get(index)?;
 
-        let node = WidgetNode::node_ref(child);
+        let node = unsafe { WidgetNodeRef::new(*child) };
 
         Some(LayoutCtxOS::new(node))
     }

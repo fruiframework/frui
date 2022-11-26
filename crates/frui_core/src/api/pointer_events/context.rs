@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use druid_shell::kurbo::{Affine, Point};
 
 use crate::app::tree::pointer_handler::HitTestEntries;
-use crate::app::tree::{WidgetNode, WidgetNodeRef};
+use crate::app::tree::WidgetNodeRef;
 use crate::prelude::Widget;
 use crate::render::*;
 
@@ -51,7 +51,7 @@ impl HitTestCtxOS {
 
     pub fn child(&self, index: usize) -> HitTestCtxOS {
         HitTestCtxOS {
-            node: WidgetNode::node_ref(&self.node.children()[index]),
+            node: unsafe { WidgetNodeRef::new(self.node.children()[index]) },
             hit_entries: self.hit_entries.clone(),
             affine: self.affine,
         }
@@ -60,15 +60,14 @@ impl HitTestCtxOS {
     pub fn children<'a>(&'a mut self) -> ChildrenIter<'a> {
         self.node.children().iter().map(|child| {
             let mut r = self.clone();
-            r.node = WidgetNode::node_ref(child);
+            r.node = unsafe { WidgetNodeRef::new(*child) };
             r
         })
     }
 
     /// Add comment.
     pub fn hit_test(&mut self, point: Point) -> bool {
-        let widget = self.node.widget().clone();
-        widget.raw().hit_test_os(self.clone(), point)
+        self.node.widget().hit_test_os(self.clone(), point)
     }
 
     /// Add comment.
@@ -85,12 +84,11 @@ impl HitTestCtxOS {
     /// Add comment.
     pub fn hit_test_with_transform(&mut self, point: Point, transform: Affine) -> bool {
         let mut ctx = self.clone();
-        let widget = self.node.widget().clone();
 
         let point_after = transform * point;
         ctx.affine = transform * self.affine;
 
-        widget.raw().hit_test_os(ctx, point_after)
+        self.node.widget().hit_test_os(ctx, point_after)
     }
 
     pub fn layout_box(&self) -> Size {

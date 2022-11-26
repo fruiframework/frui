@@ -1,10 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    app::{
-        runner::Canvas,
-        tree::{WidgetNode, WidgetNodeRef},
-    },
+    app::{runner::Canvas, tree::WidgetNodeRef},
     prelude::Widget,
 };
 
@@ -83,11 +80,7 @@ impl PaintCtxOS {
         let local_offset = *offset - self.parent_offset;
         self.node.borrow_mut().render_data.local_offset = local_offset;
 
-        self.node
-            .widget()
-            .clone()
-            .raw()
-            .paint(self.clone(), piet, offset);
+        self.node.widget().paint(self.clone(), piet, offset);
     }
 
     #[track_caller]
@@ -99,7 +92,7 @@ impl PaintCtxOS {
             .expect("specified node didn't have child at that index");
 
         PaintCtxOS {
-            node: WidgetNode::node_ref(child),
+            node: unsafe { WidgetNodeRef::new(*child) },
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         }
@@ -107,7 +100,7 @@ impl PaintCtxOS {
 
     pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
         self.node.children().iter().map(|c| PaintCtxOS {
-            node: WidgetNode::node_ref(c),
+            node: unsafe { WidgetNodeRef::new(*c) },
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         })
