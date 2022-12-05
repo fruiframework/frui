@@ -8,7 +8,7 @@ use super::{
 };
 
 use crate::{
-    app::{runner::window_handler::APP_HANDLE, tree::WidgetNodeRef},
+    app::{runner::window_handler::APP_HANDLE, tree::NodeRef},
     prelude::{InheritedState, InheritedWidget, Widget, WidgetState},
 };
 
@@ -51,7 +51,7 @@ impl<T> LayoutCtx<T> {
 }
 
 impl<W: Widget> RenderExt<W> for LayoutCtx<W> {
-    fn node(&self) -> &WidgetNodeRef {
+    fn node(&self) -> &NodeRef {
         &self.ctx.node
     }
 }
@@ -72,17 +72,17 @@ impl<T> std::ops::DerefMut for LayoutCtx<T> {
 
 #[derive(Clone)]
 pub struct LayoutCtxOS {
-    node: WidgetNodeRef,
+    node: NodeRef,
 }
 
 impl RenderOSExt for LayoutCtxOS {
-    fn node(&self) -> &WidgetNodeRef {
+    fn node(&self) -> &NodeRef {
         &self.node
     }
 }
 
 impl LayoutCtxOS {
-    pub(crate) fn new(node: WidgetNodeRef) -> Self {
+    pub(crate) fn new(node: NodeRef) -> Self {
         Self { node }
     }
 
@@ -123,7 +123,7 @@ impl LayoutCtxOS {
     fn try_child(&self, index: usize) -> Option<LayoutCtxOS> {
         let child = self.node.children().get(index)?;
 
-        let node = unsafe { WidgetNodeRef::new(*child) };
+        let node = unsafe { NodeRef::new(*child) };
 
         Some(LayoutCtxOS::new(node))
     }

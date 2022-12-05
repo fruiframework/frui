@@ -10,7 +10,7 @@ use crate::{
     api::{pointer_events::events::PointerEvent, WidgetPtr},
     app::{
         listeners::keyboard::KEYBOARD_EVENT_LISTENERS,
-        tree::{WidgetNodeRef, WidgetTree},
+        tree::{NodeRef, WidgetTree},
         TEXT_FACTORY,
     },
     prelude::Widget,
@@ -24,7 +24,7 @@ thread_local! {
 }
 
 thread_local! {
-    pub(crate) static NEED_REBUILD: Mutex<Vec<WidgetNodeRef>>  = Mutex::new(Vec::with_capacity(100));
+    pub(crate) static NEED_REBUILD: Mutex<Vec<NodeRef>>  = Mutex::new(Vec::with_capacity(100));
 }
 
 pub struct WindowHandler {

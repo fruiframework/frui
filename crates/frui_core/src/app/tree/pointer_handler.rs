@@ -4,9 +4,9 @@ use druid_shell::kurbo::Affine;
 
 use crate::prelude::{context::HitTestCtxOS, events::PointerExit, PointerEvent};
 
-use super::WidgetNodeRef;
+use super::NodeRef;
 
-pub type HitTestEntries = Rc<RefCell<HashMap<WidgetNodeRef, Affine>>>;
+pub type HitTestEntries = Rc<RefCell<HashMap<NodeRef, Affine>>>;
 
 #[derive(Default)]
 pub struct PointerHandler {
@@ -17,7 +17,7 @@ pub struct PointerHandler {
 }
 
 impl PointerHandler {
-    pub fn handle_pointer_event(&mut self, root: WidgetNodeRef, event: PointerEvent) {
+    pub fn handle_pointer_event(&mut self, root: NodeRef, event: PointerEvent) {
         match event {
             PointerEvent::PointerDown(_) => {
                 self.hit_test(root, &self.pointer_down_results, &event);
@@ -70,17 +70,12 @@ impl PointerHandler {
         }
     }
 
-    fn hit_test(
-        &self,
-        node: WidgetNodeRef,
-        new_hit_entries: &HitTestEntries,
-        event: &PointerEvent,
-    ) {
+    fn hit_test(&self, node: NodeRef, new_hit_entries: &HitTestEntries, event: &PointerEvent) {
         let ctx = HitTestCtxOS::new(&node, new_hit_entries.clone(), Affine::default());
         node.widget().hit_test_os(ctx.clone(), event.pos());
     }
 
-    fn handle_event(&self, node: &WidgetNodeRef, event: PointerEvent) {
+    fn handle_event(&self, node: &NodeRef, event: PointerEvent) {
         let ctx = HitTestCtxOS::new(node, Rc::new(RefCell::default()), Affine::default());
         node.widget().handle_event_os(ctx.clone(), &event);
     }

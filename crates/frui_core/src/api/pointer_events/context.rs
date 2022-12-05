@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use druid_shell::kurbo::{Affine, Point};
 
 use crate::app::tree::pointer_handler::HitTestEntries;
-use crate::app::tree::WidgetNodeRef;
+use crate::app::tree::NodeRef;
 use crate::prelude::Widget;
 use crate::render::*;
 
@@ -13,7 +13,7 @@ pub struct HitTestCtx<W> {
 }
 
 impl<W: Widget> RenderExt<W> for HitTestCtx<W> {
-    fn node(&self) -> &WidgetNodeRef {
+    fn node(&self) -> &NodeRef {
         &self.inner.node
     }
 }
@@ -29,7 +29,7 @@ impl<W> HitTestCtx<W> {
 
 #[derive(Clone)]
 pub struct HitTestCtxOS {
-    pub(crate) node: WidgetNodeRef,
+    pub(crate) node: NodeRef,
     /// All affine transformations applied to point at this depth.
     pub(crate) affine: Affine,
     /// All widgets that got hit and registered for pointer events.
@@ -37,11 +37,7 @@ pub struct HitTestCtxOS {
 }
 
 impl HitTestCtxOS {
-    pub(crate) fn new(
-        node: &WidgetNodeRef,
-        hit_entries: HitTestEntries,
-        affine: Affine,
-    ) -> HitTestCtxOS {
+    pub(crate) fn new(node: &NodeRef, hit_entries: HitTestEntries, affine: Affine) -> HitTestCtxOS {
         Self {
             node: node.clone(),
             hit_entries,
@@ -51,7 +47,7 @@ impl HitTestCtxOS {
 
     pub fn child(&self, index: usize) -> HitTestCtxOS {
         HitTestCtxOS {
-            node: unsafe { WidgetNodeRef::new(self.node.children()[index]) },
+            node: unsafe { NodeRef::new(self.node.children()[index]) },
             hit_entries: self.hit_entries.clone(),
             affine: self.affine,
         }
@@ -60,7 +56,7 @@ impl HitTestCtxOS {
     pub fn children<'a>(&'a mut self) -> ChildrenIter<'a> {
         self.node.children().iter().map(|child| {
             let mut r = self.clone();
-            r.node = unsafe { WidgetNodeRef::new(*child) };
+            r.node = unsafe { NodeRef::new(*child) };
             r
         })
     }

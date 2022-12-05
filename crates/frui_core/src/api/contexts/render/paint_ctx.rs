@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    app::{runner::Canvas, tree::WidgetNodeRef},
+    app::{runner::Canvas, tree::NodeRef},
     prelude::Widget,
 };
 
@@ -22,7 +22,7 @@ impl<T> PaintCtx<T> {
 }
 
 impl<W: Widget> RenderExt<W> for PaintCtx<W> {
-    fn node(&self) -> &WidgetNodeRef {
+    fn node(&self) -> &NodeRef {
         &self.node
     }
 }
@@ -43,7 +43,7 @@ impl<T> std::ops::DerefMut for PaintCtx<T> {
 
 #[derive(Clone)]
 pub struct PaintCtxOS {
-    node: WidgetNodeRef,
+    node: NodeRef,
     // Following are used to correctly register local transformation of the
     // offset. It is used to automatically transform point during hit testing.
     /// (global)
@@ -53,13 +53,13 @@ pub struct PaintCtxOS {
 }
 
 impl RenderOSExt for PaintCtxOS {
-    fn node(&self) -> &WidgetNodeRef {
+    fn node(&self) -> &NodeRef {
         &self.node
     }
 }
 
 impl PaintCtxOS {
-    pub(crate) fn new(node: WidgetNodeRef) -> Self {
+    pub(crate) fn new(node: NodeRef) -> Self {
         Self {
             node,
             offset: Offset::default(),
@@ -92,7 +92,7 @@ impl PaintCtxOS {
             .expect("specified node didn't have child at that index");
 
         PaintCtxOS {
-            node: unsafe { WidgetNodeRef::new(*child) },
+            node: unsafe { NodeRef::new(*child) },
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         }
@@ -100,7 +100,7 @@ impl PaintCtxOS {
 
     pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
         self.node.children().iter().map(|c| PaintCtxOS {
-            node: unsafe { WidgetNodeRef::new(*c) },
+            node: unsafe { NodeRef::new(*c) },
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         })
