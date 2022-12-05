@@ -26,7 +26,7 @@ impl<W: Widget, F: Fn(KeyEvent)> WidgetState for KeyboardEventDetector<W, F> {
 
     fn unmount(&self, cx: BuildCx<Self>) {
         let mut key = cx.state_mut();
-        KEYBOARD_EVENT_LISTENERS.with(|listeners| listeners.borrow_mut().unregister(&key.unwrap()));
+        KEYBOARD_EVENT_LISTENERS.with(|listeners| listeners.borrow_mut().unregister(key.unwrap()));
         *key = None;
     }
 }

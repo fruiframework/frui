@@ -391,7 +391,7 @@ impl NodeRef {
         let widget = self.borrow().widget_ptr.clone();
         let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCx>(self.ptr.get()) };
 
-        widget.mount(context)
+        widget.unmount(context)
     }
 
     /// Drop this widget [`Node`] and all its descendants.

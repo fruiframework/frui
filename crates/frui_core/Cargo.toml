@@ -12,6 +12,7 @@ edition = "2021"
 frui_macros = { path = "../frui_macros", version = "0.0.1" }
 
 log = "0.4.17"
+slotmap = "1.0.6"
 simplelog = "0.12.0"
 once_cell = "1.13.0"
 druid-shell = { git = "https://github.com/linebender/druid.git", rev = "ac3815114c65d46fd388431d3013a9412501916b" }
