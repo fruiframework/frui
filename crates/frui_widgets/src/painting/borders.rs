@@ -81,7 +81,10 @@ impl BorderSide {
 
     pub fn to_stroke_style(&self) -> Option<StrokeStyle> {
         if let BorderStyle::Dash(ref dash, offset) = self.style {
-            Some(StrokeStyle::new().dash(dash.clone(), offset))
+            let mut stroke = StrokeStyle::new();
+            stroke.set_dash_pattern(dash.clone());
+            stroke.set_dash_offset(offset);
+            Some(stroke)
         } else {
             None
         }

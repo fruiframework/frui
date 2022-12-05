@@ -13,7 +13,7 @@ frui = { path = "../frui_core", package = "frui_core", version = "0.0.1" }
 frui_macros = { path = "../frui_macros", package = "frui_macros", version = "0.0.1" }
 
 log = "0.4.17"
-druid-shell = "0.7.0"
+druid-shell = { git = "https://github.com/linebender/druid.git", rev = "ac3815114c65d46fd388431d3013a9412501916b" }
 
 [features]
 miri = []
