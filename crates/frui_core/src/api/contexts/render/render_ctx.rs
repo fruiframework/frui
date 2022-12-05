@@ -121,9 +121,9 @@ impl LayoutCtxOS {
     }
 
     fn try_child(&self, index: usize) -> Option<LayoutCtxOS> {
-        let child = self.node.children().get(index)?;
+        let child = self.node.child(index)?;
 
-        let node = unsafe { NodeRef::new(*child) };
+        let node = unsafe { NodeRef::new(child) };
 
         Some(LayoutCtxOS::new(node))
     }

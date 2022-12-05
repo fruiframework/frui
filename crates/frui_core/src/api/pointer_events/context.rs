@@ -54,9 +54,9 @@ impl HitTestCtxOS {
     }
 
     pub fn children<'a>(&'a mut self) -> ChildrenIter<'a> {
-        self.node.children().iter().map(|child| {
+        self.node.children().into_iter().map(|child| {
             let mut r = self.clone();
-            r.node = unsafe { NodeRef::new(*child) };
+            r.node = unsafe { NodeRef::new(child) };
             r
         })
     }

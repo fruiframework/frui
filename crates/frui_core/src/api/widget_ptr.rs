@@ -10,7 +10,7 @@ use super::{
 #[derive(Clone)]
 pub struct WidgetPtr<'a> {
     /// Reference to the exact type of this widget. Used to properly dispatch methods.
-    kind: &'a dyn RawWidget,
+    pub(crate) kind: &'a (dyn RawWidget + 'a),
 
     /// Whether this pointer references or owns a widget. Used to properly drop it.
     pub(crate) owned: Option<*mut (dyn Widget + 'a)>,
@@ -110,7 +110,7 @@ impl<'a> WidgetPtr<'a> {
     //
     //
 
-    pub fn raw(&self) -> &dyn RawWidget {
+    pub fn raw<'b>(&'b self) -> &'b (dyn RawWidget + 'b) {
         self.kind
     }
 
