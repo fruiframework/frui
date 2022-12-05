@@ -85,7 +85,11 @@ impl druid_shell::piet::RenderContext for Canvas<'_> {
         todo!()
     }
 
-    fn clear(&mut self, color: druid_shell::piet::Color) {
+    fn clear(
+        &mut self,
+        region: impl Into<Option<druid_shell::kurbo::Rect>>,
+        color: druid_shell::piet::Color,
+    ) {
         todo!()
     }
 
@@ -174,6 +178,13 @@ impl druid_shell::piet::RenderContext for Canvas<'_> {
         dst_rect: impl Into<druid_shell::kurbo::Rect>,
         interp: druid_shell::piet::InterpolationMode,
     ) {
+        todo!()
+    }
+
+    fn capture_image_area(
+        &mut self,
+        src_rect: impl Into<druid_shell::kurbo::Rect>,
+    ) -> Result<Self::Image, druid_shell::piet::Error> {
         todo!()
     }
 

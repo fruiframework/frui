@@ -4,7 +4,6 @@ use std::{
     collections::{HashMap, HashSet},
     hash::Hash,
     rc::Rc,
-    sync::Arc,
 };
 
 use druid_shell::IdleToken;
@@ -16,7 +15,7 @@ use crate::{
         IntoWidgetPtr, WidgetPtr,
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
-    macro_exports::PaintCtxOS,
+    macro_exports::{PaintCtxOS, RawWidget},
     render::{Canvas, Constraints, Offset, Size},
 };
 
@@ -29,9 +28,9 @@ pub(crate) struct WidgetTree {
     /// Child of this node is the `root_node`.
     ///
     /// [`InheritedWidget`]: crate::prelude::InheritedWidget
-    dummy_node: *mut Node,
+    dummy_node: NodeRef,
 
-    root_node: *mut Node,
+    root_node: NodeRef,
     pointer_handler: PointerHandler,
 }
 
@@ -39,14 +38,9 @@ impl WidgetTree {
     pub fn new(root_widget: WidgetPtr) -> Self {
         let dummy_node = Node::default();
 
-        let root_node = unsafe {
-            let root = Node::new(root_widget, None, NodeRef::new(dummy_node));
+        let root_node = Node::new(root_widget, None, dummy_node.clone());
 
-            // Make `root_node` child of `dummy_node`.
-            (&mut *dummy_node.children_ptr_mut()).push(root);
-
-            root
-        };
+        dummy_node.borrow_mut().children.push(root_node.clone());
 
         Self {
             root_node,
@@ -56,20 +50,22 @@ impl WidgetTree {
     }
 
     pub fn layout(&mut self, constraints: Constraints) {
-        LayoutCtxOS::new(self.root_node()).layout(constraints);
+        LayoutCtxOS::new(self.root_node.clone()).layout(constraints);
     }
 
     pub fn paint(&mut self, piet: &mut Canvas) {
-        PaintCtxOS::new(self.root_node()).paint(piet, &Offset::default());
+        PaintCtxOS::new(self.root_node.clone()).paint(piet, &Offset::default());
     }
 
     pub fn handle_pointer_event(&mut self, event: PointerEvent) {
         self.pointer_handler
-            .handle_pointer_event(self.root_node(), event)
+            .handle_pointer_event(self.root_node.clone(), event)
     }
+}
 
-    fn root_node(&self) -> NodeRef {
-        unsafe { NodeRef::new(self.root_node) }
+impl Drop for WidgetTree {
+    fn drop(&mut self) {
+        self.dummy_node.drop();
     }
 }
 
@@ -79,41 +75,13 @@ impl Default for WidgetTree {
     }
 }
 
-impl Drop for WidgetTree {
-    fn drop(&mut self) {
-        // Safety: `drop` is called only once here.
-        unsafe { Node::drop(self.dummy_node) };
-    }
-}
-
-#[derive(Clone)]
-pub struct IsAlive(pub Arc<Cell<bool>>);
-
-impl IsAlive {
-    pub fn new() -> Self {
-        IsAlive(Arc::new(Cell::new(true)))
-    }
-}
-
-pub(crate) enum Inheritance {
-    /// This is the `InheritedWidget`.
-    Inheritor {
-        /// This `HashMap` contains all `InheritedWidget` ancestors that are accessible
-        /// from this subtree.
-        active_inheritors: HashMap<TypeId, NodeRef>,
-        /// This `HashSet` contains all descendant widgets which inherit from this widget.
-        inheriting_widgets: HashSet<NodeRef>,
-    },
-    /// This is any widget that inherits from `InheritedWidget` ancestor.
-    Inheritee {
-        /// This is the closest `InheritedWidget` ancestor of this widget.
-        inherited_ancestor: NodeRef,
-        /// This is used to efficiently unregister this widget from all inherited ancestors.
-        inherits_from: HashSet<NodeRef>,
-    },
-}
-
 pub(crate) struct NodeInner {
+    pub is_alive: Rc<Cell<*mut Node>>,
+
+    widget_ptr: WidgetPtr<'static>,
+    parent: Option<NodeRef>,
+    children: Vec<NodeRef>,
+
     pub dirty: bool,
     pub state: Box<dyn Any>,
     pub render_data: RenderData,
@@ -121,81 +89,63 @@ pub(crate) struct NodeInner {
 }
 
 pub(crate) struct Node {
-    widget_ptr: WidgetPtr<'static>,
-
-    context: RawBuildCtx,
-    inner: RefCell<NodeInner>,
-
-    parent: Option<NodeRef>,
-    children: Vec<*mut Node>,
+    pub inner: RefCell<NodeInner>,
 }
 
 impl Node {
-    /// Build a subtree of widgets from given `widget`.
-    ///
-    /// Safety: `widget` must be valid.
-    unsafe fn new(
-        widget: WidgetPtr,
-        parent: Option<NodeRef>,
-        mut inherited_ancestor: NodeRef,
-    ) -> *mut Node {
+    fn new(widget: WidgetPtr, parent: Option<NodeRef>, mut inherited_ancestor: NodeRef) -> NodeRef {
         // We manage lifetime of widgets manually.
-        let widget_ptr = std::mem::transmute::<WidgetPtr, WidgetPtr<'static>>(widget.clone());
+        let widget_ptr =
+            unsafe { std::mem::transmute::<WidgetPtr, WidgetPtr<'static>>(widget.clone()) };
 
-        let this = Box::into_raw(Box::new(Node {
-            widget_ptr,
-            context: RawBuildCtx {
-                node: NodeRef {
-                    is_alive: Rc::new(Cell::new(true)),
-                    ptr: std::ptr::null_mut(), // <- Null
-                },
-            },
+        let node = Box::into_raw(Box::new(Node {
             inner: RefCell::new(NodeInner {
+                is_alive: Rc::new(Cell::new(std::ptr::null_mut())),
+                widget_ptr,
+                parent,
+                children: Vec::new(),
                 dirty: false,
                 state: widget.raw().create_state(),
-                render_data: RenderData::new(&widget),
+                render_data: RenderData::new(widget.raw()),
                 inheritance: Inheritance::new(&widget, &inherited_ancestor),
             }),
-            parent,
-            children: Vec::new(),
         }));
 
-        // We access fields of `WidgetNode` in this way to not pop tag for
-        // `context.node_ref.ptr` pointer from the borrow stack.
-        let (inner_ref, context_ref_mut, children_ref_mut) = (
-            &*this.inner_ptr(),
-            &mut *this.context_ptr_mut(),
-            &mut *this.children_ptr_mut(),
-        );
+        let node_ref = {
+            let is_alive = unsafe { (&*node).inner.borrow().is_alive.clone() };
 
-        context_ref_mut.node.ptr = this; // <- Here we override that null
+            is_alive.set(node); // <- Here we override that null
 
-        let node_ref = NodeRef::new(this);
+            NodeRef { ptr: is_alive }
+        };
 
         //
         // Insert this node to `active_inheritors`.
 
-        let mut inner = inner_ref.borrow_mut();
-
         if let Inheritance::Inheritor {
             ref mut active_inheritors,
             ..
-        } = inner.inheritance
+        } = node_ref.borrow_mut().inheritance
         {
             inherited_ancestor = node_ref.clone();
             active_inheritors.insert(widget.inherited_key(), node_ref.clone());
         }
 
-        drop(inner);
+        //
+        // Mount state.
+
+        node_ref.mount();
 
         //
         // Build children.
 
-        // From this point on, `WidgetNode` cannot be accessed mutably or otherwise its
-        // pointer tag will be popped and `context` invalidated.
+        // From this point on, `Node` cannot be accessed mutably until any
+        // references to it are gone (one such reference is now `BuildCx`).
+
+        let cx = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(node) };
 
         let children = widget
-            .build(&*this.context_ptr())
+            .build(cx)
             .into_iter()
             .map(|child_widget_ptr| {
                 Node::new(
@@ -206,41 +156,83 @@ impl Node {
             })
             .collect::<Vec<_>>();
 
-        *children_ref_mut = children;
+        node_ref.borrow_mut().children = children;
 
-        Node::mount(this);
+        node_ref
+    }
+}
 
-        this
+/// Basically `Rc<Node>` but allows [`Node`] to be deallocated separately from
+/// [`NodeRef`] itself (`*mut Node == NULL` case) which is used to optimize
+/// rebuilds.
+#[derive(Clone)]
+pub struct NodeRef {
+    pub(crate) ptr: Rc<Cell<*mut Node>>,
+}
+
+impl NodeRef {
+    #[track_caller]
+    pub(crate) fn borrow(&self) -> Ref<'_, NodeInner> {
+        assert!(self.is_alive());
+        unsafe { (&*self.ptr.get()).inner.borrow() }
     }
 
+    #[track_caller]
+    pub(crate) fn borrow_mut(&self) -> RefMut<'_, NodeInner> {
+        assert!(self.is_alive());
+        unsafe { (&*self.ptr.get()).inner.borrow_mut() }
+    }
+
+    pub fn is_alive(&self) -> bool {
+        !self.ptr.get().is_null()
+    }
+
+    #[track_caller]
+    pub(crate) fn widget(&self) -> &dyn RawWidget {
+        assert!(self.is_alive());
+        self.borrow().widget_ptr.kind
+    }
+
+    #[track_caller]
+    pub(crate) fn child(&self, n: usize) -> Option<NodeRef> {
+        assert!(self.is_alive());
+        self.borrow().children.get(n).map(|v| v.clone())
+    }
+
+    #[track_caller]
+    pub(crate) fn children(&self) -> Vec<NodeRef> {
+        assert!(self.is_alive());
+        self.borrow().children.clone()
+    }
+
+    #[allow(unused)]
+    #[track_caller]
+    pub fn debug_name_short(&self) -> &'static str {
+        self.widget().debug_name_short()
+    }
+}
+
+/// Tree editing methods.
+
+impl NodeRef {
     /// Update subtree by rebuilding, starting at this node.
-    ///
-    /// Safety: `s` must be valid.
-    pub unsafe fn update_subtree(s: *mut Node) {
-        // We access fields of `WidgetNode` in this way to not pop tag for
-        // `context.node_ref.ptr` pointer from the borrow stack.
-        let (inner_ref, widget_ref, context_ref, old_children_ref) = (
-            &*s.inner_ptr(),
-            &*s.widget_ptr(),
-            &*s.context_ptr(),
-            &mut *s.children_ptr_mut(),
-        );
+    pub fn update_subtree(&self) {
+        assert!(self.is_alive());
 
-        // Todo: In the calling function, check that given WidgetNode of passed `widget`
-        // is indeed `dirty`, as it may have been already updated by a previous call to
-        // this function.
-        inner_ref.borrow_mut().dirty = false;
+        // Todo: In the calling function, check that given WidgetNode of passed
+        // `widget` is indeed `dirty`, as it may have been already updated by
+        // previous call to this function.
+        self.borrow_mut().dirty = false;
 
-        let inherited_ancestor = &inner_ref
-            .borrow_mut()
-            .inheritance
-            .inherited_ancestor(&context_ref.node);
+        let inherited_ancestor = &self.borrow().inheritance.inherited_ancestor(self);
 
-        let mut old_children = std::mem::take(old_children_ref)
+        let mut old_children = std::mem::take(&mut self.borrow_mut().children)
             .into_iter()
             .map(|c| Some(c))
             .collect::<Vec<_>>();
-        let new_children_build = widget_ref.build(context_ref);
+
+        let cx = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(self.ptr.get()) };
+        let new_children_build = self.widget().build(cx);
         let mut new_children = Vec::with_capacity(new_children_build.len());
 
         for (n, new_child) in new_children_build.into_iter().enumerate() {
@@ -250,26 +242,22 @@ impl Node {
                     let old_child = std::mem::take(old_children.get_mut(n).unwrap()).unwrap();
 
                     // Try to update old_child with new_child.
-                    new_children.push(Node::update(old_child, new_child));
+                    new_children.push(old_child.update(new_child));
                 } else {
                     // Build new_child.
-                    let child = Node::new(
-                        new_child,
-                        Some(context_ref.node.clone()),
-                        inherited_ancestor.clone(),
-                    );
+                    let child =
+                        Node::new(new_child, Some(self.clone()), inherited_ancestor.clone());
 
                     new_children.push(child);
                 }
             } else {
                 if let Some(Some(old_child)) = old_children.get(n) {
-                    if (&*old_child.widget_ptr()).has_key() {
+                    let old_widget_ptr = old_child.borrow().widget_ptr.clone();
+
+                    if old_widget_ptr.has_key() {
                         // Build new_child.
-                        let child = Node::new(
-                            new_child,
-                            Some(context_ref.node.clone()),
-                            inherited_ancestor.clone(),
-                        );
+                        let child =
+                            Node::new(new_child, Some(self.clone()), inherited_ancestor.clone());
 
                         new_children.push(child);
                     } else {
@@ -277,15 +265,12 @@ impl Node {
                         let old_child = std::mem::take(old_children.get_mut(n).unwrap()).unwrap();
 
                         // Try to update old_child with new_child.
-                        new_children.push(Node::update(old_child, new_child));
+                        new_children.push(old_child.update(new_child));
                     }
                 } else {
                     // Build new_child.
-                    let child = Node::new(
-                        new_child,
-                        Some(context_ref.node.clone()),
-                        inherited_ancestor.clone(),
-                    );
+                    let child =
+                        Node::new(new_child, Some(self.clone()), inherited_ancestor.clone());
 
                     new_children.push(child);
                 }
@@ -295,214 +280,175 @@ impl Node {
         // Drop children which didn't get reused.
         for old_child in old_children.into_iter() {
             if let Some(old_child) = old_child {
-                Node::drop(old_child);
+                old_child.drop();
             }
         }
 
         // Update children keys.
-        *old_children_ref = new_children;
+        self.borrow_mut().children = new_children;
     }
 
-    /// Safety:
-    ///
-    /// `s` and `new_widget` must be valid.
-    pub unsafe fn update(s: *mut Node, new_widget: WidgetPtr) -> *mut Node {
-        // We manage lifetime of widgets manually.
-        let new_widget = std::mem::transmute::<WidgetPtr, WidgetPtr<'static>>(new_widget);
+    pub fn update(&self, new_widget: WidgetPtr) -> NodeRef {
+        assert!(self.is_alive());
 
-        // We access fields of `WidgetNode` in this way to not pop tag for `context.node_ref.ptr`
-        // pointer from the borrow stack.
-        let (widget_ref, parent_ref, context_ref) = (
-            &*s.widget_ptr(), //
-            &*s.parent_ptr(),
-            &*s.context_ptr(),
-        );
+        // We manage lifetime of widgets manually.
+        let new_widget =
+            unsafe { std::mem::transmute::<WidgetPtr, WidgetPtr<'static>>(new_widget) };
+
+        let old_widget = self.borrow().widget_ptr.clone();
 
         // If widgets share the same generic-independent TypeId and types of states of both
         // widgets match (most likely a bug if they don't) we preserve that widget's state.
-        if widget_ref.can_update(&new_widget) {
+        if old_widget.can_update(&new_widget) {
             // Safety:
             //
             // We compare and reuse configurations of widgets to optimize unnecessary view
             // rebuilds if old and new widgets are identical.
             //
             // This operation must be performed with special scrutiny, since preserving
-            // pointers to a widget which we dropped earlier will lead to use after free.
+            // pointers to widgets which were dropped earlier will cause use-after-free.
             //
             // For that reason the following `eq` method uses our own `CheapEq`
             // implementation which ensures that each widget is correctly compared (that
-            // includes fields that are references).
+            // includes fields which are references/pointers).
             //
-            // To be precise, we can compare and reuse widgets only if they are either:
-            // - owned and equal
-            // - borrowed, equal and have the same pointer addresses
+            // To be exact, we can reuse widgets if they either:
+            // - 'static, or
+            // - non-'static, but then every reference and pointer in such widget's
+            //   structure has to have identical pointer addresses.
             //
-            // Second condition comes from the fact that two borrows of different pointer
-            // addresses (1) reference different widgets or (2) reference the same widgets
-            // where one of them is owned by a widget that got deallocated.
+            // Note/Todo:
             //
-            // Note:
-            //
-            // We could theoretically reuse borrowed widgets of different pointer addresses
-            // if they are ZST, however it is currently treated as UB to dereference ZST to
-            // deallocated memory, so we don't do it.
-            if widget_ref.eq(&new_widget) {
+            // We can reuse "non-'static" widgets of different pointer addresses if those
+            // are ZST. However those ZST-s may point to deallocated memory (and it is
+            // considered UB to dereference such pointers, even if they point to ZST). To
+            // work around this, we can use `NonNull::dangling()` (which will effectively
+            // return 0x1 pointer address which is ?always safe to dereference for ZST-s?).
+            // Then we just need to update pointer address in `&dyn RawWidget` with that
+            // above and then we will be able optimize ZST rebuilds.
+            if old_widget.eq(&new_widget) {
                 // Safety: Since we reuse old widget ptr, we can drop the newly created one.
-                WidgetPtr::drop(new_widget);
+                unsafe { WidgetPtr::drop(&new_widget) };
 
-                return s;
+                return self.clone();
             } else {
                 // Unmount old widget.
-                Node::unmount(s);
+                self.unmount();
 
                 // Safety:
                 //
                 // Old pointer is still alive (and didn't move, since it is either boxed or
                 // it points to a value in ascenstor widget), so it is fine to unmount/drop
                 // children of this widget (in `update_subtree` below).
-                //
-                // Additionally, we don't access `widget_ref` after this call, so we don't
-                // cause aliasing UB.
-                let old_widget_ptr = std::mem::replace(&mut *s.widget_ptr_mut(), new_widget);
+                let old_widget_ptr =
+                    std::mem::replace(&mut self.borrow_mut().widget_ptr, new_widget);
 
-                // Update descendants of this node, stopping at equal widgets or a leaf node.
-                Node::update_subtree(s);
+                // Update descendants of this node, stopping at equal widget configurations
+                // or a leaf node.
+                self.update_subtree();
 
                 // Safety:
                 //
-                // There are no children widgets referencing the old pointer (because we
-                // updated them all in `update_subtree` above), so we can safely drop it.
-                WidgetPtr::drop(old_widget_ptr);
+                // There are no children widgets referencing old pointer (because we dropped
+                // them all in `update_subtree` above), so we can safely drop it.
+                unsafe { WidgetPtr::drop(&old_widget_ptr) };
 
                 // Mount updated widget.
-                Node::mount(s);
+                self.mount();
 
-                return s;
+                return self.clone();
             }
         } else {
-            let parent = parent_ref.clone();
+            let parent = self.borrow().parent.clone();
 
-            // We use the parent's inherited ancestor, since `s` could be an InheritedWidget
-            // itself. After we deallocate `s` this would cause use after free.
             let inherited_ancestor = parent
                 .as_ref()
                 .unwrap()
                 .borrow()
                 .inheritance
-                .inherited_ancestor(&context_ref.node);
+                .inherited_ancestor(self);
 
             // Unmount and drop subtree starting at this node.
-            Node::drop(s);
+            self.drop();
 
             // Build new subtree in its place.
             return Node::new(new_widget, parent, inherited_ancestor);
         }
     }
 
-    /// Drop this widget node and all its descendants.
-    ///
-    /// # Safety
-    ///
-    /// This function can only be called once on a given [`WidgetNode`] and `s`
-    /// must be valid.
-    pub unsafe fn drop(s: *mut Node) {
-        let inner_ref = s.inner_ptr();
-        let children_ref_mut = s.children_ptr_mut();
+    pub fn mount(&self) {
+        assert!(self.is_alive());
 
-        let mut children = std::mem::take(&mut *children_ref_mut).into_iter();
-
-        while let Some(child) = children.next() {
-            Node::drop(child);
-        }
-
-        Node::unmount(s);
-
-        // Remove this widget from its parent's list of inheriting widgets.
-        match &(&*inner_ref).borrow().inheritance {
-            Inheritance::Inheritee {
-                inherited_ancestor: _,
-                inherits_from,
-            } => {
-                let node_ref = &NodeRef::new(s);
-
-                for inheritor in inherits_from.iter() {
-                    let mut inheritor_ref = inheritor.borrow_mut();
-                    let inheriting_widgets = inheritor_ref.inheritance.inheriting_widgets();
-                    inheriting_widgets.remove(node_ref);
-                }
-            }
-            Inheritance::Inheritor { .. } => {}
-        };
-
-        // From this point on we `Context` will not be accessed again immutably,
-        // thus we can access whole `Self` mutably.
-        let s = &mut *s;
-
-        s.context.node.is_alive.set(false);
-
-        // Drop widget structure.
-        //
-        // Inlined `WidgetPtr::drop`.
-        if let Some(ptr) = s.widget_ptr.owned {
-            drop(Box::from_raw(ptr));
-        }
-
-        // Drop this node.
-        drop(Box::from_raw(s));
-    }
-
-    //
-    //
-
-    /// Safety: `s` must be valid.
-    pub unsafe fn mount(s: *mut Node) {
-        let widget = &*s.widget_ptr();
-        let context = &*s.context_ptr();
+        let widget = self.borrow().widget_ptr.clone();
+        let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(self.ptr.get()) };
 
         widget.mount(context)
     }
 
-    /// Safety: `s` must be valid.
-    pub unsafe fn unmount(s: *mut Node) {
-        let widget = &*s.widget_ptr();
-        let context = &*s.context_ptr();
+    pub fn unmount(&self) {
+        assert!(self.is_alive());
 
-        widget.unmount(context)
+        let widget = self.borrow().widget_ptr.clone();
+        let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(self.ptr.get()) };
+
+        widget.mount(context)
+    }
+
+    /// Drop this widget [`Node`] and all its descendants.
+    pub fn drop(&self) {
+        assert!(self.is_alive());
+
+        //
+        // Unmount state.
+
+        self.unmount();
+
+        //
+        // Deallocate children.
+
+        let mut children = std::mem::take(&mut self.borrow_mut().children).into_iter();
+
+        while let Some(child) = children.next() {
+            child.drop();
+        }
+
+        //
+        // Remove this widget from inherited widgets it depends on.
+
+        if let Inheritance::Inheritee { inherits_from, .. } = &self.borrow().inheritance {
+            for inheritor in inherits_from.iter() {
+                let mut inheritor_ref = inheritor.borrow_mut();
+                let inheriting_widgets = inheritor_ref.inheritance.inheriting_widgets();
+                inheriting_widgets.remove(self);
+            }
+        }
+
+        //
+        // Drop `widget_ptr` and the `node` itself.
+
+        unsafe {
+            let widget_ptr = self.borrow().widget_ptr.clone();
+            WidgetPtr::drop(&widget_ptr);
+
+            let node_ptr = self.ptr.get();
+            drop(Box::from_raw(node_ptr));
+
+            //
+            // From this point on `RawBuildCx` should not be accessed again.
+        }
+
+        //
+        // Disable this widget.
+
+        self.ptr.set(std::ptr::null_mut());
     }
 }
 
-#[derive(Clone)]
-pub struct NodeRef {
-    is_alive: Rc<Cell<bool>>,
-    ptr: *mut Node,
-}
+/// Used by API.
 
 impl NodeRef {
-    pub(crate) unsafe fn new(s: *mut Node) -> NodeRef {
-        unsafe { (&*s.context_ptr()).node.clone() }
-    }
-
-    #[track_caller]
-    pub(crate) fn borrow(&self) -> Ref<'_, NodeInner> {
-        assert_eq!(self.is_alive.get(), true);
-        unsafe { (&*self.ptr.inner_ptr()).borrow() }
-    }
-
-    #[track_caller]
-    pub(crate) fn borrow_mut(&self) -> RefMut<'_, NodeInner> {
-        assert_eq!(self.is_alive.get(), true);
-        unsafe { (&*self.ptr.inner_ptr()).borrow_mut() }
-    }
-
-    //
-
-    pub fn update_subtree(&self) {
-        assert_eq!(self.is_alive.get(), true);
-        unsafe { Node::update_subtree(self.ptr) }
-    }
-
     pub fn mark_dirty(&self) {
-        assert_eq!(self.is_alive.get(), true);
+        assert!(self.is_alive());
 
         APP_HANDLE.with(|handle| {
             handle
@@ -512,7 +458,7 @@ impl NodeRef {
                 .schedule_idle(IdleToken::new(0));
         });
 
-        if !self.borrow_mut().dirty {
+        if !self.borrow().dirty {
             self.borrow_mut().dirty = true;
 
             NEED_REBUILD.with(|dirty| {
@@ -522,17 +468,17 @@ impl NodeRef {
     }
 
     pub fn mark_dependent_widgets_as_dirty(&self) {
-        assert_eq!(self.is_alive.get(), true);
+        assert!(self.is_alive());
 
-        match &self.borrow().inheritance {
-            Inheritance::Inheritor {
-                inheriting_widgets, ..
-            } => {
-                for widget in inheriting_widgets.iter() {
-                    widget.mark_dirty()
-                }
+        if let Inheritance::Inheritor {
+            inheriting_widgets, ..
+        } = &self.borrow().inheritance
+        {
+            for widget in inheriting_widgets.iter() {
+                widget.mark_dirty()
             }
-            _ => unreachable!(),
+        } else {
+            unreachable!()
         }
     }
 
@@ -540,12 +486,13 @@ impl NodeRef {
     where
         K: 'static,
     {
-        assert_eq!(self.is_alive.get(), true);
+        assert!(self.is_alive());
+
         let key = TypeId::of::<K>();
 
-        let mut node_ref = self.borrow_mut();
+        let mut inner = self.borrow_mut();
 
-        let (inherited_ancestor, inherits_from) = match &mut node_ref.inheritance {
+        let (inherited_ancestor, inherits_from) = match &mut inner.inheritance {
             Inheritance::Inheritee {
                 inherited_ancestor,
                 inherits_from,
@@ -553,27 +500,19 @@ impl NodeRef {
             _ => unreachable!(),
         };
 
-        let inherited_ref = inherited_ancestor.borrow();
+        let inherited_widget = {
+            let inherited_ref = inherited_ancestor.borrow();
 
-        // Closest InheritedWidget ancestor.
-        let active_inheritors = match &inherited_ref.inheritance {
-            Inheritance::Inheritor {
-                active_inheritors, ..
-            } => active_inheritors,
-            _ => unreachable!(),
+            // All inherited widgets accessible from this node.
+            let active_inheritors = inherited_ref.inheritance.active_inheritors();
+
+            // Closest inhertied ancestor of type K.
+            active_inheritors.get(&key)?.clone()
         };
 
-        // Target InheritedWidget (matching K).
-        let inherited_widget = active_inheritors.get(&key)?.clone();
-        drop(inherited_ref);
         let mut inherited_widget_ref = inherited_widget.borrow_mut();
 
-        let inheriting_widgets = match &mut inherited_widget_ref.inheritance {
-            Inheritance::Inheritor {
-                inheriting_widgets, ..
-            } => inheriting_widgets,
-            _ => unreachable!(),
-        };
+        let inheriting_widgets = inherited_widget_ref.inheritance.inheriting_widgets();
 
         // Register this node in InheritedWidget.
         inheriting_widgets.insert(self.clone());
@@ -583,37 +522,11 @@ impl NodeRef {
 
         Some(inherited_widget.clone())
     }
-
-    pub fn is_alive(&self) -> bool {
-        self.is_alive.get()
-    }
-
-    #[track_caller]
-    pub fn widget<'a>(&'a self) -> &'a dyn crate::macro_exports::RawWidget {
-        self.widget_ptr().raw()
-    }
-
-    #[track_caller]
-    pub fn widget_ptr<'a>(&'a self) -> &'a WidgetPtr<'static> {
-        assert!(self.is_alive.get());
-        unsafe { &*self.ptr.widget_ptr() }
-    }
-
-    #[track_caller]
-    pub(crate) fn children<'a>(&'a self) -> &'a [*mut Node] {
-        assert!(self.is_alive.get());
-        unsafe { &*self.ptr.children_ptr() }
-    }
-
-    #[allow(unused)]
-    pub fn debug_name_short(&self) -> &'static str {
-        self.widget().debug_name_short()
-    }
 }
 
 impl PartialEq for NodeRef {
     fn eq(&self, other: &Self) -> bool {
-        self.is_alive.as_ptr() == other.is_alive.as_ptr()
+        self.ptr.as_ptr() == other.ptr.as_ptr()
     }
 }
 
@@ -621,13 +534,13 @@ impl Eq for NodeRef {}
 
 impl Hash for NodeRef {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.is_alive.as_ptr().hash(state);
+        self.ptr.as_ptr().hash(state);
     }
 }
 
 impl std::fmt::Debug for NodeRef {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.is_alive.get() {
+        if self.is_alive() {
             write!(f, "WidgetNodeRef ({})", self.debug_name_short())
         } else {
             f.debug_struct("WidgetNodeRef (removed)")
@@ -642,29 +555,54 @@ pub(crate) struct RenderData {
     pub state: Box<dyn Any>,
     /// Data that can be accessed from parent widget.
     pub parent_data: Box<dyn Any>,
+
     /// Size computed during last layout.
     pub size: Size,
-    // Todo: Use Point instead of Offset.
     /// Offset received during last paint.
     pub local_offset: Offset,
     /// Incoming constraints received during last layout.
     pub constraints: Constraints,
+
     /// Whether child was laid out. Used to display an error message when
     /// painting children without laying them out beforehand.
     pub laid_out: bool,
 }
 
 impl RenderData {
-    fn new(widget: &WidgetPtr) -> RenderData {
+    fn new(widget: &dyn RawWidget) -> RenderData {
         RenderData {
-            state: widget.raw().create_render_state(),
-            parent_data: widget.raw().create_parent_data(),
+            state: widget.create_render_state(),
+            parent_data: widget.create_parent_data(),
             size: Size::default(),
             local_offset: Offset::default(),
             constraints: Constraints::default(),
             laid_out: false,
         }
     }
+}
+
+/// Whether this node *inherits-from* [`InheritedWidget`] ([`Inheritee`] ) or
+/// *is* an [`InheritedWidget`] itself ([`Inheritor`]).
+///
+/// [`Inheritor`]: Inheritance::Inheritor
+/// [`Inheritee`]: Inheritance::Inheritee
+/// [`InheritedWidget`]: crate::prelude::InheritedWidget
+pub(crate) enum Inheritance {
+    Inheritor {
+        /// All [`InheritedWidget`](crate::prelude::InheritedWidget) ancestors that are
+        /// accessible from this node (that are higher in the tree).
+        active_inheritors: HashMap<TypeId, NodeRef>,
+        /// All descendant widgets which inherit from this widget.
+        inheriting_widgets: HashSet<NodeRef>,
+    },
+    Inheritee {
+        /// This is the closest [`InheritedWidget`](crate::prelude::InheritedWidget)
+        /// ancestor of this widget.
+        inherited_ancestor: NodeRef,
+        /// This is used to efficiently unregister from all inherited ancestors
+        /// ancestors.
+        inherits_from: HashSet<NodeRef>,
+    },
 }
 
 impl Inheritance {
@@ -723,15 +661,16 @@ impl Default for Inheritance {
     }
 }
 
+//
 // Helpers.
 
 trait FindKey {
     /// `key` must be valid as well as pointers in self`.
-    unsafe fn find_key(&mut self, key: &WidgetPtr) -> Option<usize>;
+    fn find_key(&mut self, key: &WidgetPtr) -> Option<usize>;
 }
 
-impl FindKey for Vec<Option<*mut Node>> {
-    unsafe fn find_key(&mut self, key: &WidgetPtr) -> Option<usize> {
+impl FindKey for Vec<Option<NodeRef>> {
+    fn find_key(&mut self, key: &WidgetPtr) -> Option<usize> {
         if let None = key.raw().local_key() {
             return None;
         }
@@ -740,7 +679,8 @@ impl FindKey for Vec<Option<*mut Node>> {
             .enumerate()
             .find(|(_, w)| match w {
                 Some(w) => {
-                    let local_key_any = unsafe { (&*w.widget_ptr()).raw().local_key() };
+                    let node = w.widget();
+                    let local_key_any = node.local_key();
 
                     match local_key_any {
                         Some(k) => k == key.raw().local_key().unwrap(),
@@ -754,99 +694,33 @@ impl FindKey for Vec<Option<*mut Node>> {
 }
 
 impl Node {
-    fn default() -> *mut Node {
+    fn default() -> NodeRef {
         // We manage lifetime of widgets manually.
         let widget_ptr =
             unsafe { std::mem::transmute::<WidgetPtr, WidgetPtr<'static>>(().into_widget_ptr()) };
 
         let this = Box::into_raw(Box::new(Node {
-            widget_ptr: widget_ptr.clone(),
-            context: RawBuildCtx {
-                node: NodeRef {
-                    is_alive: Rc::new(Cell::new(true)),
-                    ptr: std::ptr::null_mut(), // <- Null
-                },
-            },
             inner: RefCell::new(NodeInner {
+                is_alive: Rc::new(Cell::new(std::ptr::null_mut())),
+                widget_ptr: widget_ptr.clone(),
+                parent: None,
+                children: Vec::new(),
                 dirty: false,
                 state: widget_ptr.raw().create_state(),
-                render_data: RenderData::new(&widget_ptr),
+                render_data: RenderData::new(widget_ptr.raw()),
                 inheritance: Inheritance::Inheritor {
                     active_inheritors: HashMap::new(),
                     inheriting_widgets: HashSet::new(),
                 },
             }),
-            parent: None,
-            children: Vec::new(),
         }));
 
-        // Safety:
-        //
-        // We can mutably dereference `context` because it is valid for reads and comes
-        // from `context_ptr_mut` which doesn't pop stacked borrows for `this`.
         unsafe {
-            // Set it inside the Context.
-            (&mut *this.context_ptr_mut()).node.ptr = this; // <- Here we override that null.
-        };
+            let is_alive = (&*this).inner.borrow().is_alive.clone();
 
-        this
-    }
-}
+            is_alive.set(this); // <- Here we override that null.
 
-/// Helper methods used to prevent popping `node.context.node.ptr` pointer tag from
-/// stacked borrows when accessing other fields of [`WidgetNode`].
-trait WidgetNodePtrExt {
-    fn inner_ptr(&self) -> *const RefCell<NodeInner>;
-    fn widget_ptr(&self) -> *const WidgetPtr<'static>;
-    fn parent_ptr(&self) -> *const Option<NodeRef>;
-    fn context_ptr(&self) -> *const RawBuildCtx;
-    fn children_ptr(&self) -> *const Vec<*mut Node>;
-
-    fn inner_ptr_mut(&self) -> *mut RefCell<NodeInner>;
-    fn widget_ptr_mut(&self) -> *mut WidgetPtr<'static>;
-    fn parent_ptr_mut(&self) -> *mut Option<NodeRef>;
-    fn context_ptr_mut(&self) -> *mut RawBuildCtx;
-    fn children_ptr_mut(&self) -> *mut Vec<*mut Node>;
-}
-
-impl WidgetNodePtrExt for *mut Node {
-    fn context_ptr(&self) -> *const RawBuildCtx {
-        unsafe { std::ptr::addr_of!((**self).context) }
-    }
-
-    fn widget_ptr(&self) -> *const WidgetPtr<'static> {
-        unsafe { std::ptr::addr_of!((**self).widget_ptr) }
-    }
-
-    fn inner_ptr(&self) -> *const RefCell<NodeInner> {
-        unsafe { std::ptr::addr_of!((**self).inner) }
-    }
-
-    fn parent_ptr(&self) -> *const Option<NodeRef> {
-        unsafe { std::ptr::addr_of!((**self).parent) }
-    }
-
-    fn children_ptr(&self) -> *const Vec<*mut Node> {
-        unsafe { std::ptr::addr_of!((**self).children) }
-    }
-
-    fn context_ptr_mut(&self) -> *mut RawBuildCtx {
-        unsafe { std::ptr::addr_of_mut!((**self).context) }
-    }
-
-    fn widget_ptr_mut(&self) -> *mut WidgetPtr<'static> {
-        unsafe { std::ptr::addr_of_mut!((**self).widget_ptr) }
-    }
-
-    fn inner_ptr_mut(&self) -> *mut RefCell<NodeInner> {
-        unsafe { std::ptr::addr_of_mut!((**self).inner) }
-    }
-
-    fn parent_ptr_mut(&self) -> *mut Option<NodeRef> {
-        unsafe { std::ptr::addr_of_mut!((**self).parent) }
-    }
-
-    fn children_ptr_mut(&self) -> *mut Vec<*mut Node> {
-        unsafe { std::ptr::addr_of_mut!((**self).children) }
+            NodeRef { ptr: is_alive }
+        }
     }
 }

@@ -113,7 +113,9 @@ impl FruiWindowHandler for WindowHandler {
         self.window_handle.set_cursor(&Cursor::Arrow);
     }
 
-    fn prepare_paint(&mut self) {}
+    fn prepare_paint(&mut self) {
+        self.window_handle.invalidate();
+    }
 
     fn paint(&mut self, piet: &mut Canvas, _invalid: &druid_shell::Region) {
         //

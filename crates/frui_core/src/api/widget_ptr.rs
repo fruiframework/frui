@@ -10,7 +10,7 @@ use super::{
 #[derive(Clone)]
 pub struct WidgetPtr<'a> {
     /// Reference to the exact type of this widget. Used to properly dispatch methods.
-    kind: &'a dyn RawWidget,
+    pub(crate) kind: &'a (dyn RawWidget + 'a),
 
     /// Whether this pointer references or owns a widget. Used to properly drop it.
     pub(crate) owned: Option<*mut (dyn Widget + 'a)>,
@@ -45,9 +45,10 @@ impl<'a> WidgetPtr<'a> {
     ///
     /// Data referenced by this [`WidgetPtr`] didn't move.
     ///
-    /// Additionally, make sure there is no other [`WidgetPtr`] that may reference
-    /// this [`WidgetPtr`] after [`WidgetNode::drop`] has been called on it.
-    pub unsafe fn drop(self) {
+    /// Make sure there is no other [`WidgetPtr`] that may reference this
+    /// [`WidgetPtr`] after calling this method. That includes calling `drop`
+    /// a second time.
+    pub unsafe fn drop(&self) {
         if let Some(widget) = self.owned {
             drop(Box::from_raw(widget));
         }
@@ -110,7 +111,7 @@ impl<'a> WidgetPtr<'a> {
     //
     //
 
-    pub fn raw(&self) -> &dyn RawWidget {
+    pub fn raw<'b>(&'b self) -> &'b (dyn RawWidget + 'b) {
         self.kind
     }
 

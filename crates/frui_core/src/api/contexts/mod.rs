@@ -1,4 +1,4 @@
-use crate::app::tree::NodeRef;
+use crate::app::tree::Node;
 
 pub mod build_ctx;
 pub mod render;
@@ -20,5 +20,5 @@ pub mod render;
 /// [`_BuildCtx`]: build_ctx::_BuildCtx
 #[repr(transparent)]
 pub struct RawBuildCtx {
-    pub(crate) node: NodeRef,
+    pub(crate) _node: Node,
 }

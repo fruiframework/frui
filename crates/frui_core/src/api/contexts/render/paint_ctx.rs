@@ -87,20 +87,19 @@ impl PaintCtxOS {
     pub fn child(&mut self, index: usize) -> PaintCtxOS {
         let child = self
             .node
-            .children()
-            .get(index)
+            .child(index)
             .expect("specified node didn't have child at that index");
 
         PaintCtxOS {
-            node: unsafe { NodeRef::new(*child) },
+            node: child,
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         }
     }
 
     pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
-        self.node.children().iter().map(|c| PaintCtxOS {
-            node: unsafe { NodeRef::new(*c) },
+        self.node.children().into_iter().map(|child| PaintCtxOS {
+            node: child,
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         })
