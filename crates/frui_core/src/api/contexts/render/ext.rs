@@ -7,7 +7,7 @@ use std::{
 
 use crate::{
     api::contexts::build_ctx::{StateGuard, StateGuardMut, STATE_UPDATE_SUPRESSED},
-    app::tree::WidgetNodeRef,
+    app::tree::NodeRef,
     prelude::{Widget, WidgetState},
 };
 
@@ -15,7 +15,7 @@ use super::{RenderState, Size};
 
 pub trait RenderExt<W: Widget> {
     #[doc(hidden)]
-    fn node(&self) -> &WidgetNodeRef;
+    fn node(&self) -> &NodeRef;
 
     fn widget_state(&self) -> StateGuard<W::State>
     where
@@ -62,7 +62,7 @@ pub trait RenderExt<W: Widget> {
 
 pub trait RenderOSExt {
     #[doc(hidden)]
-    fn node(&self) -> &WidgetNodeRef;
+    fn node(&self) -> &NodeRef;
 
     fn size(&self) -> Size {
         self.node().borrow().render_data.size

@@ -6,7 +6,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use crate::{app::tree::WidgetNodeRef, prelude::InheritedWidget};
+use crate::{app::tree::NodeRef, prelude::InheritedWidget};
 
 pub mod widget_state;
 pub use widget_state::WidgetState;
@@ -22,7 +22,7 @@ pub type BuildCtx<'a, T> = &'a _BuildCtx<'a, T>;
 
 #[repr(transparent)]
 pub struct _BuildCtx<'a, T> {
-    node: WidgetNodeRef,
+    node: NodeRef,
     _p: PhantomData<&'a T>,
 }
 
@@ -113,7 +113,7 @@ impl<'a, T: 'static> std::ops::DerefMut for StateGuardMut<'a, T> {
 }
 
 pub struct InheritedState<'a, T: 'static> {
-    pub(crate) node: WidgetNodeRef,
+    pub(crate) node: NodeRef,
     pub(crate) _p: PhantomData<&'a T>,
 }
 
