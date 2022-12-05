@@ -6,7 +6,10 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use crate::{app::tree::NodeRef, prelude::InheritedWidget};
+use crate::{
+    app::tree::{Node, NodeRef},
+    prelude::InheritedWidget,
+};
 
 pub mod widget_state;
 pub use widget_state::WidgetState;
@@ -16,13 +19,13 @@ pub use widget_state::WidgetState;
 pub(crate) static STATE_UPDATE_SUPRESSED: AtomicBool = AtomicBool::new(false);
 
 // `BuildCtx` is borrowed to make it so that closures don't take ownership
-// of it, which would be inconvenient - user would have to clone `BuildContext`
+// of it, which would be inconvenient - user would have to clone `BuildCtx`
 // before every closure, since otherwise the context would move.
 pub type BuildCtx<'a, T> = &'a _BuildCtx<'a, T>;
 
 #[repr(transparent)]
 pub struct _BuildCtx<'a, T> {
-    node: NodeRef,
+    node: Node,
     _p: PhantomData<&'a T>,
 }
 
@@ -32,7 +35,7 @@ impl<'a, T> _BuildCtx<'a, T> {
         T: WidgetState,
     {
         StateGuard {
-            guard: Ref::map(self.node.borrow(), |node| node.state.deref()),
+            guard: Ref::map(self.node.inner.borrow(), |node| node.state.deref()),
             _p: PhantomData,
         }
     }
@@ -42,41 +45,38 @@ impl<'a, T> _BuildCtx<'a, T> {
         T: WidgetState,
     {
         if !STATE_UPDATE_SUPRESSED.load(Ordering::SeqCst) {
-            self.node.mark_dirty();
+            self.node_ref().mark_dirty();
         }
 
         StateGuardMut {
-            guard: RefMut::map(self.node.borrow_mut(), |node| node.state.deref_mut()),
+            guard: RefMut::map(self.node.inner.borrow_mut(), |node| node.state.deref_mut()),
             _p: PhantomData,
         }
     }
 
-    /// This method registers the widget of this `BuildContext` as a dependency of
-    /// the closest `InheritedWidget` ancestor of type `W` in the tree. It then
-    /// returns the state of that inherited widget or `None` if inherited ancestor
-    /// doesn't exist.
+    /// This method registers the widget of this [`BuildCtx`] as a dependency of
+    /// the closest [`InheritedWidget`] ancestor of type `W` in the tree. It
+    /// then returns the state of that inherited widget or [`None`] if inherited
+    /// ancestor doesn't exist.
     pub fn depend_on_inherited_widget<W>(&self) -> Option<InheritedState<W::State>>
     where
         W: InheritedWidget + WidgetState,
     {
         // Register and get inherited widget of specified key.
         let node = self
-            .node
+            .node_ref()
             .depend_on_inherited_widget_of_key::<W::UniqueTypeId>()?;
-
-        // Todo:
-        //
-        // 1. Get node above.
-        // 2. Increase rc/borrow count.
-        // 3. Get reference to the widget's state (can be done at once in step
-        //    above).
-        // 4. Return InheritedGuard<'a> with that `node`, `refcell` guard, and
-        //    extracted reference. Possibly transmute.
 
         Some(InheritedState {
             node,
             _p: PhantomData,
         })
+    }
+
+    fn node_ref(&self) -> NodeRef {
+        NodeRef {
+            ptr: self.node.inner.borrow().is_alive.clone(),
+        }
     }
 }
 

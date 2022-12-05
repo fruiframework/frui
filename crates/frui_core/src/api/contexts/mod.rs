@@ -20,5 +20,5 @@ pub mod render;
 /// [`_BuildCtx`]: build_ctx::_BuildCtx
 #[repr(transparent)]
 pub struct RawBuildCtx {
-    pub(crate) node: Node,
+    pub(crate) _node: Node,
 }

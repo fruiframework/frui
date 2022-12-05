@@ -91,7 +91,7 @@ impl PaintCtxOS {
             .expect("specified node didn't have child at that index");
 
         PaintCtxOS {
-            node: unsafe { NodeRef::new(child) },
+            node: child,
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         }
@@ -99,7 +99,7 @@ impl PaintCtxOS {
 
     pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
         self.node.children().into_iter().map(|child| PaintCtxOS {
-            node: unsafe { NodeRef::new(child) },
+            node: child,
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         })

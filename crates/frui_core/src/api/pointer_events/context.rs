@@ -45,19 +45,18 @@ impl HitTestCtxOS {
         }
     }
 
-    pub fn child(&self, index: usize) -> HitTestCtxOS {
-        HitTestCtxOS {
-            node: unsafe { NodeRef::new(self.node.children()[index]) },
+    pub fn child(&self, index: usize) -> Option<HitTestCtxOS> {
+        Some(HitTestCtxOS {
+            node: self.node.child(index)?,
             hit_entries: self.hit_entries.clone(),
             affine: self.affine,
-        }
+        })
     }
 
     pub fn children<'a>(&'a mut self) -> ChildrenIter<'a> {
-        self.node.children().into_iter().map(|child| {
-            let mut r = self.clone();
-            r.node = unsafe { NodeRef::new(child) };
-            r
+        self.node.children().into_iter().map(|child| HitTestCtxOS {
+            node: child,
+            ..self.clone()
         })
     }
 

@@ -45,9 +45,10 @@ impl<'a> WidgetPtr<'a> {
     ///
     /// Data referenced by this [`WidgetPtr`] didn't move.
     ///
-    /// Additionally, make sure there is no other [`WidgetPtr`] that may reference
-    /// this [`WidgetPtr`] after [`WidgetNode::drop`] has been called on it.
-    pub unsafe fn drop(self) {
+    /// Make sure there is no other [`WidgetPtr`] that may reference this
+    /// [`WidgetPtr`] after calling this method. That includes calling `drop`
+    /// a second time.
+    pub unsafe fn drop(&self) {
         if let Some(widget) = self.owned {
             drop(Box::from_raw(widget));
         }
