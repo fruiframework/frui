@@ -340,7 +340,10 @@ pub struct RRect {
 
 impl From<druid_shell::piet::kurbo::RoundedRect> for RRect {
     fn from(rrect: druid_shell::piet::kurbo::RoundedRect) -> Self {
-        Self::from_rect_and_radius(rrect.rect().into(), Radius::circular(rrect.radius()))
+        Self::from_rect_and_radius(
+            rrect.rect().into(),
+            Radius::circular(rrect.radii().bottom_left),
+        )
     }
 }
 
