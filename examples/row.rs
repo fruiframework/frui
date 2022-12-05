@@ -16,7 +16,7 @@ use misc::flex_children as list;
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         DebugContainer::new(
             Row::builder()
                 .space_between(20.0)

@@ -31,10 +31,10 @@ impl WidgetState for App {
 }
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
         KeyboardEventDetector {
-            on_event: |_| ctx.state_mut().switch(),
-            child: match ctx.state().value() {
+            on_event: |_| cx.state_mut().switch(),
+            child: match cx.state().value() {
                 true => Text::new("Top Left").boxed(),
                 false => Center::child(Text::new("Centered")).boxed(),
             },

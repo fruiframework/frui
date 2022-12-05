@@ -91,28 +91,28 @@ impl WidgetDerive for () {
 }
 
 impl RenderWidget for () {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![]
     }
 
-    fn layout(&self, _: &LayoutCtx<Self>, c: Constraints) -> Size {
+    fn layout(&self, _: &LayoutCx<Self>, c: Constraints) -> Size {
         c.smallest()
     }
 
-    fn paint(&self, _: &mut PaintCtx<Self>, _: &mut Canvas, _: &Offset) {}
+    fn paint(&self, _: &mut PaintCx<Self>, _: &mut Canvas, _: &Offset) {}
 }
 
 impl RawWidget for () {
-    fn build<'w>(&'w self, ctx: &'w super::contexts::RawBuildCtx) -> Vec<super::WidgetPtr<'w>> {
-        <Self as RenderWidgetOS>::build(self, ctx)
+    fn build<'w>(&'w self, cx: &'w super::contexts::RawBuildCx) -> Vec<super::WidgetPtr<'w>> {
+        <Self as RenderWidgetOS>::build(self, cx)
     }
 
-    fn layout<'w>(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
-        <Self as RenderWidgetOS>::layout(self, ctx, constraints)
+    fn layout<'w>(&self, cx: LayoutCxOS, constraints: Constraints) -> Size {
+        <Self as RenderWidgetOS>::layout(self, cx, constraints)
     }
 
-    fn paint<'w>(&'w self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
-        <Self as RenderWidgetOS>::paint(self, ctx, canvas, offset)
+    fn paint<'w>(&'w self, cx: PaintCxOS, canvas: &mut Canvas, offset: &Offset) {
+        <Self as RenderWidgetOS>::paint(self, cx, canvas, offset)
     }
 
     fn inherited_key(&self) -> Option<std::any::TypeId> {
@@ -123,25 +123,25 @@ impl RawWidget for () {
 macro_rules! impl_widget_os_deref_ {
     ($($impl:tt)*) => {
         $($impl)* {
-            fn build<'w>(&'w self, ctx: &'w super::contexts::RawBuildCtx) -> Vec<super::WidgetPtr<'w>> {
-                self.deref().build(ctx)
+            fn build<'w>(&'w self, cx: &'w super::contexts::RawBuildCx) -> Vec<super::WidgetPtr<'w>> {
+                self.deref().build(cx)
             }
 
             fn layout<'w>(
                 &self,
-                ctx: LayoutCtxOS,
+                cx: LayoutCxOS,
                 constraints: Constraints,
             ) -> Size {
-                self.deref().layout(ctx, constraints)
+                self.deref().layout(cx, constraints)
             }
 
             fn paint<'w>(
                 &'w self,
-                ctx: PaintCtxOS,
+                cx: PaintCxOS,
                 canvas: &mut Canvas,
                 offset: &Offset,
             ) {
-                self.deref().paint(ctx, canvas, offset)
+                self.deref().paint(cx, canvas, offset)
             }
 
 

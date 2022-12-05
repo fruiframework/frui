@@ -17,23 +17,23 @@ impl WidgetState for App {
 }
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Stack::builder().children((
             // Stats:
             Positioned::builder()
                 .left(30.)
                 .top(30.)
-                .child(ctx.state().clone()),
+                .child(cx.state().clone()),
             Center::child(
                 PointerListener::builder()
-                    .on_pointer_down(|_| ctx.state_mut().down_count += 1)
-                    .on_pointer_up(|_| ctx.state_mut().up_count += 1)
-                    .on_pointer_scroll(|_| ctx.state_mut().scroll_count += 1)
+                    .on_pointer_down(|_| cx.state_mut().down_count += 1)
+                    .on_pointer_up(|_| cx.state_mut().up_count += 1)
+                    .on_pointer_scroll(|_| cx.state_mut().scroll_count += 1)
                     .child(
                         PointerRegion::builder()
-                            .on_enter(|_| ctx.state_mut().enter_count += 1)
-                            .on_exit(|_| ctx.state_mut().exit_count += 1)
-                            .on_move(|e| ctx.state_mut().pointer_pos = e.0.pos)
+                            .on_enter(|_| cx.state_mut().enter_count += 1)
+                            .on_exit(|_| cx.state_mut().exit_count += 1)
+                            .on_move(|e| cx.state_mut().pointer_pos = e.0.pos)
                             .child(
                                 Container::builder()
                                     .width(100.)
@@ -58,7 +58,7 @@ struct Stats {
 }
 
 impl ViewWidget for Stats {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Text::new(format!("{:#?}", self))
     }
 }

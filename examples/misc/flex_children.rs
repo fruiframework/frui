@@ -81,7 +81,7 @@ impl Big {
 }
 
 impl ViewWidget for Big {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Container::builder()
             .color(self.2.clone())
             .width(self.0)

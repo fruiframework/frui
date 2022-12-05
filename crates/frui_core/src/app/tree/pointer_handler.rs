@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use druid_shell::kurbo::Affine;
 
-use crate::prelude::{context::HitTestCtxOS, events::PointerExit, PointerEvent};
+use crate::prelude::{context::HitTestCxOS, events::PointerExit, PointerEvent};
 
 use super::NodeRef;
 
@@ -71,12 +71,12 @@ impl PointerHandler {
     }
 
     fn hit_test(&self, node: NodeRef, new_hit_entries: &HitTestEntries, event: &PointerEvent) {
-        let ctx = HitTestCtxOS::new(&node, new_hit_entries.clone(), Affine::default());
-        node.widget().hit_test_os(ctx.clone(), event.pos());
+        let cx = HitTestCxOS::new(&node, new_hit_entries.clone(), Affine::default());
+        node.widget().hit_test_os(cx.clone(), event.pos());
     }
 
     fn handle_event(&self, node: &NodeRef, event: PointerEvent) {
-        let ctx = HitTestCtxOS::new(node, Rc::new(RefCell::default()), Affine::default());
-        node.widget().handle_event_os(ctx.clone(), &event);
+        let cx = HitTestCxOS::new(node, Rc::new(RefCell::default()), Affine::default());
+        node.widget().handle_event_os(cx.clone(), &event);
     }
 }

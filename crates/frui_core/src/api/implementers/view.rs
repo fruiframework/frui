@@ -1,8 +1,8 @@
 use crate::{
     api::{
         contexts::{
-            build_ctx::{BuildCtx, _BuildCtx},
-            RawBuildCtx,
+            build_cx::{BuildCx, _BuildCx},
+            RawBuildCx,
         },
         IntoWidgetPtr, WidgetPtr,
     },
@@ -12,21 +12,21 @@ use crate::{
 use super::{ViewWidgetOS, WidgetDerive};
 
 pub trait ViewWidget: WidgetDerive + Sized {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w>;
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w>;
 }
 
 impl<T: ViewWidget> ViewWidgetOS for T {
-    fn build<'w>(&'w self, ctx: &'w RawBuildCtx) -> Vec<WidgetPtr<'w>> {
-        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
+    fn build<'w>(&'w self, cx: &'w RawBuildCx) -> Vec<WidgetPtr<'w>> {
+        let cx = unsafe { std::mem::transmute::<&RawBuildCx, &_BuildCx<T>>(cx) };
 
-        vec![T::build(&self, ctx).into_widget_ptr()]
+        vec![T::build(&self, cx).into_widget_ptr()]
     }
 
-    fn layout<'w>(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
-        ctx.child(0).layout(constraints)
+    fn layout<'w>(&self, cx: LayoutCxOS, constraints: Constraints) -> Size {
+        cx.child(0).layout(constraints)
     }
 
-    fn paint<'w>(&'w self, mut ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
-        ctx.child(0).paint(canvas, offset)
+    fn paint<'w>(&'w self, mut cx: PaintCxOS, canvas: &mut Canvas, offset: &Offset) {
+        cx.child(0).paint(canvas, offset)
     }
 }

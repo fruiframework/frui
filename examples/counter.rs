@@ -22,7 +22,7 @@ impl WidgetState for Counter {
 }
 
 impl ViewWidget for Counter {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Column::builder()
             .space_between(60.0)
             .main_axis_size(MainAxisSize::Max)
@@ -30,7 +30,7 @@ impl ViewWidget for Counter {
             .main_axis_alignment(MainAxisAlignment::Center)
             .cross_axis_alignment(CrossAxisAlignment::Center)
             .children((
-                Text::new(ctx.state().to_string())
+                Text::new(cx.state().to_string())
                     .size(150.0)
                     .weight(FontWeight::BOLD),
                 Row::builder()
@@ -38,11 +38,11 @@ impl ViewWidget for Counter {
                     .children((
                         Button {
                             label: Text::new("+").size(30.),
-                            on_click: || *ctx.state_mut() += 1,
+                            on_click: || *cx.state_mut() += 1,
                         },
                         Button {
                             label: Text::new("-").size(30.),
-                            on_click: || *ctx.state_mut() -= 1,
+                            on_click: || *cx.state_mut() -= 1,
                         },
                     )),
             ))

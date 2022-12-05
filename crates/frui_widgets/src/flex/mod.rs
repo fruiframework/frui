@@ -146,16 +146,16 @@ impl<W: Widget> ParentData for Flexible<W> {
 }
 
 impl<W: Widget> RenderWidget for Flexible<W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        constraints.constrain(ctx.child(0).layout(constraints))
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
+        constraints.constrain(cx.child(0).layout(constraints))
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        ctx.child(0).paint(canvas, offset)
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        cx.child(0).paint(canvas, offset)
     }
 }
 

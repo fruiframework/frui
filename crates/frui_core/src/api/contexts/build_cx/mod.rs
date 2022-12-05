@@ -18,18 +18,18 @@ pub use widget_state::WidgetState;
 /// state updates (e.g. in unmount/mount methods).
 pub(crate) static STATE_UPDATE_SUPRESSED: AtomicBool = AtomicBool::new(false);
 
-// `BuildCtx` is borrowed to make it so that closures don't take ownership
-// of it, which would be inconvenient - user would have to clone `BuildCtx`
+// `BuildCx` is borrowed to make it so that closures don't take ownership
+// of it, which would be inconvenient - user would have to clone `BuildCx`
 // before every closure, since otherwise the context would move.
-pub type BuildCtx<'a, T> = &'a _BuildCtx<'a, T>;
+pub type BuildCx<'a, T> = &'a _BuildCx<'a, T>;
 
 #[repr(transparent)]
-pub struct _BuildCtx<'a, T> {
+pub struct _BuildCx<'a, T> {
     node: Node,
     _p: PhantomData<&'a T>,
 }
 
-impl<'a, T> _BuildCtx<'a, T> {
+impl<'a, T> _BuildCx<'a, T> {
     pub fn state(&self) -> StateGuard<T::State>
     where
         T: WidgetState,
@@ -54,7 +54,7 @@ impl<'a, T> _BuildCtx<'a, T> {
         }
     }
 
-    /// This method registers the widget of this [`BuildCtx`] as a dependency of
+    /// This method registers the widget of this [`BuildCx`] as a dependency of
     /// the closest [`InheritedWidget`] ancestor of type `W` in the tree. It
     /// then returns the state of that inherited widget or [`None`] if inherited
     /// ancestor doesn't exist.

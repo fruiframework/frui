@@ -11,7 +11,7 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
     let Imports {
         Vec, TypeId,
         RawWidget, WidgetPtr,
-        RawBuildCtx, LayoutCtxOS, PaintCtxOS, Canvas, 
+        RawBuildCx, LayoutCxOS, PaintCxOS, Canvas, 
         Size, Offset, Constraints, 
     } = imports_impl_widget_os();
 
@@ -20,16 +20,16 @@ pub fn impl_raw_widget(item: &ItemStruct, widget_kind: WidgetKind) -> TokenStrea
 
     quote! {
         impl #impl_generics #RawWidget for #Target #ty_generics #where_clause {
-            fn build<'w>(&'w self, ctx: &'w #RawBuildCtx) -> #Vec<#WidgetPtr<'w>> {
-                <Self as #WidgetKindOS>::build(self, ctx)
+            fn build<'w>(&'w self, cx: &'w #RawBuildCx) -> #Vec<#WidgetPtr<'w>> {
+                <Self as #WidgetKindOS>::build(self, cx)
             }
 
-            fn layout(&self, ctx: #LayoutCtxOS, constraints: #Constraints) -> #Size {
-                <Self as #WidgetKindOS>::layout(self, ctx, constraints)
+            fn layout(&self, cx: #LayoutCxOS, constraints: #Constraints) -> #Size {
+                <Self as #WidgetKindOS>::layout(self, cx, constraints)
             }
 
-            fn paint(&self, ctx: #PaintCtxOS, canvas: &mut #Canvas, offset: &#Offset) {
-                <Self as #WidgetKindOS>::paint(self, ctx, canvas, offset)
+            fn paint(&self, cx: #PaintCxOS, canvas: &mut #Canvas, offset: &#Offset) {
+                <Self as #WidgetKindOS>::paint(self, cx, canvas, offset)
             }
 
             fn inherited_key(&self) -> Option<#TypeId> {
@@ -57,10 +57,10 @@ struct Imports {
     RawWidget: TokenStream,
     WidgetPtr: TokenStream,
     // Contextes
-    RawBuildCtx: TokenStream,
-    LayoutCtxOS: TokenStream,
+    RawBuildCx: TokenStream,
+    LayoutCxOS: TokenStream,
     Canvas: TokenStream,
-    PaintCtxOS: TokenStream,
+    PaintCxOS: TokenStream,
     // Types
     Size: TokenStream,
     Offset: TokenStream,
@@ -75,10 +75,10 @@ fn imports_impl_widget_os() -> Imports {
         TypeId: quote!(::std::any::TypeId),
         RawWidget: quote!(#exports::RawWidget),
         WidgetPtr: quote!(#exports::WidgetPtr),
-        RawBuildCtx: quote!(#exports::RawBuildCtx),
-        LayoutCtxOS: quote!(#exports::LayoutCtxOS),
+        RawBuildCx: quote!(#exports::RawBuildCx),
+        LayoutCxOS: quote!(#exports::LayoutCxOS),
         Canvas: quote!(#exports::Canvas),
-        PaintCtxOS: quote!(#exports::PaintCtxOS),
+        PaintCxOS: quote!(#exports::PaintCxOS),
         Size: quote!(#exports::Size),
         Offset: quote!(#exports::Offset),
         Constraints: quote!(#exports::Constraints),

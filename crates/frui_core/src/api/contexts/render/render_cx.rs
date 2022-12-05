@@ -12,15 +12,15 @@ use crate::{
     prelude::{InheritedState, InheritedWidget, Widget, WidgetState},
 };
 
-pub struct LayoutCtx<T> {
-    ctx: LayoutCtxOS,
+pub struct LayoutCx<T> {
+    cx: LayoutCxOS,
     _p: PhantomData<T>,
 }
 
-impl<T> LayoutCtx<T> {
-    pub(crate) fn new(any: LayoutCtxOS) -> Self {
+impl<T> LayoutCx<T> {
+    pub(crate) fn new(any: LayoutCxOS) -> Self {
         Self {
-            ctx: any,
+            cx: any,
             _p: PhantomData,
         }
     }
@@ -34,15 +34,6 @@ impl<T> LayoutCtx<T> {
             .node
             .depend_on_inherited_widget_of_key::<W::UniqueTypeId>()?;
 
-        // Todo:
-        //
-        // 1. Get node above.
-        // 2. Increase rc/borrow count.
-        // 3. Get reference to the widget's state (can be done at once in step
-        //    above).
-        // 4. Return InheritedGuard<'a> with that `node`, `refcell` guard, and
-        //    extracted reference. Possibly transmute.
-
         Some(InheritedState {
             node,
             _p: PhantomData,
@@ -50,38 +41,38 @@ impl<T> LayoutCtx<T> {
     }
 }
 
-impl<W: Widget> RenderExt<W> for LayoutCtx<W> {
+impl<W: Widget> RenderExt<W> for LayoutCx<W> {
     fn node(&self) -> &NodeRef {
-        &self.ctx.node
+        &self.cx.node
     }
 }
 
-impl<T> std::ops::Deref for LayoutCtx<T> {
-    type Target = LayoutCtxOS;
+impl<T> std::ops::Deref for LayoutCx<T> {
+    type Target = LayoutCxOS;
 
     fn deref(&self) -> &Self::Target {
-        &self.ctx
+        &self.cx
     }
 }
 
-impl<T> std::ops::DerefMut for LayoutCtx<T> {
+impl<T> std::ops::DerefMut for LayoutCx<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.ctx
+        &mut self.cx
     }
 }
 
 #[derive(Clone)]
-pub struct LayoutCtxOS {
+pub struct LayoutCxOS {
     node: NodeRef,
 }
 
-impl RenderOSExt for LayoutCtxOS {
+impl RenderOSExt for LayoutCxOS {
     fn node(&self) -> &NodeRef {
         &self.node
     }
 }
 
-impl LayoutCtxOS {
+impl LayoutCxOS {
     pub(crate) fn new(node: NodeRef) -> Self {
         Self { node }
     }
@@ -108,22 +99,22 @@ impl LayoutCtxOS {
         size
     }
 
-    pub fn child(&self, index: usize) -> LayoutCtxOS {
+    pub fn child(&self, index: usize) -> LayoutCxOS {
         self.try_child(index)
             .expect("specified node didn't have any children")
     }
 
-    pub fn children(&self) -> LayoutCtxIter {
-        LayoutCtxIter {
+    pub fn children(&self) -> LayoutCxIter {
+        LayoutCxIter {
             child_idx: 0,
-            parent_ctx: self,
+            parent_cx: self,
         }
     }
 
-    fn try_child(&self, index: usize) -> Option<LayoutCtxOS> {
+    fn try_child(&self, index: usize) -> Option<LayoutCxOS> {
         let child = self.node.child(index)?;
 
-        Some(LayoutCtxOS::new(child))
+        Some(LayoutCxOS::new(child))
     }
 
     pub fn schedule_layout(&mut self) {
@@ -137,32 +128,32 @@ impl LayoutCtxOS {
     }
 }
 
-pub struct LayoutCtxIter<'a> {
+pub struct LayoutCxIter<'a> {
     child_idx: usize,
-    parent_ctx: &'a LayoutCtxOS,
+    parent_cx: &'a LayoutCxOS,
 }
 
-impl<'a> LayoutCtxIter<'a> {
+impl<'a> LayoutCxIter<'a> {
     pub fn len(&self) -> usize {
-        self.parent_ctx.node.children().len()
+        self.parent_cx.node.children().len()
     }
 }
 
-impl Clone for LayoutCtxIter<'_> {
+impl Clone for LayoutCxIter<'_> {
     fn clone(&self) -> Self {
         Self {
             // Reset iterator.
             child_idx: 0,
-            parent_ctx: self.parent_ctx,
+            parent_cx: self.parent_cx,
         }
     }
 }
 
-impl<'a> Iterator for LayoutCtxIter<'a> {
-    type Item = LayoutCtxOS;
+impl<'a> Iterator for LayoutCxIter<'a> {
+    type Item = LayoutCxOS;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let r = self.parent_ctx.try_child(self.child_idx);
+        let r = self.parent_cx.try_child(self.child_idx);
         self.child_idx += 1;
         r
     }

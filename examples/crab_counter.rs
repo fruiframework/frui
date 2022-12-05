@@ -21,7 +21,7 @@ impl WidgetState for CrabCounter {
 }
 
 impl ViewWidget for CrabCounter {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Column::builder()
             .space_between(60.0)
             .main_axis_size(MainAxisSize::Max)
@@ -29,7 +29,7 @@ impl ViewWidget for CrabCounter {
             .main_axis_alignment(MainAxisAlignment::Center)
             .cross_axis_alignment(CrossAxisAlignment::Center)
             .children((
-                Text::new(format!("{} 🦀", *ctx.state()))
+                Text::new(format!("{} 🦀", *cx.state()))
                     .size(100.0)
                     .weight(FontWeight::BOLD),
                 Row::builder()
@@ -37,11 +37,11 @@ impl ViewWidget for CrabCounter {
                     .children((
                         Button {
                             label: Text::new("+").size(30.),
-                            on_click: || *ctx.state_mut() += 1,
+                            on_click: || *cx.state_mut() += 1,
                         },
                         Button {
                             label: Text::new("-").size(30.),
-                            on_click: || *ctx.state_mut() -= 1,
+                            on_click: || *cx.state_mut() -= 1,
                         },
                     )),
             ))

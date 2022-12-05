@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{
-    api::contexts::build_ctx::{StateGuard, StateGuardMut, STATE_UPDATE_SUPRESSED},
+    api::contexts::build_cx::{StateGuard, StateGuardMut, STATE_UPDATE_SUPRESSED},
     app::tree::NodeRef,
     prelude::{Widget, WidgetState},
 };

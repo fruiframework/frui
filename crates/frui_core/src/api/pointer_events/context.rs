@@ -7,28 +7,28 @@ use crate::app::tree::NodeRef;
 use crate::prelude::Widget;
 use crate::render::*;
 
-pub struct HitTestCtx<W> {
-    pub(crate) inner: HitTestCtxOS,
+pub struct HitTestCx<W> {
+    pub(crate) inner: HitTestCxOS,
     _p: PhantomData<W>,
 }
 
-impl<W: Widget> RenderExt<W> for HitTestCtx<W> {
+impl<W: Widget> RenderExt<W> for HitTestCx<W> {
     fn node(&self) -> &NodeRef {
         &self.inner.node
     }
 }
 
-impl<W> HitTestCtx<W> {
-    pub(crate) fn new(ctx: HitTestCtxOS) -> HitTestCtx<W> {
+impl<W> HitTestCx<W> {
+    pub(crate) fn new(cx: HitTestCxOS) -> HitTestCx<W> {
         Self {
-            inner: ctx,
+            inner: cx,
             _p: PhantomData,
         }
     }
 }
 
 #[derive(Clone)]
-pub struct HitTestCtxOS {
+pub struct HitTestCxOS {
     pub(crate) node: NodeRef,
     /// All affine transformations applied to point at this depth.
     pub(crate) affine: Affine,
@@ -36,8 +36,8 @@ pub struct HitTestCtxOS {
     pub(crate) hit_entries: HitTestEntries,
 }
 
-impl HitTestCtxOS {
-    pub(crate) fn new(node: &NodeRef, hit_entries: HitTestEntries, affine: Affine) -> HitTestCtxOS {
+impl HitTestCxOS {
+    pub(crate) fn new(node: &NodeRef, hit_entries: HitTestEntries, affine: Affine) -> HitTestCxOS {
         Self {
             node: node.clone(),
             hit_entries,
@@ -45,8 +45,8 @@ impl HitTestCtxOS {
         }
     }
 
-    pub fn child(&self, index: usize) -> Option<HitTestCtxOS> {
-        Some(HitTestCtxOS {
+    pub fn child(&self, index: usize) -> Option<HitTestCxOS> {
+        Some(HitTestCxOS {
             node: self.node.child(index)?,
             hit_entries: self.hit_entries.clone(),
             affine: self.affine,
@@ -54,7 +54,7 @@ impl HitTestCtxOS {
     }
 
     pub fn children<'a>(&'a mut self) -> ChildrenIter<'a> {
-        self.node.children().into_iter().map(|child| HitTestCtxOS {
+        self.node.children().into_iter().map(|child| HitTestCxOS {
             node: child,
             ..self.clone()
         })
@@ -78,12 +78,12 @@ impl HitTestCtxOS {
 
     /// Add comment.
     pub fn hit_test_with_transform(&mut self, point: Point, transform: Affine) -> bool {
-        let mut ctx = self.clone();
+        let mut cx = self.clone();
 
         let point_after = transform * point;
-        ctx.affine = transform * self.affine;
+        cx.affine = transform * self.affine;
 
-        self.node.widget().hit_test_os(ctx, point_after)
+        self.node.widget().hit_test_os(cx, point_after)
     }
 
     pub fn layout_box(&self) -> Size {
@@ -92,17 +92,17 @@ impl HitTestCtxOS {
 }
 
 type ChildrenIter<'a> =
-    impl Iterator<Item = HitTestCtxOS> + 'a + DoubleEndedIterator + ExactSizeIterator;
+    impl Iterator<Item = HitTestCxOS> + 'a + DoubleEndedIterator + ExactSizeIterator;
 
-impl<W> std::ops::Deref for HitTestCtx<W> {
-    type Target = HitTestCtxOS;
+impl<W> std::ops::Deref for HitTestCx<W> {
+    type Target = HitTestCxOS;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
 }
 
-impl<W> std::ops::DerefMut for HitTestCtx<W> {
+impl<W> std::ops::DerefMut for HitTestCx<W> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
     }

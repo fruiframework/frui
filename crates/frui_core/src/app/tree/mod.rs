@@ -10,12 +10,12 @@ use druid_shell::IdleToken;
 
 use crate::{
     api::{
-        contexts::{render::LayoutCtxOS, RawBuildCtx},
+        contexts::{render::LayoutCxOS, RawBuildCx},
         pointer_events::events::PointerEvent,
         IntoWidgetPtr, WidgetPtr,
     },
     app::runner::window_handler::{APP_HANDLE, NEED_REBUILD},
-    macro_exports::{PaintCtxOS, RawWidget},
+    macro_exports::{PaintCxOS, RawWidget},
     render::{Canvas, Constraints, Offset, Size},
 };
 
@@ -50,11 +50,11 @@ impl WidgetTree {
     }
 
     pub fn layout(&mut self, constraints: Constraints) {
-        LayoutCtxOS::new(self.root_node.clone()).layout(constraints);
+        LayoutCxOS::new(self.root_node.clone()).layout(constraints);
     }
 
     pub fn paint(&mut self, piet: &mut Canvas) {
-        PaintCtxOS::new(self.root_node.clone()).paint(piet, &Offset::default());
+        PaintCxOS::new(self.root_node.clone()).paint(piet, &Offset::default());
     }
 
     pub fn handle_pointer_event(&mut self, event: PointerEvent) {
@@ -142,7 +142,7 @@ impl Node {
         // From this point on, `Node` cannot be accessed mutably until any
         // references to it are gone (one such reference is now `BuildCx`).
 
-        let cx = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(node) };
+        let cx = unsafe { std::mem::transmute::<*mut Node, &RawBuildCx>(node) };
 
         let children = widget
             .build(cx)
@@ -231,7 +231,7 @@ impl NodeRef {
             .map(|c| Some(c))
             .collect::<Vec<_>>();
 
-        let cx = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(self.ptr.get()) };
+        let cx = unsafe { std::mem::transmute::<*mut Node, &RawBuildCx>(self.ptr.get()) };
         let new_children_build = self.widget().build(cx);
         let mut new_children = Vec::with_capacity(new_children_build.len());
 
@@ -380,7 +380,7 @@ impl NodeRef {
         assert!(self.is_alive());
 
         let widget = self.borrow().widget_ptr.clone();
-        let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(self.ptr.get()) };
+        let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCx>(self.ptr.get()) };
 
         widget.mount(context)
     }
@@ -389,7 +389,7 @@ impl NodeRef {
         assert!(self.is_alive());
 
         let widget = self.borrow().widget_ptr.clone();
-        let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCtx>(self.ptr.get()) };
+        let context = unsafe { std::mem::transmute::<*mut Node, &RawBuildCx>(self.ptr.get()) };
 
         widget.mount(context)
     }

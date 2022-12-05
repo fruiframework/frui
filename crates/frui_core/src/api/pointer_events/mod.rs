@@ -1,22 +1,22 @@
 use druid_shell::kurbo::Point;
 use frui_macros::sealed;
 
-use self::context::HitTestCtxOS;
+use self::context::HitTestCxOS;
 
 pub mod context;
 pub mod events;
 pub mod pointer_listener;
 pub mod pointer_region;
 
-pub use context::HitTestCtx;
+pub use context::HitTestCx;
 pub use events::PointerEvent;
 pub use pointer_listener::PointerListener;
 pub use pointer_region::PointerRegion;
 
 pub trait HitTest: Sized {
-    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
+    fn hit_test<'a>(&'a self, cx: &'a mut HitTestCx<Self>, point: Point) -> bool {
+        if cx.layout_box().contains(point) {
+            for mut child in cx.children() {
                 if child.hit_test_with_paint_offset(point) {
                     // Don't hit test other children if one already handled that
                     // event.
@@ -31,19 +31,19 @@ pub trait HitTest: Sized {
     }
 
     #[allow(unused_variables)]
-    fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent) {}
+    fn handle_event(&self, cx: &mut HitTestCx<Self>, event: &PointerEvent) {}
 }
 
 #[sealed(crate)]
 pub trait HitTestOS {
-    fn hit_test_os(&self, ctx: HitTestCtxOS, point: Point) -> bool;
-    fn handle_event_os(&self, ctx: HitTestCtxOS, event: &PointerEvent);
+    fn hit_test_os(&self, cx: HitTestCxOS, point: Point) -> bool;
+    fn handle_event_os(&self, cx: HitTestCxOS, event: &PointerEvent);
 }
 
 impl<T> HitTestOS for T {
-    default fn hit_test_os(&self, mut ctx: HitTestCtxOS, point: Point) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
+    default fn hit_test_os(&self, mut cx: HitTestCxOS, point: Point) -> bool {
+        if cx.layout_box().contains(point) {
+            for mut child in cx.children() {
                 if child.hit_test_with_paint_offset(point) {
                     // Don't hit test other children if one already handled that
                     // event.
@@ -57,18 +57,18 @@ impl<T> HitTestOS for T {
         false
     }
 
-    default fn handle_event_os(&self, _: HitTestCtxOS, _: &PointerEvent) {}
+    default fn handle_event_os(&self, _: HitTestCxOS, _: &PointerEvent) {}
 }
 
 impl<T: HitTest> HitTestOS for T {
-    fn hit_test_os(&self, ctx: HitTestCtxOS, point: Point) -> bool {
-        let ctx = &mut <HitTestCtx<T>>::new(ctx);
+    fn hit_test_os(&self, cx: HitTestCxOS, point: Point) -> bool {
+        let cx = &mut <HitTestCx<T>>::new(cx);
 
-        if T::hit_test(&self, ctx, point) {
-            ctx.inner
+        if T::hit_test(&self, cx, point) {
+            cx.inner
                 .hit_entries
                 .borrow_mut()
-                .insert(ctx.inner.node.clone(), ctx.inner.affine);
+                .insert(cx.inner.node.clone(), cx.inner.affine);
 
             true
         } else {
@@ -76,9 +76,9 @@ impl<T: HitTest> HitTestOS for T {
         }
     }
 
-    fn handle_event_os(&self, ctx: HitTestCtxOS, event: &PointerEvent) {
-        let ctx = &mut HitTestCtx::new(ctx);
+    fn handle_event_os(&self, cx: HitTestCxOS, event: &PointerEvent) {
+        let cx = &mut HitTestCx::new(cx);
 
-        T::handle_event(&self, ctx, event)
+        T::handle_event(&self, cx, event)
     }
 }

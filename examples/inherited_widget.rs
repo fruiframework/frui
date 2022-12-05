@@ -50,8 +50,8 @@ impl<W: Widget> InheritedWidget for InheritedSwitch<W> {
 // access to the state of the InheritedWidget.
 
 impl InheritedSwitch<()> {
-    pub fn of<'a, T>(ctx: BuildCtx<'a, T>) -> SwitchGuard<'a> {
-        let state = ctx.depend_on_inherited_widget::<Self>().unwrap();
+    pub fn of<'a, T>(cx: BuildCx<'a, T>) -> SwitchGuard<'a> {
+        let state = cx.depend_on_inherited_widget::<Self>().unwrap();
 
         SwitchGuard::new(state)
     }
@@ -67,9 +67,9 @@ impl InheritedSwitch<()> {
 struct InheritedSwitchDispatcher;
 
 impl ViewWidget for InheritedSwitchDispatcher {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
         KeyboardEventDetector {
-            on_event: |_| InheritedSwitch::of(ctx).switch(),
+            on_event: |_| InheritedSwitch::of(cx).switch(),
             child: (),
         }
     }
@@ -84,8 +84,8 @@ impl ViewWidget for InheritedSwitchDispatcher {
 struct InheritedSwitchConsumer;
 
 impl ViewWidget for InheritedSwitchConsumer {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
-        Text::new(InheritedSwitch::of(ctx).to_string())
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
+        Text::new(InheritedSwitch::of(cx).to_string())
     }
 }
 
@@ -101,7 +101,7 @@ impl ViewWidget for InheritedSwitchConsumer {
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Center::child(Column::builder().children((
             Text::new(concat!(
                 "Following widget doesn't depend on inherited widget, ",

@@ -33,8 +33,8 @@ impl<L: Widget, F: Fn()> WidgetState for Button<L, F> {
 }
 
 impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
-        let (is_hovered, is_pressed) = (ctx.state().is_hovered, ctx.state().is_pressed);
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
+        let (is_hovered, is_pressed) = (cx.state().is_hovered, cx.state().is_pressed);
 
         let color = if is_pressed {
             COLOR.darken().darken()
@@ -45,18 +45,18 @@ impl<L: Widget, F: Fn()> ViewWidget for Button<L, F> {
         };
 
         PointerListener::builder()
-            .on_pointer_down(|_| ctx.state_mut().is_pressed = true)
+            .on_pointer_down(|_| cx.state_mut().is_pressed = true)
             .on_pointer_up(|_| {
-                ctx.state_mut().is_pressed = false;
+                cx.state_mut().is_pressed = false;
 
-                if ctx.state().is_hovered {
+                if cx.state().is_hovered {
                     (self.on_click)();
                 }
             })
             .child(
                 PointerRegion::builder()
-                    .on_enter(|_| ctx.state_mut().is_hovered = true)
-                    .on_exit(|_| ctx.state_mut().is_hovered = false)
+                    .on_enter(|_| cx.state_mut().is_hovered = true)
+                    .on_exit(|_| cx.state_mut().is_hovered = false)
                     .child(SizedBox::from_size(
                         DecoratedBox::builder()
                             .position(DecorationPosition::Background)
@@ -122,18 +122,18 @@ mod test {
     }
 
     impl ViewWidget for OnlyButtons {
-        fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
-            *COUNT.lock().unwrap() = *ctx.state();
+        fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
+            *COUNT.lock().unwrap() = *cx.state();
 
             UnconstrainedBox {
                 child: Row::builder().space_between(10.0).children((
                     Button {
                         label: (),
-                        on_click: || *ctx.state_mut() += 1,
+                        on_click: || *cx.state_mut() += 1,
                     },
                     Button {
                         label: (),
-                        on_click: || *ctx.state_mut() -= 1,
+                        on_click: || *cx.state_mut() -= 1,
                     },
                 )),
             }

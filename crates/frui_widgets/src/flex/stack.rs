@@ -62,13 +62,13 @@ impl Stack<(), AlignmentDirectional> {
         }
     }
 
-    fn is_positioned(child: &LayoutCtxOS) -> bool {
+    fn is_positioned(child: &LayoutCxOS) -> bool {
         child
             .try_parent_data::<StackLayoutData>()
             .map_or(false, |d| d.is_positioned())
     }
 
-    fn layout_positioned_child(child: &mut LayoutCtxOS, size: Size, alignment: &Alignment) -> bool {
+    fn layout_positioned_child(child: &mut LayoutCxOS, size: Size, alignment: &Alignment) -> bool {
         let mut has_visual_overflow = false;
         let mut child_constraints = Constraints::default();
         {
@@ -129,7 +129,7 @@ impl Stack<(), AlignmentDirectional> {
 }
 
 impl<WL: WidgetList, A: Directional<Output = Alignment>> Stack<WL, A> {
-    fn get_layout_offset(&self, child: &PaintCtxOS, alignment: &Alignment, size: Size) -> Offset {
+    fn get_layout_offset(&self, child: &PaintCxOS, alignment: &Alignment, size: Size) -> Offset {
         let child_size = child.size();
         child.try_parent_data::<StackLayoutData>().map_or_else(
             || alignment.along(size - child_size),
@@ -139,11 +139,11 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> Stack<WL, A> {
 }
 
 impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<WL, A> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
         let alignment = self.alignment.resolve(&self.text_direction);
         let mut width = constraints.min_width;
         let mut height = constraints.min_height;
@@ -155,7 +155,7 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
 
         let mut non_positioned_children_count = 0;
 
-        for child in ctx.children() {
+        for child in cx.children() {
             if !Stack::is_positioned(&child) {
                 non_positioned_children_count += 1;
                 let child_size = child.layout(non_positioned_constraints);
@@ -169,7 +169,7 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
         let size = if has_non_positioned_child {
             if cfg!(debug_assertions) {
                 if width == 0. || height == 0. {
-                    if non_positioned_children_count != ctx.children().len() {
+                    if non_positioned_children_count != cx.children().len() {
                         log::warn!(concat!(
                             "not positioned children in Stack have height or width 0. This is most likely a bug. ",
                             "Consider setting `fit` option of `Stack` to StackFit::Expand."
@@ -183,7 +183,7 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
             constraints.biggest()
         };
 
-        for mut child in ctx.children() {
+        for mut child in cx.children() {
             let child_size = child.size();
             if !Stack::is_positioned(&child) {
                 if let Some(mut layout_data) = child.try_parent_data_mut::<StackLayoutData>() {
@@ -197,8 +197,8 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
         size
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        let size = ctx.size();
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        let size = cx.size();
         let alignment = self.alignment.resolve(&self.text_direction);
 
         if self.clip {
@@ -207,7 +207,7 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
                     Rect::from_origin_size(*offset, size),
                 ));
 
-                for mut child in ctx.children() {
+                for mut child in cx.children() {
                     let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                     child.paint(cv, &offset);
                 }
@@ -216,7 +216,7 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
             });
             r.unwrap();
         } else {
-            for mut child in ctx.children() {
+            for mut child in cx.children() {
                 let offset = *offset + self.get_layout_offset(&child, &alignment, size);
                 child.paint(canvas, &offset);
             }
@@ -225,9 +225,9 @@ impl<WL: WidgetList, A: Directional<Output = Alignment>> RenderWidget for Stack<
 }
 
 impl<WL: WidgetList, A: Directional<Output = Alignment>> HitTest for Stack<WL, A> {
-    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children().rev() {
+    fn hit_test<'a>(&'a self, cx: &'a mut HitTestCx<Self>, point: Point) -> bool {
+        if cx.layout_box().contains(point) {
+            for mut child in cx.children().rev() {
                 if child.hit_test_with_paint_offset(point) {
                     // If widget on top handled an event, it won't be passed to
                     // other children, so we can return early.
@@ -273,16 +273,16 @@ impl<T> RenderWidget for Positioned<T>
 where
     T: Widget,
 {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        ctx.child(0).layout(constraints)
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
+        cx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        ctx.child(0).paint(canvas, offset)
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        cx.child(0).paint(canvas, offset)
     }
 }
 

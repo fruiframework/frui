@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 use super::{
     events::{PointerDown, PointerEvent, PointerScroll, PointerUp},
-    HitTest, HitTestCtx,
+    HitTest, HitTestCx,
 };
 
 #[derive(ViewWidget)]
@@ -29,7 +29,7 @@ where
     PS: FnPointerScroll,
     CHILD: Widget,
 {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         &self.child
     }
 }
@@ -43,11 +43,11 @@ where
 {
     fn hit_test<'a>(
         &'a self,
-        ctx: &'a mut HitTestCtx<Self>,
+        cx: &'a mut HitTestCx<Self>,
         point: druid_shell::kurbo::Point,
     ) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
+        if cx.layout_box().contains(point) {
+            for mut child in cx.children() {
                 child.hit_test(point);
             }
 
@@ -57,7 +57,7 @@ where
         false
     }
 
-    fn handle_event(&self, _: &mut HitTestCtx<Self>, event: &PointerEvent) {
+    fn handle_event(&self, _: &mut HitTestCx<Self>, event: &PointerEvent) {
         match event {
             PointerEvent::PointerDown(e) => self.on_pointer_down.call(e),
             PointerEvent::PointerUp(e) => self.on_pointer_up.call(e),

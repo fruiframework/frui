@@ -1,6 +1,6 @@
 use std::any::{Any, TypeId};
 
-use crate::prelude::{BuildCtx, ViewWidget, Widget};
+use crate::prelude::{BuildCx, ViewWidget, Widget};
 
 /// LocalKey is a widget that allows you to annotate the key for a `child`
 /// widget.
@@ -17,7 +17,7 @@ impl<K: 'static + PartialEq, W: Widget> LocalKey<K, W> {
 }
 
 impl<K: 'static + PartialEq, W: Widget> ViewWidget for LocalKey<K, W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         &self.child
     }
 }

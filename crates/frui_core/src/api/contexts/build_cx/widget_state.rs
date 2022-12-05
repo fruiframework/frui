@@ -2,9 +2,9 @@ use std::any::{Any, TypeId};
 
 use frui_macros::sealed;
 
-use crate::macro_exports::RawBuildCtx;
+use crate::macro_exports::RawBuildCx;
 
-use super::{BuildCtx, _BuildCtx};
+use super::{BuildCx, _BuildCx};
 
 pub trait WidgetState: Sized {
     type State: 'static;
@@ -13,17 +13,17 @@ pub trait WidgetState: Sized {
 
     /// Called when the widget is mounted into the tree (before build).
     ///
-    /// Accessing `state_mut` of this [`BuildCtx`] will not schedule rebuild.
-    fn mount<'a>(&'a self, ctx: BuildCtx<'a, Self>) {
-        let _ = ctx;
+    /// Accessing `state_mut` of this [`BuildCx`] will not schedule rebuild.
+    fn mount<'a>(&'a self, cx: BuildCx<'a, Self>) {
+        let _ = cx;
     }
 
     /// Called when the widget is unmounted from the tree. At this point given
     /// widget may be dropped or mounted again with its configuration updated.
     ///
-    /// Accessing `state_mut` of this [`BuildCtx`] will not schedule rebuild.
-    fn unmount<'a>(&'a self, ctx: BuildCtx<'a, Self>) {
-        let _ = ctx;
+    /// Accessing `state_mut` of this [`BuildCx`] will not schedule rebuild.
+    fn unmount<'a>(&'a self, cx: BuildCx<'a, Self>) {
+        let _ = cx;
     }
 }
 
@@ -32,8 +32,8 @@ pub trait WidgetStateOS {
     fn state_type_id(&self) -> TypeId;
     fn create_state(&self) -> Box<dyn Any>;
 
-    fn mount(&self, build_ctx: &RawBuildCtx);
-    fn unmount(&self, build_ctx: &RawBuildCtx);
+    fn mount(&self, build_cx: &RawBuildCx);
+    fn unmount(&self, build_cx: &RawBuildCx);
 }
 
 impl<T> WidgetStateOS for T {
@@ -46,9 +46,9 @@ impl<T> WidgetStateOS for T {
         Box::new(())
     }
 
-    default fn mount(&self, _: &RawBuildCtx) {}
+    default fn mount(&self, _: &RawBuildCx) {}
 
-    default fn unmount(&self, _: &RawBuildCtx) {}
+    default fn unmount(&self, _: &RawBuildCx) {}
 }
 
 impl<T: WidgetState> WidgetStateOS for T {
@@ -60,15 +60,15 @@ impl<T: WidgetState> WidgetStateOS for T {
         Box::new(T::create_state(&self))
     }
 
-    fn mount(&self, ctx: &RawBuildCtx) {
-        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
+    fn mount(&self, cx: &RawBuildCx) {
+        let cx = unsafe { std::mem::transmute::<&RawBuildCx, &_BuildCx<T>>(cx) };
 
-        T::mount(&self, ctx)
+        T::mount(&self, cx)
     }
 
-    fn unmount(&self, ctx: &RawBuildCtx) {
-        let ctx = unsafe { std::mem::transmute::<&RawBuildCtx, &_BuildCtx<T>>(ctx) };
+    fn unmount(&self, cx: &RawBuildCx) {
+        let cx = unsafe { std::mem::transmute::<&RawBuildCx, &_BuildCx<T>>(cx) };
 
-        T::unmount(&self, ctx)
+        T::unmount(&self, cx)
     }
 }

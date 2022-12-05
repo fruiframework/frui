@@ -1,6 +1,6 @@
 use crate::{prelude::*, render::*};
 
-use super::{events::*, HitTest, HitTestCtx};
+use super::{events::*, HitTest, HitTestCx};
 
 #[derive(ViewWidget)]
 pub struct PointerRegion<PEN, PMV, PEX, CHILD>
@@ -23,7 +23,7 @@ where
     PEX: FnPointerExit,
     CHILD: Widget,
 {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         &self.child
     }
 }
@@ -50,21 +50,21 @@ where
     PEX: FnPointerExit,
     CHILD: Widget,
 {
-    fn handle_event(&self, ctx: &mut HitTestCtx<Self>, event: &PointerEvent) {
+    fn handle_event(&self, cx: &mut HitTestCx<Self>, event: &PointerEvent) {
         match event {
             PointerEvent::PointerMove(e) => {
-                if *ctx.render_state() {
+                if *cx.render_state() {
                     self.on_move.call(&PointerMove(e.0.clone()));
                 } else {
                     // Pointer now hovers over this widget.
-                    *ctx.render_state_mut() = true;
+                    *cx.render_state_mut() = true;
 
                     self.on_enter.call(&PointerEnter(e.0.clone()));
                 }
             }
             PointerEvent::PointerExit(e) => {
                 // Pointer no longer hovers over this widget.
-                *ctx.render_state_mut() = false;
+                *cx.render_state_mut() = false;
 
                 self.on_exit.call(e);
             }

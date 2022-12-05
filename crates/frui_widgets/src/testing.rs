@@ -32,12 +32,12 @@ impl<W: Widget> DebugContainer<W> {
 }
 
 impl<W: Widget> RenderWidget for DebugContainer<W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        let size = ctx.child(0).layout(constraints);
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
+        let size = cx.child(0).layout(constraints);
 
         if self.print_size != "" {
             println!("{} = {:?}", self.print_size, size);
@@ -46,10 +46,10 @@ impl<W: Widget> RenderWidget for DebugContainer<W> {
         size
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        ctx.child(0).paint(canvas, offset);
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        cx.child(0).paint(canvas, offset);
 
-        let rect = Rect::from_origin_size(*offset, ctx.child(0).size());
+        let rect = Rect::from_origin_size(*offset, cx.child(0).size());
         let brush = &canvas.solid_brush(Color::GREEN);
 
         canvas.stroke_styled(rect, brush, 2., &StrokeStyle::new().line_cap(LineCap::Butt));

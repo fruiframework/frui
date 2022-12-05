@@ -96,20 +96,20 @@ impl Flex<()> {
 }
 
 impl<WL: WidgetList> RenderWidget for Flex<WL> {
-    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _cx: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         self.children.get()
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
         let main_size_max = self.direction.max(constraints);
         let can_flex = main_size_max < f64::INFINITY;
-        let child_count = ctx.children().len();
-        let text_direction = Directionality::unwrap_or_default(self.text_direction, ctx);
+        let child_count = cx.children().len();
+        let text_direction = Directionality::unwrap_or_default(self.text_direction, cx);
 
         //
         // Override child parent data to store calculated offsets.
 
-        self.ensure_parent_data(ctx, || FlexData::default());
+        self.ensure_parent_data(cx, || FlexData::default());
 
         //
         // Layout inflexible children.
@@ -118,7 +118,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             flex_count,
             allocated_space,
             mut cross_size_min,
-        } = self.layout_inflexible(ctx.children(), constraints);
+        } = self.layout_inflexible(cx.children(), constraints);
 
         let flexible = flex_count > 0;
 
@@ -140,7 +140,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
             assert!(can_flex, "flex received unbounded constraints");
 
             let cross_size_min_flex =
-                self.layout_flexible(ctx.children(), constraints, free_space, flex_count);
+                self.layout_flexible(cx.children(), constraints, free_space, flex_count);
 
             cross_size_min = cross_size_min.max(cross_size_min_flex);
         }
@@ -159,7 +159,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         let (main_axis_flipped, mut main_offset) =
             self.compute_main_offset(main_size, leading_space, text_direction);
 
-        for child in ctx.children() {
+        for child in cx.children() {
             let child_size = child.size();
             let child_offset = &mut child.try_parent_data_mut::<FlexData>().unwrap().offset;
 
@@ -184,8 +184,8 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
         size
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        for mut child in ctx.children() {
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        for mut child in cx.children() {
             let child_offset: Offset = child
                 .try_parent_data::<FlexData>()
                 .map_or(*offset, |d| (*offset + d.offset));
@@ -195,7 +195,7 @@ impl<WL: WidgetList> RenderWidget for Flex<WL> {
 }
 
 impl<WL: WidgetList> Flex<WL> {
-    fn layout_inflexible(&self, children: LayoutCtxIter, constraints: Constraints) -> InflexResult {
+    fn layout_inflexible(&self, children: LayoutCxIter, constraints: Constraints) -> InflexResult {
         let mut flex_count = 0;
         let mut cross_size_min = 0.0;
         let mut allocated_space = 0.0;
@@ -322,7 +322,7 @@ impl<WL: WidgetList> Flex<WL> {
 
     fn layout_flexible(
         &self,
-        children: LayoutCtxIter,
+        children: LayoutCxIter,
         constraints: Constraints,
         mut free_space: f64,
         mut flex_count: usize,
@@ -517,23 +517,23 @@ struct MainAxisSizes {
     space_between: f64,
 }
 
-fn get_flex(child: &LayoutCtxOS) -> Option<usize> {
+fn get_flex(child: &LayoutCxOS) -> Option<usize> {
     child.try_parent_data::<FlexData>().map(|d| d.flex_factor)
 }
 
-fn get_fit(child: &LayoutCtxOS) -> Option<FlexFit> {
+fn get_fit(child: &LayoutCxOS) -> Option<FlexFit> {
     child.try_parent_data::<FlexData>().map(|d| d.fit)
 }
 
-fn is_flex(c: &LayoutCtxOS) -> bool {
+fn is_flex(c: &LayoutCxOS) -> bool {
     get_flex(c).unwrap_or(0) > 0
 }
 
-fn fit_loose(c: &LayoutCtxOS) -> bool {
+fn fit_loose(c: &LayoutCxOS) -> bool {
     get_fit(c).unwrap() == FlexFit::Loose
 }
 
-fn fit_tight(c: &LayoutCtxOS) -> bool {
+fn fit_tight(c: &LayoutCxOS) -> bool {
     get_fit(c).unwrap() == FlexFit::Tight
 }
 

@@ -7,42 +7,42 @@ use crate::{
 
 use super::{ext::RenderExt, Offset, RenderOSExt};
 
-pub struct PaintCtx<T> {
-    ctx: PaintCtxOS,
+pub struct PaintCx<T> {
+    cx: PaintCxOS,
     _p: PhantomData<T>,
 }
 
-impl<T> PaintCtx<T> {
-    pub fn new(ctx: PaintCtxOS) -> Self {
+impl<T> PaintCx<T> {
+    pub fn new(cx: PaintCxOS) -> Self {
         Self {
-            ctx,
+            cx,
             _p: PhantomData,
         }
     }
 }
 
-impl<W: Widget> RenderExt<W> for PaintCtx<W> {
+impl<W: Widget> RenderExt<W> for PaintCx<W> {
     fn node(&self) -> &NodeRef {
         &self.node
     }
 }
 
-impl<T> std::ops::Deref for PaintCtx<T> {
-    type Target = PaintCtxOS;
+impl<T> std::ops::Deref for PaintCx<T> {
+    type Target = PaintCxOS;
 
     fn deref(&self) -> &Self::Target {
-        &self.ctx
+        &self.cx
     }
 }
 
-impl<T> std::ops::DerefMut for PaintCtx<T> {
+impl<T> std::ops::DerefMut for PaintCx<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.ctx
+        &mut self.cx
     }
 }
 
 #[derive(Clone)]
-pub struct PaintCtxOS {
+pub struct PaintCxOS {
     node: NodeRef,
     // Following are used to correctly register local transformation of the
     // offset. It is used to automatically transform point during hit testing.
@@ -52,13 +52,13 @@ pub struct PaintCtxOS {
     parent_offset: Offset,
 }
 
-impl RenderOSExt for PaintCtxOS {
+impl RenderOSExt for PaintCxOS {
     fn node(&self) -> &NodeRef {
         &self.node
     }
 }
 
-impl PaintCtxOS {
+impl PaintCxOS {
     pub(crate) fn new(node: NodeRef) -> Self {
         Self {
             node,
@@ -84,21 +84,21 @@ impl PaintCtxOS {
     }
 
     #[track_caller]
-    pub fn child(&mut self, index: usize) -> PaintCtxOS {
+    pub fn child(&mut self, index: usize) -> PaintCxOS {
         let child = self
             .node
             .child(index)
             .expect("specified node didn't have child at that index");
 
-        PaintCtxOS {
+        PaintCxOS {
             node: child,
             offset: Offset::default(),
             parent_offset: self.offset.clone(),
         }
     }
 
-    pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCtxOS> + 'a {
-        self.node.children().into_iter().map(|child| PaintCtxOS {
+    pub fn children<'a>(&'a mut self) -> impl Iterator<Item = PaintCxOS> + 'a {
+        self.node.children().into_iter().map(|child| PaintCxOS {
             node: child,
             offset: Offset::default(),
             parent_offset: self.offset.clone(),

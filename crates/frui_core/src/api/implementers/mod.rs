@@ -7,9 +7,9 @@ use crate::render::*;
 use super::{
     any_ext::AnyExt,
     contexts::{
-        build_ctx::widget_state::WidgetStateOS,
+        build_cx::widget_state::WidgetStateOS,
         render::{ParentDataOS, RenderStateOS},
-        RawBuildCtx,
+        RawBuildCx,
     },
     local_key::WidgetLocalKey,
     pointer_events::HitTestOS,
@@ -60,11 +60,11 @@ pub trait OS:
     + StructuralEqOS
     + AnyExt
 {
-    fn build<'w>(&'w self, ctx: &'w RawBuildCtx) -> Vec<WidgetPtr<'w>>;
+    fn build<'w>(&'w self, cx: &'w RawBuildCx) -> Vec<WidgetPtr<'w>>;
 
-    fn layout(&self, ctx: LayoutCtxOS, constraints: Constraints) -> Size;
+    fn layout(&self, cx: LayoutCxOS, constraints: Constraints) -> Size;
 
-    fn paint(&self, ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset);
+    fn paint(&self, cx: PaintCxOS, canvas: &mut Canvas, offset: &Offset);
 
     fn inherited_key(&self) -> Option<TypeId> {
         None

@@ -13,12 +13,12 @@ impl<W: Widget> Center<W> {
 }
 
 impl<W: Widget> RenderWidget for Center<W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        let child_size = ctx.child(0).layout(constraints.loosen());
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
+        let child_size = cx.child(0).layout(constraints.loosen());
 
         let mut size = constraints.biggest();
 
@@ -31,15 +31,15 @@ impl<W: Widget> RenderWidget for Center<W> {
         size
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        let self_size = ctx.size();
-        let child_size = ctx.child(0).size();
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        let self_size = cx.size();
+        let child_size = cx.child(0).size();
 
         let child_offset = Offset {
             x: offset.x + (self_size.width - child_size.width) / 2.,
             y: offset.y + (self_size.height - child_size.height) / 2.,
         };
 
-        ctx.child(0).paint(canvas, &child_offset);
+        cx.child(0).paint(canvas, &child_offset);
     }
 }

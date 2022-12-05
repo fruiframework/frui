@@ -11,8 +11,8 @@ pub mod app;
 pub mod prelude {
     pub use super::{
         api::{
-            contexts::build_ctx::{
-                BuildCtx, InheritedState, InheritedStateRef, InheritedStateRefMut, WidgetState,
+            contexts::build_cx::{
+                BuildCx, InheritedState, InheritedStateRef, InheritedStateRefMut, WidgetState,
             },
             implementers::{inherited::InheritedWidget, view::ViewWidget},
             impls::BoxedWidget,
@@ -53,8 +53,8 @@ pub mod macro_exports {
     pub use crate::{
         api::{
             contexts::{
-                render::{LayoutCtxOS, PaintCtxOS},
-                RawBuildCtx,
+                render::{LayoutCxOS, PaintCxOS},
+                RawBuildCx,
             },
             implementers::{
                 InheritedWidgetOS, RawWidget, RenderWidgetOS, ViewWidgetOS, WidgetDerive,

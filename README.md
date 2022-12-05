@@ -27,7 +27,7 @@ use frui::prelude::*;
 struct App;
 
 impl ViewWidget for App {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Center::child(Text::new("Hello, World!"))
     }
 }
@@ -39,15 +39,13 @@ fn main() {
 
 ## Warning
 
-This framework is still in an experimental phase of development. As such, API changes are inevitable and necessary for the best developer experience. 
+This framework is still in an experimental phase of development. As such, API changes are inevitable and necessary for the best developer experience.
 
-Currently, there is very little optimizations happening. Layout and drawing are the least optimized. Many important widgets are yet to be implemented. 
+Currently, there is very little optimizations happening. Layout and drawing are the least optimized. Many important widgets are yet to be implemented.
 
 Frui heavily utilizes some of the nightly features to optimize rebuilds of the widget tree and improve the API. Therefore, the Minimum Supported Rust Version is **the latest nightly release** of Rust. This may be a deal-breaker for some.
 
 It is important to know that Frui should not be used to build any serious applications at this point in time.
-
-
 
 ## Features
 
@@ -77,7 +75,6 @@ It is important to know that Frui should not be used to build any serious applic
 - [ ] Officially supported widget library implementing most popular design languages (e.g. `frui_material`, `frui_cupertino`)
 - [ ] Documentation and tutorials
 
-
 ## 🦀 Counter - Example
 
 Obligatory crab counter! From `examples/crab_counter.rs`.
@@ -101,7 +98,7 @@ impl WidgetState for CrabCounter {
 }
 
 impl ViewWidget for CrabCounter {
-    fn build<'w>(&'w self, ctx: BuildCtx<'w, Self>) -> Self::Widget<'w> {
+    fn build<'w>(&'w self, cx: BuildCx<'w, Self>) -> Self::Widget<'w> {
         Column::builder()
             .space_between(60.0)
             .main_axis_size(MainAxisSize::Max)
@@ -109,7 +106,7 @@ impl ViewWidget for CrabCounter {
             .main_axis_alignment(MainAxisAlignment::Center)
             .cross_axis_alignment(CrossAxisAlignment::Center)
             .children((
-                Text::new(format!("{} 🦀", *ctx.state()))
+                Text::new(format!("{} 🦀", *cx.state()))
                     .size(100.0)
                     .weight(FontWeight::BOLD),
                 Row::builder()
@@ -117,11 +114,11 @@ impl ViewWidget for CrabCounter {
                     .children((
                         Button {
                             label: Text::new("+").size(30.),
-                            on_click: || *ctx.state_mut() += 1,
+                            on_click: || *cx.state_mut() += 1,
                         },
                         Button {
                             label: Text::new("-").size(30.),
-                            on_click: || *ctx.state_mut() -= 1,
+                            on_click: || *cx.state_mut() -= 1,
                         },
                     )),
             ))
@@ -132,6 +129,7 @@ fn main() {
     run_app(CrabCounter);
 }
 ```
+
 <p align="center"><img src="assets/crab_counter.png" height="400px" alt="screenshot of application running above code"/></p>
 
 *<p align="center">Crabs counter running on MacOS</p>*
@@ -142,10 +140,9 @@ Frui wouldn't exist without Flutter and its widget architecture, which inspired 
 
 Frui also wouldn't exist without prior work done on Druid - which powers most of the back-end. Many widgets share some of the implementation details with it as well. Thank you a lot!
 
-
 ## License
 
 All code in this repository is dual-licensed under either:
 
-* MIT License ([LICENSE-MIT](LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
-* Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
+- MIT License ([LICENSE-MIT](LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))

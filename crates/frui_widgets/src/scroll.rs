@@ -42,11 +42,11 @@ impl<W: Widget> WidgetState for Scroll<W> {
 }
 
 impl<W: Widget> RenderWidget for Scroll<W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
         let child_constraints = match self.scroll_direction {
             ScrollDirection::Horizontal => Constraints {
                 min_width: 0.,
@@ -60,22 +60,22 @@ impl<W: Widget> RenderWidget for Scroll<W> {
             },
         };
 
-        ctx.child(0).layout(child_constraints);
+        cx.child(0).layout(child_constraints);
 
         constraints.biggest()
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Err(e) = canvas.save() {
             log::error!("saving render context failed: {:?}", e);
             return;
         }
 
-        let viewport = Rect::from_origin_size(*offset, ctx.size());
+        let viewport = Rect::from_origin_size(*offset, cx.size());
         canvas.clip(druid_shell::piet::kurbo::Rect::from(viewport));
-        canvas.transform(Affine::translate(-ctx.widget_state().scroll_offset));
+        canvas.transform(Affine::translate(-cx.widget_state().scroll_offset));
 
-        ctx.child(0).paint(canvas, offset);
+        cx.child(0).paint(canvas, offset);
 
         if let Err(e) = canvas.restore() {
             log::error!("restoring render context failed: {:?}", e);

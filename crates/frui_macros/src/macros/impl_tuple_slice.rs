@@ -11,6 +11,7 @@ pub fn impl_tuple_slice(tokens: TokenStream) -> TokenStream {
         let bounds_3 = (0..args_count).map(syn::Index::from);
 
         quote! {
+            #[doc(hidden)]
             impl< #(#bounds_1 : Widget),* > WidgetList for ( #(#bounds_2,)* ) {
                 fn get(&self) -> Vec<&dyn Widget> {
                     vec![ #( &self.#bounds_3 ),* ]

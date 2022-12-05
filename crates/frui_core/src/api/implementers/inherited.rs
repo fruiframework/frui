@@ -12,16 +12,16 @@ pub trait InheritedWidget: WidgetDerive + Sized {
 }
 
 impl<T: InheritedWidget> InheritedWidgetOS for T {
-    fn build<'w>(&'w self, _: &'w crate::api::contexts::RawBuildCtx) -> Vec<WidgetPtr<'w>> {
+    fn build<'w>(&'w self, _: &'w crate::api::contexts::RawBuildCx) -> Vec<WidgetPtr<'w>> {
         vec![T::build(self).into_widget_ptr()]
     }
 
-    fn layout<'w>(&'w self, ctx: LayoutCtxOS, constraints: Constraints) -> Size {
-        ctx.child(0).layout(constraints)
+    fn layout<'w>(&'w self, cx: LayoutCxOS, constraints: Constraints) -> Size {
+        cx.child(0).layout(constraints)
     }
 
-    fn paint<'w>(&'w self, mut ctx: PaintCtxOS, canvas: &mut Canvas, offset: &Offset) {
-        ctx.child(0).paint(canvas, offset)
+    fn paint<'w>(&'w self, mut cx: PaintCxOS, canvas: &mut Canvas, offset: &Offset) {
+        cx.child(0).paint(canvas, offset)
     }
 
     fn inherited_key(&self) -> Option<TypeId> {

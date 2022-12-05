@@ -53,23 +53,23 @@ impl<W: Widget> Container<W> {
 }
 
 impl<W: Widget> RenderWidget for Container<W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
         let constraints = Constraints::new_tight_for(self.width, self.height).enforce(constraints);
 
-        ctx.child(0).layout(constraints)
+        cx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
         if let Some(color) = &self.color {
             let brush = &canvas.solid_brush(color.clone());
-            canvas.fill(DruidRect::from_origin_size(offset, ctx.size()), brush);
+            canvas.fill(DruidRect::from_origin_size(offset, cx.size()), brush);
         }
 
-        ctx.child(0).paint(canvas, offset)
+        cx.child(0).paint(canvas, offset)
     }
 }
 
@@ -91,16 +91,16 @@ impl DecoratedBox<(), DefaultBoxDecoration> {
 }
 
 impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
-    fn build<'w>(&'w self, _ctx: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _cx: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.child]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        constraints.constrain(ctx.child(0).layout(constraints))
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
+        constraints.constrain(cx.child(0).layout(constraints))
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
-        let rect = Rect::from_origin_size(offset, ctx.size());
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
+        let rect = Rect::from_origin_size(offset, cx.size());
         let path = self
             .decoration
             .get_clip_path(rect.into(), &TextDirection::Ltr);
@@ -110,7 +110,7 @@ impl<W: Widget, D: Decoration> RenderWidget for DecoratedBox<W, D> {
         canvas
             .with_save(|c| {
                 c.clip(path);
-                ctx.child(0).paint(c, offset);
+                cx.child(0).paint(c, offset);
                 Ok(())
             })
             .unwrap();

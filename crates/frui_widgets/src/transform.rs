@@ -5,18 +5,18 @@ use frui::render::*;
 pub struct Transform<W: Widget>(pub Affine, pub W);
 
 impl<W: Widget> RenderWidget for Transform<W> {
-    fn build<'w>(&'w self, _: BuildCtx<'w, Self>) -> Vec<Self::Widget<'w>> {
+    fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Vec<Self::Widget<'w>> {
         vec![&self.1]
     }
 
-    fn layout(&self, ctx: &LayoutCtx<Self>, constraints: Constraints) -> Size {
-        ctx.child(0).layout(constraints)
+    fn layout(&self, cx: &LayoutCx<Self>, constraints: Constraints) -> Size {
+        cx.child(0).layout(constraints)
     }
 
-    fn paint(&self, ctx: &mut PaintCtx<Self>, canvas: &mut Canvas, offset: &Offset) {
+    fn paint(&self, cx: &mut PaintCx<Self>, canvas: &mut Canvas, offset: &Offset) {
         let r = canvas.with_save(|cv| {
             cv.transform(self.0);
-            ctx.child(0).paint(cv, offset);
+            cx.child(0).paint(cv, offset);
 
             Ok(())
         });
@@ -26,9 +26,9 @@ impl<W: Widget> RenderWidget for Transform<W> {
 }
 
 impl<W: Widget> HitTest for Transform<W> {
-    fn hit_test<'a>(&'a self, ctx: &'a mut HitTestCtx<Self>, point: Point) -> bool {
-        if ctx.layout_box().contains(point) {
-            for mut child in ctx.children() {
+    fn hit_test<'a>(&'a self, cx: &'a mut HitTestCx<Self>, point: Point) -> bool {
+        if cx.layout_box().contains(point) {
+            for mut child in cx.children() {
                 if child.hit_test_with_transform(point, self.0.inverse()) {
                     return true;
                 }
