@@ -1,6 +1,6 @@
 <h1 align="center"><img src="assets/logo.svg" height="80px" alt="Frui"/></h1>
 
-*<p align="center">Reading: "Fru" as in "fruit" and "i" as in "I" (I am).</p>*
+*<p align="center">Reading: "Fru–" as in "fruit" and "–i" as in "I am".</p>*
 
 <p align="center">
 <a href="https://crates.io/crates/frui"><img src="https://img.shields.io/crates/v/frui.svg" alt="Latest version"/></a>
@@ -18,62 +18,65 @@ For an introduction see the [announcement](https://github.com/fruiframework/frui
 ## Example
 
 ```rust
-
 #![feature(type_alias_impl_trait)]
 
 use frui::prelude::*;
 
 #[derive(ViewWidget)]
-struct App;
+struct App<'a>(&'a str);
 
-impl ViewWidget for App {
+impl ViewWidget for App<'_> {
     fn build<'w>(&'w self, _: BuildCx<'w, Self>) -> Self::Widget<'w> {
-        Center::child(Text::new("Hello, World!"))
+        Center::child(Text::new(format!("Hello, {}!", self.0)))
     }
 }
 
 fn main() {
-    run_app(App);
+    run_app(App("World"));
 }
 ```
 
 ## Warning
 
-This framework is still in an experimental phase of development. As such, API changes are inevitable and necessary for the best developer experience.
+Frui is an experimental framework and is not suitable for building real applications. It is more of a proof of concept and an exploration of new ideas, rather than a fully-fledged and reliable tool. While it may have some interesting implications and possibilities, it is not yet ready for production use and the development efforts on it are rather sporadic. It is currently not optimized and some important features have not been implemented. 
 
-Currently, there is very little optimizations happening. Layout and drawing are the least optimized. Many important widgets are yet to be implemented.
+To compile it you will need to install the **latest version of nightly Rust**. 
 
-Frui heavily utilizes some of the nightly features to optimize rebuilds of the widget tree and improve the API. Therefore, the Minimum Supported Rust Version is **the latest nightly release** of Rust. This may be a deal-breaker for some.
-
-It is important to know that Frui should not be used to build any serious applications at this point in time.
+Feel free to try it out!
 
 ## Features
 
-*Ok, what's done and what's not?*
+*Ok, what's in there?*
 
-- [x] `ViewWidget` (see [`StatelessWidget`](https://api.flutter.dev/flutter/widgets/StatelessWidget-class.html) and [`StatefulWidget`](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html))
-- [x] `InheritedWidget` (see [`InheritedWidget`](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html))
-- [x] `LocalKey` (see [`Key`](https://api.flutter.dev/flutter/foundation/Key-class.html))
-- [x] Scheduling state updates
-- [x] Basic event detection (`KeyboardEventDetector` / mouse events)
-- [x] Basic layout widgets (`Column`, `Row`, `Center`)
+- Basic widgets:
+  - `ViewWidget`
+  - `InheritedWidget`
+  - `RenderWidget`
+- Impls:
+  - `WidgetState`
+  - `RenderState`
+  - `ParentData`
+- Preserving state:
+  - `LocalKey`
+  - Position in children list
+- Basic event detectors:
+  - `KeyboardEventDetector`
+  - `PointerListener`
+  - `PointerRegion`
+- Basic widgets:
+  - `Text`
+  - `Center`
+  - `Row`
+  - `Column`
+  - `Flex`
+  - `Stack`
+  - `SizedBox`
+  - `LimitedBox`
+  - `ConstrainedBox`
 
-###
 
-- [ ] Focus
-- [ ] Events
-- [ ] Accessibility
-- [ ] Z-layers drawing
-- [ ] Optimizations:
-  - [ ] Widget-rebuilds (based on depth)
-  - [ ] Layout
-  - [ ] Painting
-- [ ] Library of widgets common to all design langauges (provided in `frui_widgets`)
-  - [ ] `Column`, `Row`, `Stack`, `Scroll`, ...
-  - [ ] `KeyboardListener`, `GestureDetector`, ...
-  - [ ] Theming widgets, etc.
-- [ ] Officially supported widget library implementing most popular design languages (e.g. `frui_material`, `frui_cupertino`)
-- [ ] Documentation and tutorials
+For more features see `examples`.
+
 
 ## 🦀 Counter - Example
 
@@ -132,13 +135,12 @@ fn main() {
 
 <p align="center"><img src="assets/crab_counter.png" height="400px" alt="screenshot of application running above code"/></p>
 
-*<p align="center">Crabs counter running on MacOS</p>*
+*<p align="center">Crab counter running on MacOS</p>*
 
 ## Credits
 
-Frui wouldn't exist without Flutter and its widget architecture, which inspired Frui's API. Thank you!
 
-Frui also wouldn't exist without prior work done on Druid - which powers most of the back-end. Many widgets share some of the implementation details with it as well. Thank you a lot!
+Frui was inspired by Flutter's widget architecture and API, and builds upon the work done in Druid, which powers much of the back-end and has influenced the implementation of many widgets. The contributions of both Flutter and Druid were essential to the development of Frui, and for those – thank you!
 
 ## License
 
